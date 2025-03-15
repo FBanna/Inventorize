@@ -1,20 +1,21 @@
+use crate::{Config};
+
 use axum::{http::{header::CONTENT_TYPE, HeaderValue, Method}, routing::get, Json, Router};
 use std::net::SocketAddr;
 use tower_http::{cors::{Any, CorsLayer}, services::{ServeDir, ServeFile}};
 
-pub async fn start_server() {
+pub async fn start_server(config: Config) {
 
     let app = get_router();
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3030));
+    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
 
     println!("Server started, listening on {addr}");
 
-    axum::Server::bind(&addr)
+    let server = axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .expect("Failed to start server");
-
 }
 
 #[cfg(debug_assertions)]
@@ -38,7 +39,7 @@ fn get_router() -> Router{
         .nest_service("/", ServeDir::new("dist"))//.not_found_service(ServeFile::new("dist/index.html")))
         .layer(
             tower_http::cors::CorsLayer::new()
-                .allow_origin(Any)
+                .allow_origin("/".parse::<HeaderValue>().unwrap())
                 .allow_headers([CONTENT_TYPE])
                 .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE]),
         )

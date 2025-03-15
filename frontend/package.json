@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"yarn:dev:*\"",
     "dev:frontend": "vite",
-    "dev:backend": "cargo watch -C ../ -x run",
+    "dev:backend": "set RUST_LOG=info && cd .. && watchexec -r cargo run",
     "build": "vite build",
     "preview": "vite preview"
   },
