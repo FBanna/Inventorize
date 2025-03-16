@@ -1,12 +1,46 @@
 use crate::{Config};
 
-use axum::{http::{header::CONTENT_TYPE, HeaderValue, Method}, routing::get, Json, Router};
+pub mod login;
+mod handler;
+
+use axum::{http::{header::CONTENT_TYPE, HeaderValue, Method}, middleware, response::Response, routing::{get, post}, Json, Router};
+use axum_login::{login_required, tower_sessions::{MemoryStore, SessionManagerLayer}, AuthManagerLayer, AuthManagerLayerBuilder};
+use login::{Backend, User};
 use std::net::SocketAddr;
 use tower_http::{cors::{Any, CorsLayer}, services::{ServeDir, ServeFile}};
 
 pub async fn start_server(config: Config) {
 
-    let app = get_router();
+
+    
+
+    let session_store = MemoryStore::default();
+    let session_layer = SessionManagerLayer::new(session_store);
+
+    let backend = Backend::new(User {id: 0, username: config.user, password: config.password});
+    let auth_layer: AuthManagerLayer<Backend, MemoryStore> = AuthManagerLayerBuilder::new(backend, session_layer).build();
+
+
+
+    //#[cfg(debug_assertions)]
+    //let app = get_router_debug();
+
+    //#[cfg(not(debug_assertions))]
+    //let app = get_router(auth_layer);
+
+    let app =     Router::new()
+        
+        .nest_service("/", ServeDir::new("dist"))
+        .route_layer(login_required!(Backend, login_url = "/login"))
+        .route("/login", post(todo!()))
+        .route("/login", get(todo!()))
+        .layer(auth);
+        // .layer(
+        //     tower_http::cors::CorsLayer::new()
+        //         .allow_origin("/".parse::<HeaderValue>().unwrap())
+        //         .allow_headers([CONTENT_TYPE])
+        //         .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE]),
+        // );
 
     let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
 
@@ -18,8 +52,8 @@ pub async fn start_server(config: Config) {
         .expect("Failed to start server");
 }
 
-#[cfg(debug_assertions)]
-fn get_router() -> Router{
+
+fn get_router_debug() -> Router{
     Router::new()
         .route("/", get(handler))
         .layer(
@@ -30,21 +64,6 @@ fn get_router() -> Router{
             //     .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE]),
         )
 }
-
-#[cfg(not(debug_assertions))]
-fn get_router() -> Router{
-    
-    Router::new()
-        .route("/api", get(handler))
-        .nest_service("/", ServeDir::new("dist"))//.not_found_service(ServeFile::new("dist/index.html")))
-        .layer(
-            tower_http::cors::CorsLayer::new()
-                .allow_origin("/".parse::<HeaderValue>().unwrap())
-                .allow_headers([CONTENT_TYPE])
-                .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE]),
-        )
-}
-
 
 
 #[derive(serde::Serialize)]

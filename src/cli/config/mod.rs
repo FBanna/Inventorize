@@ -5,24 +5,30 @@ use serde::{Deserialize, Serialize};
 
 pub const DEFAULT_CONFIG_FILE: &str = "./config.yaml";
 const DEFAULT_PORT_NUMBER: u16 = 3030;
+const DEFAULT_USER: &str = "user";
+const DEFAULT_PASSWORD: &str = "password";
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config{
-    pub port: u16
+    pub port: u16,
+    pub user: String,
+    pub password: String,
 }
 
 impl Config{
     pub fn new() -> Config {
         Config{
-            port: DEFAULT_PORT_NUMBER
+            port: DEFAULT_PORT_NUMBER,
+            user: DEFAULT_USER.to_string(),
+            password: DEFAULT_PASSWORD.to_string()
         }
     }
 
-    pub fn print(&self){
+    // pub fn print(&self){
 
-        let string = serde_yaml::to_string(self).expect("Could not serialize");
-        println!("config is {string}");
-    }
+    //     let string = serde_yaml::to_string(self).expect("Could not serialize");
+    //     println!("config is {string}");
+    // }
 
     pub fn debug_print(&self){
 
