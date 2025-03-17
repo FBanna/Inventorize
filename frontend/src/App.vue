@@ -4,27 +4,27 @@ import { ref } from 'vue';
 let output = ref("hi")
 
 async function get_message(){
-  let response = await fetch(import.meta.env.VITE_API_URL)
+  let response = await fetch("http://localhost:3030/api")
   let json = await response.json()
   output.value = json.message
 
 }
 
-async function login() {
-  let response = await fetch(import.meta.env.VITE_API_URL + "/login", {
-    method: "POST",
-    body: JSON.stringify({
-      username: "use2r",
-      password: "pass"
-    }),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8"
-    }
-  })
+// async function login() {
+//   let response = await fetch(import.meta.env.VITE_API_URL + "/login", {
+//     method: "POST",
+//     body: JSON.stringify({
+//       username: "use2r",
+//       password: "pass"
+//     }),
+//     headers: {
+//       "Content-type": "application/json; charset=UTF-8"
+//     }
+//   })
 
-  let json = await response.json()
-  output.value = json.result
-}
+//   let json = await response.json()
+//   output.value = json.result
+// }
 
 </script>
 
@@ -34,9 +34,6 @@ async function login() {
   {{ output }}
 
   <button @click="get_message">click!</button>
-
-  <button @click="login">login</button>
-
 
 
 </template>
