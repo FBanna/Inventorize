@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use async_trait::async_trait;
 use axum_login::{AuthUser, AuthnBackend, UserId};
-use password_auth::verify_password;
+use password_auth::{generate_hash, verify_password};
 use serde::Deserialize;
 
 #[derive(Debug, Clone)]
@@ -31,7 +31,9 @@ pub struct Backend {
 
 impl Backend {
     pub fn new(user: User) -> Self{
-        Self {user}
+
+        let hash = generate_hash(user.password);
+        Self {user: User{id: user.id,username: user.username, password: hash}}
     } 
 }
 
@@ -57,7 +59,10 @@ impl AuthnBackend for Backend {
         creds: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
 
+        println!("Im here!! + {0}", &self.user.password);
+
         if(verify_password(creds.password, &self.user.password).is_ok()){
+            println!("wtf man am I not good enough!!!");
             return Ok(Some(self.user.clone()));
         } else {
             return Ok(None);

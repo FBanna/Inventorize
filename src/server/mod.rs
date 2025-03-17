@@ -32,17 +32,22 @@ pub async fn start_server(config: Config) {
     //let app = get_router(auth_layer);
 
     let app = Router::new()
+        
         .route("/api", get(handler))
-        //.nest_service("/home", ServeDir::new("dist"))
-        //.route_layer(login_required!(Backend, login_url = "/login"))
-        //.route("/login", post(handler::login))
-        //.nest_service("/login", ServeDir::new("dist"))
+        .fallback_service(ServeDir::new("dist"))
+        .route_layer(login_required!(Backend, login_url = "/login"))
+        
+        .nest_service("/login", ServeDir::new("dist/login"))
+        
+        .route("/api/login", post(handler::login))
+        
+        .layer(auth_layer)
         .layer(
             //tower_http::cors::CorsLayer::permissive()
             tower_http::cors::CorsLayer::new()
                 .allow_origin(
                     [
-                        "/".parse::<HeaderValue>().unwrap(),
+                        "/".parse::<HeaderValue>().unwrap(), 
                         #[cfg(debug_assertions)]
                         "http://localhost:5173".parse::<HeaderValue>().unwrap()
                     ]

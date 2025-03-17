@@ -4,7 +4,7 @@ import { ref } from 'vue';
 let output = ref("hi")
 
 async function get_message(){
-  let response = await fetch("http://localhost:3030/api")
+  let response = await fetch(import.meta.env.VITE_API_URL)
   let json = await response.json()
   output.value = json.message
 
@@ -29,7 +29,7 @@ async function get_message(){
 </script>
 
 <template>
-  hello
+  hellosdfsdf
 
   {{ output }}
 

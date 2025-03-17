@@ -7,6 +7,3 @@ cd frontend
 call yarn build
 move dist ../target/release
 cd ..
-start "target/release/Inventorizor.exe" 
-
-
