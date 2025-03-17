@@ -8,7 +8,7 @@ use crate::server::login::{AuthSession};
 
 use super::login::Credentials;
 
-async fn login(
+pub async fn login(
     mut auth_session: AuthSession,
     Form(creds): Form<Credentials>,
 ) -> impl IntoResponse {

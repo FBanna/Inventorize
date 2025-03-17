@@ -3,7 +3,10 @@ use crate::{Config};
 pub mod login;
 mod handler;
 
-use axum::{http::{header::CONTENT_TYPE, HeaderValue, Method}, middleware, response::Response, routing::{get, post}, Json, Router};
+use axum::{
+    extract::Query, http::StatusCode, response::{Html, IntoResponse, Redirect}, routing::{get, post}, Form, Json, Router
+};
+
 use axum_login::{login_required, tower_sessions::{MemoryStore, SessionManagerLayer}, AuthManagerLayer, AuthManagerLayerBuilder};
 use login::{Backend, User};
 use std::net::SocketAddr;
@@ -32,8 +35,8 @@ pub async fn start_server(config: Config) {
         
         .nest_service("/", ServeDir::new("dist"))
         .route_layer(login_required!(Backend, login_url = "/login"))
-        .route("/login", post(todo!()))
-        .route("/login", get(todo!()))
+        .route("/login", post(handler::login))
+        .nest_service("/login", ServeDir::new("dist"))
         .layer(auth);
         // .layer(
         //     tower_http::cors::CorsLayer::new()
