@@ -4,7 +4,7 @@ pub mod login;
 mod handler;
 
 use axum::{
-    extract::Query, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{get, post}, Form, Json, Router
+    extract::Query, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{get, get_service, post}, Form, Json, Router
 };
 
 use axum_login::{login_required, tower_sessions::{MemoryStore, SessionManagerLayer}, AuthManagerLayer, AuthManagerLayerBuilder};
@@ -37,14 +37,16 @@ pub async fn start_server(config: Config) {
         //.route_service("/prot",ServeFile::new("dist/index.html"))
         //
         .route("/api", get(handler))
-        .fallback_service(ServeDir::new("dist"))
-        .route_layer(login_required!(Backend, login_url = "/login"))
         
-        .nest_service("/login", ServeDir::new("dist/login"))
+        .route("/",get(page))
+
+        // .route_layer(login_required!(Backend, login_url = "/login"))
         
-        .route("/api/login", post(handler::login))
+        // .nest_service("/login", ServeDir::new("dist/login"))
         
-        .layer(auth_layer)
+        // .route("/api/login", post(handler::login))
+        
+        // .layer(auth_layer)
         .layer(
             //tower_http::cors::CorsLayer::permissive()
             tower_http::cors::CorsLayer::new()
@@ -73,6 +75,11 @@ pub async fn start_server(config: Config) {
 }
 
 
+
+async fn page() -> Html<&'static str>{
+    let html_content = include_str!("../../target/release/dist/index.html");
+    Html(html_content)
+}
 
 #[derive(serde::Serialize)]
 struct Message {
