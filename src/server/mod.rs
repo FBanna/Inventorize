@@ -33,6 +33,9 @@ pub async fn start_server(config: Config) {
 
     let app = Router::new()
         
+        
+        //.route_service("/prot",ServeFile::new("dist/index.html"))
+        //
         .route("/api", get(handler))
         .fallback_service(ServeDir::new("dist"))
         .route_layer(login_required!(Backend, login_url = "/login"))
