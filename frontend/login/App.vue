@@ -9,7 +9,7 @@ let password = ref("")
 
 async function login() {
 
-  const data = { username: "user", password: "password" }
+  const data = { username: username.value, password: password.value }
   let response = await fetch(import.meta.env.VITE_API_URL + "/login", {
     method: "POST",
     body: JSON.stringify(
@@ -33,10 +33,15 @@ async function login() {
 
 
   username:
-  <input v-bind="username">
+  <input v-model="username">
 
   password:
-  <input v-bind="password">
+  <input v-model="password">
+
+
+
+
+  {{ password }}
 
   <button @click="login">login</button>
 

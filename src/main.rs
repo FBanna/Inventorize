@@ -12,6 +12,8 @@ async fn main() {
 
     let config: Config = cli::get_config();
 
+    config.print();
+
     
     Config::debug_print(&config);
 

@@ -16,7 +16,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(__dirname, "index.html"),
+        main: resolve(__dirname, "src/index.html"),
         login: resolve(__dirname, "login/index.html") // go to "/login/" last slash important!!!!
       }
     }

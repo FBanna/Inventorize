@@ -24,11 +24,11 @@ impl Config{
         }
     }
 
-    // pub fn print(&self){
+    pub fn print(&self){
 
-    //     let string = serde_yaml::to_string(self).expect("Could not serialize");
-    //     println!("config is {string}");
-    // }
+        let string = serde_yaml::to_string(self).expect("Could not serialize");
+        println!("config is {string}");
+    }
 
     pub fn debug_print(&self){
 

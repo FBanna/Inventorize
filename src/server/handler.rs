@@ -22,8 +22,10 @@ pub async fn login(
     };
 
     if auth_session.login(&user).await.is_err() {
+        println!("THINGS DID NOT GO WELL");
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     }
 
-    Redirect::to("/prot").into_response()
+    println!("redireccting....");
+    Redirect::to("/test").into_response()
 }

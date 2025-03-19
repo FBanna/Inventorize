@@ -4,7 +4,7 @@ pub mod login;
 mod handler;
 
 use axum::{
-    extract::Query, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{get, get_service, post}, Form, Json, Router
+    extract::Query, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}, Form, Json, Router
 };
 
 use axum_login::{login_required, tower_sessions::{MemoryStore, SessionManagerLayer}, AuthManagerLayer, AuthManagerLayerBuilder};
@@ -13,6 +13,8 @@ use std::net::SocketAddr;
 use tower_http::{cors::{Any, CorsLayer}, services::{ServeDir, ServeFile}};
 
 pub async fn start_server(config: Config) {
+
+    println!("{0}",config.password);
 
 
     
@@ -34,19 +36,33 @@ pub async fn start_server(config: Config) {
     let app = Router::new()
         
         
-        //.route_service("/prot",ServeFile::new("dist/index.html"))
-        //
+        
+
+        .route("/", any_service(ServeDir::new("dist/src")))
+
+        .route_layer(login_required!(Backend, login_url = "/login"))
         .route("/api", get(handler))
         
-        .route("/",get(page))
 
-        // .route_layer(login_required!(Backend, login_url = "/login"))
+        .nest_service("/login", ServeDir::new("dist/login"))
+        .nest_service("/assets", ServeDir::new("dist/assets"))
+        //.route("/login", any_service(ServeDir::new("dist/login")))
+        .route("/api/login", post(handler::login))
+
+        .route("/test", get(|| async { "hi" }))
+        //.fallback_service(ServeDir::new("dist"))
+
         
-        // .nest_service("/login", ServeDir::new("dist/login"))
         
-        // .route("/api/login", post(handler::login))
         
-        // .layer(auth_layer)
+
+        
+        //.route("/login", any_service(ServeDir::new("dist/login")))
+        
+        
+        
+        .layer(auth_layer)
+        //
         .layer(
             //tower_http::cors::CorsLayer::permissive()
             tower_http::cors::CorsLayer::new()
@@ -72,13 +88,6 @@ pub async fn start_server(config: Config) {
     println!("Server started, listening on {addr}");
 
     let server = axum::serve(listener, app).await.unwrap();
-}
-
-
-
-async fn page() -> Html<&'static str>{
-    let html_content = include_str!("../../target/release/dist/index.html");
-    Html(html_content)
 }
 
 #[derive(serde::Serialize)]
