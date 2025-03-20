@@ -1,43 +1,23 @@
 <script setup>
-import { ref } from 'vue';
 
-let output = ref("hi")
+import { createMemoryHistory, createRouter } from 'vue-router';
 
-async function get_message(){
-  let response = await fetch(import.meta.env.VITE_API_URL)
-  let json = await response.json()
-  output.value = json.message
+import Home from "./home/home.vue"
+import Component from './component/component.vue';
+import { createApp} from 'vue';
 
-}
+const routes = [
+  { path: "/", component: Home},
+  { path: "/test", component: Component}
+]
 
-// async function login() {
-//   let response = await fetch(import.meta.env.VITE_API_URL + "/login", {
-//     method: "POST",
-//     body: JSON.stringify({
-//       username: "use2r",
-//       password: "pass"
-//     }),
-//     headers: {
-//       "Content-type": "application/json; charset=UTF-8"
-//     }
-//   })
+const router = createRouter({
+  history: createMemoryHistory(),
+  routes,
+})
 
-//   let json = await response.json()
-//   output.value = json.result
-// }
+createApp(App)
+  .use(router)
+  .mount('#app')
 
 </script>
-
-<template>
-  hellosdfsdf
-
-  {{ output }}
-
-  <button @click="get_message">click!</button>
-
-
-</template>
-
-<style>
-
-</style>

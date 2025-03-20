@@ -38,9 +38,11 @@ pub async fn start_server(config: Config) {
         
         
 
-        .route("/", any_service(ServeDir::new("dist/src")))
-
-        .route_layer(login_required!(Backend, login_url = "/login"))
+        //.route("/", any_service(ServeDir::new("dist/src")))
+        .fallback_service(
+            get_service(ServeDir::new("./dist/src"))
+        )
+        //.route_layer(login_required!(Backend, login_url = "/login"))
         .route("/api", get(handler))
         
 
@@ -49,7 +51,7 @@ pub async fn start_server(config: Config) {
         //.route("/login", any_service(ServeDir::new("dist/login")))
         .route("/api/login", post(handler::login))
 
-        .route("/test", get(|| async { "hi" }))
+        //.route("/test", get(|| async { "hi" }))
         //.fallback_service(ServeDir::new("dist"))
 
         

@@ -1,28 +1,23 @@
 <script setup>
 import { ref } from 'vue';
 
+const login_api = ref(import.meta.env.VITE_API_URL + "/login")
 
-let username = ref("")
-let password = ref("")
-//let output = ref("hi")
+// async function login() {
+
+//   const data = { username: username.value, password: password.value }
+//   fetch(import.meta.env.VITE_API_URL + "/login", {
+//     method: "POST",
+//     body: JSON.stringify(
+//       data
+//     ),
+//     headers: {
+//       "Content-type": "application/json; charset=utf-8"
+//     }
+//   })
+// }
 
 
-async function login() {
-
-  const data = { username: username.value, password: password.value }
-  let response = await fetch(import.meta.env.VITE_API_URL + "/login", {
-    method: "POST",
-    body: JSON.stringify(
-      data
-    ),
-    headers: {
-      "Content-type": "application/json; charset=utf-8"
-    }
-  })
-
-  //let json = await response.json()
-  //output.value = json.result
-}
 
 </script>
 
@@ -31,19 +26,11 @@ async function login() {
 
   <br><br>
 
-
-  username:
-  <input v-model="username">
-
-  password:
-  <input v-model="password">
-
-
-
-
-  {{ password }}
-
-  <button @click="login">login</button>
+  <form :action=login_api  method="POST">
+    <input type="text" name="username" required />
+    <input type="password" name="password" required />
+    <button type="submit">Login</button>
+  </form>
 
 
 </template>

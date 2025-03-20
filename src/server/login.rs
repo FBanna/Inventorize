@@ -58,11 +58,8 @@ impl AuthnBackend for Backend {
         &self,
         creds: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
+        if verify_password(creds.password, &self.user.password).is_ok() {
 
-        println!("Im here!! + {0}", &self.user.password);
-
-        if(verify_password(creds.password, &self.user.password).is_ok()){
-            println!("wtf man am I not good enough!!!");
             return Ok(Some(self.user.clone()));
         } else {
             return Ok(None);
