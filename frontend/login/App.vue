@@ -3,38 +3,68 @@ import { ref } from 'vue';
 
 const login_api = ref(import.meta.env.VITE_API_URL + "/login")
 
-// async function login() {
-
-//   const data = { username: username.value, password: password.value }
-//   fetch(import.meta.env.VITE_API_URL + "/login", {
-//     method: "POST",
-//     body: JSON.stringify(
-//       data
-//     ),
-//     headers: {
-//       "Content-type": "application/json; charset=utf-8"
-//     }
-//   })
-// }
-
-
 
 </script>
 
 <template>
-  LOGIN PAGE???
 
-  <br><br>
+  
 
-  <form :action=login_api  method="POST">
-    <input type="text" name="username" required />
-    <input type="password" name="password" required />
-    <button type="submit">Login</button>
-  </form>
+
+    <div class="content page">
+      
+      <img src="../public/logox128.png">
+      
+      Login to Inventorize
+      
+
+      <br><br>
+
+      <form :action=login_api  method="POST">
+        <input type="text" name="username" required />
+
+        <br>
+
+        <input type="password" name="password" required />
+
+        <br>
+
+        <button class="submit" type="submit">Login</button>
+      </form>
+    </div>
+
+
+  
+
 
 
 </template>
 
-<style>
+<style lang="scss">
+
+@import "../public/colours.scss";
+
+.submit {
+  background-color: $accent;
+}
+
+
+.page{
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  height: 100%; 
+  width: 100%;
+
+}
+
+.content{
+  display: grid;
+  place-content: center;
+
+  text-align: center;
+  outline: 1px solid black;
+}
+
 
 </style>

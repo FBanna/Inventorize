@@ -8,7 +8,7 @@ import Component from './component/component.vue';
 
 const routes = [
     { path: "/", component: Home},
-    { path: "/test", component: Component}
+    { path: "/component", component: Component}
 ]
 
 const router = createRouter({
