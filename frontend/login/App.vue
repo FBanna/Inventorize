@@ -20,8 +20,8 @@ async function login() {
     }
   })
 
-  let json = await response.json()
-  output.value = json.result
+  //let json = await response.json()
+  //output.value = json.result
 }
 
 </script>
