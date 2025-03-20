@@ -1,23 +1,31 @@
 <script setup>
-
-import { createMemoryHistory, createRouter } from 'vue-router';
-
-import Home from "./home/home.vue"
-import Component from './component/component.vue';
-import { createApp} from 'vue';
-
-const routes = [
-  { path: "/", component: Home},
-  { path: "/test", component: Component}
-]
-
-const router = createRouter({
-  history: createMemoryHistory(),
-  routes,
-})
-
-createApp(App)
-  .use(router)
-  .mount('#app')
+import { RouterLink, RouterView } from 'vue-router'
 
 </script>
+
+<template>
+  <header>
+    <div id="nav">
+      hi
+      <nav>
+        <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/test">About</RouterLink>
+      </nav>
+    </div>
+  </header>
+
+  <RouterView />
+</template>
+
+<style>
+
+  #nav {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40pt;
+    background: red;
+    margin: 0pt, 0pt, 0pt, 0pt;
+  }
+
+</style>

@@ -38,11 +38,11 @@ pub async fn start_server(config: Config) {
         
         
 
-        //.route("/", any_service(ServeDir::new("dist/src")))
-        .fallback_service(
-            get_service(ServeDir::new("./dist/src"))
-        )
-        //.route_layer(login_required!(Backend, login_url = "/login"))
+        .route("/", any_service(ServeDir::new("dist/src")))
+
+        //.fallback_service(ServeDir::new("dist/src"))
+
+        .route_layer(login_required!(Backend, login_url = "/login"))
         .route("/api", get(handler))
         
 
