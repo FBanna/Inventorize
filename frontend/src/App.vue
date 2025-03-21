@@ -7,10 +7,26 @@ import { RouterLink, RouterView } from 'vue-router'
 
 <template>
   <header>
-    <div id="nav">
+    <div class="nav">
       <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/component">Component</RouterLink>
+
+        
+
+        <RouterLink class="logo_button" to="/"><img class="image" src="../public/logo.svg"></RouterLink>
+        <RouterLink class="nav_buttons" to="/component">Component</RouterLink>
+
+
+
+
+
+        <div class="right_side">
+
+          <a class="nav_buttons" href="/logout">Logout</a>
+
+        </div>
+
+        
+
       </nav>
     </div>
   </header>
@@ -18,20 +34,48 @@ import { RouterLink, RouterView } from 'vue-router'
   <RouterView />
 </template>
 
-<style>
+<style lang="scss">
 
-  #nav {
+@use "../public/import";
+
+  .nav {
     top: 0;
     left: 0;
     width: 100%;
     height: 40pt;
-    background: red;
+    background: import.$white;
+    box-sizing: border-box;
+    padding: 5px;
+    border-bottom: 1px solid import.$white;
+    box-shadow: 0 0 5px rgb(88, 88, 88);
+    margin-bottom: 5px;
     
+  }
+
+  .nav_buttons {
+    float: left;
+    color: import.$primary;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+  }
+
+  .logo_button {
+    float: left;
+  }
+
+  .image {
+    height: 30pt;
   }
 
   body { 
     margin: 0px;
   }
 
+  .right_side{
+    float: right;
+    height: 100%;
+  }
 
 </style>

@@ -50,6 +50,7 @@ pub async fn start_server(config: Config) {
         .nest_service("/assets", ServeDir::new("dist/assets"))
         //.route("/login", any_service(ServeDir::new("dist/login")))
         .route("/api/login", post(handler::login))
+        .route("/logout", get(handler::logout))
 
         //.route("/test", get(|| async { "hi" }))
         //.fallback_service(ServeDir::new("dist"))

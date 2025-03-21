@@ -4,7 +4,6 @@ import { ref } from 'vue';
 const login_api = ref(import.meta.env.VITE_API_URL + "/login")
 
 
-function @KeyboardEvent.
 
 </script>
 
@@ -21,15 +20,16 @@ function @KeyboardEvent.
       
       
       
-      Login to Inventorize
+      Inventorize
       
 
       <br>
 
+      <div style="width: 350px;">
 
-      <form :action=login_api  method="POST">
+        <form :action=login_api  method="POST">
 
-        <div>
+        <div >
           <input class="input" type="text" name="username" placeholder="Username" required />
 
           <br>
@@ -40,8 +40,11 @@ function @KeyboardEvent.
 
           <button class="submit" type="submit">Login</button>
         </div>
-        
-      </form>
+
+        </form>
+
+      </div>
+      
     </div>
 
 
@@ -53,15 +56,15 @@ function @KeyboardEvent.
 
 <style lang="scss">
 
-@import "../public/colours.scss";
+@use "../public/import.scss";
 
 .submit {
-  background-color: $accent;
+  background-color: import.$accent;
   color: white;
   border-style: hidden;
   border-radius: 1px;
   width: calc(90% + 6px);
-  height: 25px;
+  height: 34px;
   margin-top: 4px;
 
 }
@@ -73,9 +76,10 @@ function @KeyboardEvent.
   left: 0; 
   height: 100%; 
   width: 100%;
-  font-family: Arial, Helvetica, sans-serif;
+
   font-weight: bolder;
-  font-size: 30px;
+  font-size: 30px !important;
+  
 
 }
 
@@ -93,12 +97,12 @@ function @KeyboardEvent.
 }
 
 .input {
-  border-color: $primary;
+  border-color: import.$primary;
   border-style: solid;
   border-width: 1px;
   border-radius: 1px;
   margin: 4px;
-  height: 21px;
+  height: 30px;
   width: 90%;
 }
 
