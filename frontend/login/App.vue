@@ -4,6 +4,8 @@ import { ref } from 'vue';
 const login_api = ref(import.meta.env.VITE_API_URL + "/login")
 
 
+function @KeyboardEvent.
+
 </script>
 
 <template>
@@ -24,16 +26,21 @@ const login_api = ref(import.meta.env.VITE_API_URL + "/login")
 
       <br>
 
+
       <form :action=login_api  method="POST">
-        <input class="input" type="text" name="username" required />
 
-        <br>
+        <div>
+          <input class="input" type="text" name="username" placeholder="Username" required />
 
-        <input class="input" type="password" name="password" required />
+          <br>
 
-        <br>
+          <input class="input" type="password" name="password" placeholder="Password" required />
 
-        <button class="submit" type="submit">Login</button>
+          <br>
+
+          <button class="submit" type="submit">Login</button>
+        </div>
+        
       </form>
     </div>
 
@@ -50,9 +57,12 @@ const login_api = ref(import.meta.env.VITE_API_URL + "/login")
 
 .submit {
   background-color: $accent;
+  color: white;
   border-style: hidden;
-  width: 156px;
-  border-radius: 3px;
+  border-radius: 1px;
+  width: calc(90% + 6px);
+  height: 25px;
+  margin-top: 4px;
 
 }
 
@@ -63,6 +73,9 @@ const login_api = ref(import.meta.env.VITE_API_URL + "/login")
   left: 0; 
   height: 100%; 
   width: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bolder;
+  font-size: 30px;
 
 }
 
@@ -80,12 +93,13 @@ const login_api = ref(import.meta.env.VITE_API_URL + "/login")
 }
 
 .input {
-  border-radius: 3px;
   border-color: $primary;
   border-style: solid;
-  margin: 2px;
-  width: 150px;
+  border-width: 1px;
+  border-radius: 1px;
+  margin: 4px;
+  height: 21px;
+  width: 90%;
 }
-
 
 </style>
