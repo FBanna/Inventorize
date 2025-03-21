@@ -12,20 +12,24 @@ const login_api = ref(import.meta.env.VITE_API_URL + "/login")
 
 
     <div class="content page">
+
+      <div>
+        <img class="image" src="../public/logo.svg">
+      </div>
       
-      <img src="../public/logox128.png">
+      
       
       Login to Inventorize
       
 
-      <br><br>
+      <br>
 
       <form :action=login_api  method="POST">
-        <input type="text" name="username" required />
+        <input class="input" type="text" name="username" required />
 
         <br>
 
-        <input type="password" name="password" required />
+        <input class="input" type="password" name="password" required />
 
         <br>
 
@@ -46,6 +50,10 @@ const login_api = ref(import.meta.env.VITE_API_URL + "/login")
 
 .submit {
   background-color: $accent;
+  border-style: hidden;
+  width: 156px;
+  border-radius: 3px;
+
 }
 
 
@@ -64,6 +72,19 @@ const login_api = ref(import.meta.env.VITE_API_URL + "/login")
 
   text-align: center;
   outline: 1px solid black;
+}
+
+.image {
+  width: 80px;
+  height: 80px;
+}
+
+.input {
+  border-radius: 3px;
+  border-color: $primary;
+  border-style: solid;
+  margin: 2px;
+  width: 150px;
 }
 
 
