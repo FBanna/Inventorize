@@ -4,13 +4,14 @@ use log::{debug};
 
 mod server;
 mod cli;
+mod db;
 
 #[tokio::main]
 async fn main() {
 
     env_logger::init();
 
-    let config: Config = cli::get_config();
+    let config: Config = cli::get_config().await;
 
     config.print();
 

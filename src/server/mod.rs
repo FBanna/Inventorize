@@ -22,7 +22,7 @@ pub async fn start_server(config: Config) {
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store);
 
-    let backend = Backend::new(User {id: 0, username: config.user, password: config.password});
+    let backend = Backend::new(User {username: config.user, password: config.password});
     let auth_layer: AuthManagerLayer<Backend, MemoryStore> = AuthManagerLayerBuilder::new(backend, session_layer).build();
 
 

@@ -7,7 +7,6 @@ use serde::Deserialize;
 
 #[derive(Debug, Clone)]
 pub struct User {
-    pub id: i64,
     pub username: String,
     pub password: String,
 }
@@ -16,7 +15,7 @@ impl AuthUser for User {
     type Id = i64;
 
     fn id(&self) -> Self::Id {
-        self.id
+        0
     }
 
     fn session_auth_hash(&self) -> &[u8] {
@@ -33,7 +32,7 @@ impl Backend {
     pub fn new(user: User) -> Self{
 
         let hash = generate_hash(user.password);
-        Self {user: User{id: user.id,username: user.username, password: hash}}
+        Self {user: User{username: user.username, password: hash}}
     } 
 }
 
@@ -58,7 +57,7 @@ impl AuthnBackend for Backend {
         &self,
         creds: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
-        if verify_password(creds.password, &self.user.password).is_ok() {
+        if verify_password(creds.password, &self.user.password).is_ok() && creds.username == self.user.username {
 
             return Ok(Some(self.user.clone()));
         } else {

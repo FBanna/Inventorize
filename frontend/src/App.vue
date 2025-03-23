@@ -13,7 +13,7 @@ import { RouterLink, RouterView } from 'vue-router'
         
 
         <RouterLink class="logo_button" to="/"><img class="image" src="../public/logo.svg"></RouterLink>
-        <RouterLink class="nav_buttons" to="/component">Component</RouterLink>
+        <RouterLink class="nav_buttons" to="/addcomponent">Add</RouterLink>
 
 
 
@@ -39,6 +39,8 @@ import { RouterLink, RouterView } from 'vue-router'
 @use "../public/import";
 
   .nav {
+    z-index: 10;
+    position: relative;
     top: 0;
     left: 0;
     width: 100%;
@@ -48,7 +50,7 @@ import { RouterLink, RouterView } from 'vue-router'
     padding: 5px;
     border-bottom: 1px solid import.$white;
     box-shadow: 0 0 5px rgb(88, 88, 88);
-    margin-bottom: 5px;
+    margin-bottom: 0px;
     
   }
 

@@ -1,8 +1,10 @@
 pub mod config;
+use crate::db::create;
 
 use std::{path::PathBuf, process::exit};
 use clap::{arg, command, value_parser, Command};
 use config::{Config, read_config, DEFAULT_CONFIG_FILE};
+use sqlx::{migrate::MigrateDatabase, FromRow, Row, Sqlite, SqlitePool};
 
 
 
@@ -11,7 +13,7 @@ use config::{Config, read_config, DEFAULT_CONFIG_FILE};
 
 
 
-pub fn get_config() -> Config{
+pub async fn get_config() -> Config{
     let mut config: Config = Config::new();
 
     let matches = command!()
@@ -24,6 +26,11 @@ pub fn get_config() -> Config{
             arg!(
                 -p --port <PORT> "sets port number"
             ).required(false).value_parser(value_parser!(i32))
+        )
+        .arg(
+            arg!(
+                -d --db <DB> "sets db location"
+            ).required(false).value_parser(value_parser!(String))
         )
         .subcommand(
             Command::new("init")
@@ -38,7 +45,12 @@ pub fn get_config() -> Config{
 
         Config::write(&Config::new());
 
-        println!("INTITAILIZED DIRECTORY!")
+        create::init(&config.db_location).await;
+
+
+        println!("INTITAILIZED DIRECTORY!");
+
+        exit(0);
     }
 
     // GET CONFIG FILE
@@ -71,9 +83,13 @@ pub fn get_config() -> Config{
             eprintln!("invalid port number!");
             exit(0);
         }
-
-
     }
+
+    if let Some(db_location) = matches.get_one::<String>("db"){
+        config.db_location = db_location.clone();
+    }
+
+    create::init(&config.db_location).await;
 
     return config;
     

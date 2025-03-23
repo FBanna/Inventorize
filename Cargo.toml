@@ -12,12 +12,15 @@ serde = { version = "1.0.164", features = ["derive"] }
 tower-http = { version = "0.6.2", features = ["cors", "fs", "redirect"] }
 clap = { version = "4.5.32", features = ["derive", "cargo"]}
 serde_yaml = "0.9.34"
+
 log = "0.4.26"
 env_logger = "0.11.7"
+
 async-trait = "0.1.88"
 axum-login = "0.17.0"
 password-auth = "1.0.0"
 tower = "0.5.2"
+sqlx = { version = "0.8.3", features = ["runtime-tokio-native-tls", "sqlite"] }
 
 [profile.release]
 opt-level = 3
