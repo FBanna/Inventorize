@@ -1,5 +1,5 @@
 pub mod config;
-use crate::db::create;
+use crate::db::components::Component;
 
 use std::{path::PathBuf, process::exit};
 use clap::{arg, command, value_parser, Command};
@@ -45,7 +45,9 @@ pub async fn get_config() -> Config{
 
         Config::write(&Config::new());
 
-        create::init(&config.db_location).await;
+        Component::init(&config.db_location).await;
+
+        //create::init(&config.db_location).await;
 
 
         println!("INTITAILIZED DIRECTORY!");
@@ -88,8 +90,6 @@ pub async fn get_config() -> Config{
     if let Some(db_location) = matches.get_one::<String>("db"){
         config.db_location = db_location.clone();
     }
-
-    create::init(&config.db_location).await;
 
     return config;
     

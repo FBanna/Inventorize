@@ -15,6 +15,9 @@ async fn main() {
 
     config.print();
 
+
+    let component_db = db::components::Component::init(&config.db_location).await;
+
     
     Config::debug_print(&config);
 
