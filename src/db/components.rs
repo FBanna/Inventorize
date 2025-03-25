@@ -2,12 +2,24 @@ use sqlx::{migrate::{MigrateDatabase, Migrator}, Pool, Sqlite, SqlitePool};
 
 static MIGRATOR: Migrator = sqlx::migrate!();
 
-pub struct Component {
+
+//#[derive(sqlx::FromRow)]
+pub struct Component{
+    pub ID: i32,
+    pub NAME: String,
+    pub SIZE: Option<String>,
+    pub INFO: Option<String>,
+    pub STOCK: i32,
+    pub ORIGIN: Option<String>,
+    pub URL: Option<String>
+}
+
+pub struct Components {
     pool: Pool<Sqlite>
 }
 
 
-impl Component {
+impl Components {
 
     pub async fn init(path: &str) -> Self{
 
@@ -33,6 +45,20 @@ impl Component {
         } else {
             println!("Database already exists");
         }
+    }
+
+    pub async fn add(self, c: Component){
+        sqlx::query("INSERT INTO components (ID,NAME,SIZE,INFO,STOCK,ORIGIN,URL) VALUES (?,?,?,?,?,?,?)")
+            .bind(c.ID)
+            .bind(c.NAME)
+            .bind(c.SIZE)
+            .bind(c.INFO)
+            .bind(c.STOCK)
+            .bind(c.ORIGIN)
+            .bind(c.URL)
+            .execute(&self.pool)
+            .await
+            .unwrap();
     }
 
 }

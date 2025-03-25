@@ -1,5 +1,5 @@
 pub mod config;
-use crate::db::components::Component;
+use crate::db::components::Components;
 
 use std::{path::PathBuf, process::exit};
 use clap::{arg, command, value_parser, Command};
@@ -45,7 +45,7 @@ pub async fn get_config() -> Config{
 
         Config::write(&Config::new());
 
-        Component::init(&config.db_location).await;
+        Components::init(&config.db_location).await;
 
         //create::init(&config.db_location).await;
 
