@@ -15,6 +15,8 @@ impl Component {
 
         let pool = SqlitePool::connect(path).await.unwrap();
 
+        println!("IM HERE!! {:?}", MIGRATOR);
+
         let _ = MIGRATOR.run(&pool).await;
 
         Self{pool}
