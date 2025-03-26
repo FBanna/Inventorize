@@ -1,14 +1,14 @@
 use crate::{Config};
 
-pub mod login;
-mod handler;
+pub mod login_api;
 
 use axum::{
     extract::Query, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}, Form, Json, Router
 };
 
 use axum_login::{login_required, tower_sessions::{MemoryStore, SessionManagerLayer}, AuthManagerLayer, AuthManagerLayerBuilder};
-use login::{Backend, User};
+use login_api::login::{Backend,User};
+use login_api::handler;
 use std::net::SocketAddr;
 use tower_http::{cors::{Any, CorsLayer}, services::{ServeDir, ServeFile}};
 
