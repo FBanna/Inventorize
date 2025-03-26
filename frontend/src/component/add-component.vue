@@ -8,8 +8,8 @@ const add_component_api = ref(import.meta.env.VITE_API_URL + "/add_component")
 
 <template>
   
-
-  ADD COMPONENT
+  <div class="window">
+    ADD COMPONENT
   
   <form :action="add_component_api" method="POST">
 
@@ -18,17 +18,17 @@ const add_component_api = ref(import.meta.env.VITE_API_URL + "/add_component")
     <br>
 
     
-    <input class="input" type="text" name="size" placeholder="size" required>
+    <input class="input" type="text" name="size" placeholder="size">
     
     <br>
 
     
-    <input class="input" type="text" name="value" placeholder="value" required>
+    <input class="input" type="text" name="value" placeholder="value">
     
     <br>
 
     
-    <input class="input" type="text" name="info" placeholder="info" required>
+    <input class="input" type="text" name="info" placeholder="info">
     
     <br>
 
@@ -38,22 +38,49 @@ const add_component_api = ref(import.meta.env.VITE_API_URL + "/add_component")
     <br>
 
     
-    <input class="input" type="text" name="origin" placeholder="origin" required>
+    <input class="input" type="text" name="origin" placeholder="origin">
     
     <br>
 
     
-    <input class="input" type="text" name="url" placeholder="url" required>
+    <input class="input" type="text" name="url" placeholder="url">
     
     <br>
 
-    <button class="submit" type="submit">Login</button>
+    <button class="submit" type="submit">Submit</button>
 
   </form>
+  </div>
+  
 
 
 </template>
 
-<style>
+<style lang="scss">
+
+@use "../../public/import";
+
+.window{
+  margin: 5px;
+}
+
+.input{
+  box-sizing: border-box;
+  width: 200px;
+  border-radius: 4px;
+  border-width: 1px;
+  border-style: solid;
+  margin-bottom: 5px;
+}
+
+.submit {
+  background-color: import.$accent;
+  color: white !important;
+  border-style: hidden;
+  border-radius: 1px;
+  width: 100px;
+  height: 25px;
+}
+
 
 </style> 

@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 
-const login_api = ref(import.meta.env.VITE_API_URL + "/login")
+const login_api = ref("http://localhost:3030/login_api")
 
 
 
@@ -60,13 +60,12 @@ const login_api = ref(import.meta.env.VITE_API_URL + "/login")
 
 .submit {
   background-color: import.$accent;
-  color: white;
+  color: white !important;
   border-style: hidden;
   border-radius: 1px;
   width: calc(90% + 6px);
   height: 34px;
   margin-top: 4px;
-
 }
 
 

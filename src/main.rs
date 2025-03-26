@@ -20,24 +20,26 @@ async fn main() {
 
     let component = db::components::Component{
         //ID:5000,
-        NAME:("Resistor".to_string()),
-        SIZE:Some("0402".to_string()),
-        INFO:Some("60 OHM".to_string()),
-        STOCK:5000,
-        ORIGIN:None, 
-        URL: None
+        name:("Resistor".to_string()),
+        size:Some("0402".to_string()),
+        value:Some("60 OHM".to_string()),
+        info:None,
+        stock:5000,
+        origin:None, 
+        url: None
     };
 
     component_db.add(component).await;
 
     let component = db::components::Component{
         //ID:5000,
-        NAME:("Resistor".to_string()),
-        SIZE:Some("0603".to_string()),
-        INFO:Some("60 OHM".to_string()),
-        STOCK:10,
-        ORIGIN:None, 
-        URL: None
+        name:("Resistor".to_string()),
+        size:Some("0603".to_string()),
+        value:Some("180 OHM".to_string()),
+        info:Some("Thick Film".to_string()),
+        stock:10,
+        origin:None, 
+        url: None
     };
 
     component_db.add(component).await;
@@ -45,5 +47,5 @@ async fn main() {
     
     Config::debug_print(&config);
 
-    server::start_server(config).await;
+    server::start_server(config, component_db).await;
 }

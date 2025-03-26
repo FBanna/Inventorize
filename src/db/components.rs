@@ -1,17 +1,48 @@
-use sqlx::{migrate::{MigrateDatabase, Migrator}, Pool, Sqlite, SqlitePool};
+use serde::{Deserialize, Serialize};
+use sqlx::{migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::SqliteRow, Pool, Row, Sqlite, SqlitePool};
 
 static MIGRATOR: Migrator = sqlx::migrate!();
 
 
-//#[derive(sqlx::FromRow)]
+#[derive(Serialize, Deserialize, FromRow)]
 pub struct Component{
     //pub ID: Option<i32>,
-    pub NAME: String,
-    pub SIZE: Option<String>,
-    pub INFO: Option<String>,
-    pub STOCK: i32,
-    pub ORIGIN: Option<String>,
-    pub URL: Option<String>
+    pub name: String,
+    pub size: Option<String>,
+    pub value: Option<String>,
+    pub info: Option<String>,
+    pub stock: i32,
+    pub origin: Option<String>,
+    pub url: Option<String>
+}
+
+// impl<'r> sqlx::FromRow<'r, SqliteRow> for Component {
+//     fn from_row(row: &'r SqliteRow) -> Result<Self, sqlx::Error> {
+//         use Row;
+//         let name = row.try_get("name")?;
+//         let size = row.try_get("size");
+//         let value = row.try_get("value");
+//         let info = row.try_get("info");
+//         let origin = row.try_get("origin");
+//         let url = row.try_get("url");
+
+//         Ok(Component{
+//             name,
+//             size:size,
+//             value:value,
+//             info:info,
+//             stock,
+//             origin:origin,
+//             url:url
+//         })
+//     }
+// }
+
+impl Component{
+
+    pub fn fmt(&self) -> String{
+        return self.name.clone() + &self.size.clone().unwrap_or_else(|| {"none".to_string()}).clone();
+    }
 }
 
 pub struct Components {
@@ -48,17 +79,25 @@ impl Components {
     }
 
     pub async fn add(&self, c: Component){
-        sqlx::query("INSERT INTO components (NAME,SIZE,INFO,STOCK,ORIGIN,URL) VALUES (?,?,?,?,?,?)")
+        sqlx::query("INSERT INTO components (name,size,value,info,stock,origin,url) VALUES (?,?,?,?,?,?,?)")
             //.bind(c.ID)
-            .bind(c.NAME)
-            .bind(c.SIZE)
-            .bind(c.INFO)
-            .bind(c.STOCK)
-            .bind(c.ORIGIN)
-            .bind(c.URL)
+            .bind(c.name)
+            .bind(c.size)
+            .bind(c.value) 
+            .bind(c.info)
+            .bind(c.stock)
+            .bind(c.origin)
+            .bind(c.url)
             .execute(&self.pool)
             .await
             .unwrap();
+    }
+
+    pub async fn get(&self) -> Component{
+        sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")
+        .fetch_one(&self.pool)
+        .await
+        .unwrap()
     }
 
 }

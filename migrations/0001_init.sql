@@ -1,10 +1,11 @@
 CREATE TABLE IF NOT EXISTS components
 (
-    NAME    TEXT                    NOT NULL,
-    SIZE    TEXT,
-    INFO    TEXT,
-    STOCK   INTEGER                 NOT NULL,
-    ORIGIN  TEXT,
-    URL     TEXT
+    name    TEXT                    NOT NULL,
+    size    TEXT,
+    value   TEXT,
+    info    TEXT,
+    stock   INTEGER                 NOT NULL,
+    origin  TEXT,
+    url     TEXT
 );
 
