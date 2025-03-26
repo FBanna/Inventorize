@@ -1,23 +1,55 @@
 <script setup>
 import { ref } from 'vue';
 
-let output = ref("hi")
+const add_component_api = ref(import.meta.env.VITE_API_URL + "/add_component")
 
-async function get_message(){
-  let response = await fetch(import.meta.env.VITE_API_URL)
-  let json = await response.json()
-  output.value = json.message
-
-}
 
 </script>
 
 <template>
-  what the hell???!!
+  
 
-  {{ output }}
+  ADD COMPONENT
+  
+  <form :action="add_component_api" method="POST">
 
-  <button @click="get_message">click!</button>
+    <input class="input" type="text" name="name" placeholder="name" required>
+
+    <br>
+
+    
+    <input class="input" type="text" name="size" placeholder="size" required>
+    
+    <br>
+
+    
+    <input class="input" type="text" name="value" placeholder="value" required>
+    
+    <br>
+
+    
+    <input class="input" type="text" name="info" placeholder="info" required>
+    
+    <br>
+
+    
+    <input class="input" type="number" name="stock" placeholder="stock" required>
+    
+    <br>
+
+    
+    <input class="input" type="text" name="origin" placeholder="origin" required>
+    
+    <br>
+
+    
+    <input class="input" type="text" name="url" placeholder="url" required>
+    
+    <br>
+
+    <button class="submit" type="submit">Login</button>
+
+  </form>
 
 
 </template>

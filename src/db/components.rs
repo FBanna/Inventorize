@@ -5,7 +5,7 @@ static MIGRATOR: Migrator = sqlx::migrate!();
 
 //#[derive(sqlx::FromRow)]
 pub struct Component{
-    pub ID: i32,
+    //pub ID: Option<i32>,
     pub NAME: String,
     pub SIZE: Option<String>,
     pub INFO: Option<String>,
@@ -47,9 +47,9 @@ impl Components {
         }
     }
 
-    pub async fn add(self, c: Component){
-        sqlx::query("INSERT INTO components (ID,NAME,SIZE,INFO,STOCK,ORIGIN,URL) VALUES (?,?,?,?,?,?,?)")
-            .bind(c.ID)
+    pub async fn add(&self, c: Component){
+        sqlx::query("INSERT INTO components (NAME,SIZE,INFO,STOCK,ORIGIN,URL) VALUES (?,?,?,?,?,?)")
+            //.bind(c.ID)
             .bind(c.NAME)
             .bind(c.SIZE)
             .bind(c.INFO)
