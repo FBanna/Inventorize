@@ -1,14 +1,14 @@
 <script setup>
-import { ref } from 'vue';
+  import { ref } from 'vue';
 
-let output = ref("hi")
+  let output = ref("hi")
 
-async function get_message(){
-  let response = await fetch(import.meta.env.VITE_API_URL)
-  let json = await response.json()
-  output.value = json.message
+  async function get_message(){
+    let response = await fetch(import.meta.env.VITE_API_URL)
+    let json = await response.json()
+    output.value = json.message
 
-}
+  }
 
 </script>
 

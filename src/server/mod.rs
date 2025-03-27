@@ -3,7 +3,7 @@ use crate::{db::components::Components, Config};
 pub mod login_api;
 pub mod db_api;
 
-use db_api::{post_component, get_component};
+use db_api::{get_all_component, get_first_component, post_component};
 
 use axum::{
     extract::Query, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}, Form, Json, Router
@@ -43,7 +43,8 @@ pub async fn start_server(config: Config, db: Components) {
     let api_router = Router::new()
         .route("/", get(handler))
         .route("/post_component", post(post_component::post_component))
-        .route("/get_component", get(get_component::get_component));
+        .route("/get_first_component", get(get_first_component::get_component))
+        .route("/get_all_component", get(get_all_component::get_component));
 
     let app = Router::new()
         

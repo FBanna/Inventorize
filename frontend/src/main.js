@@ -5,7 +5,7 @@ import { useRoute, useRouter, createRouter, createMemoryHistory } from 'vue-rout
 import App from './App.vue'
 import Home from "./home/home.vue"
 import Component from './component/component.vue';
-import AddComponent from "./component/add-component.vue"
+import AddComponent from "./component/new-component.vue"
 
 const routes = [
     { path: "/", component: Home},
