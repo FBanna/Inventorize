@@ -57,6 +57,7 @@ impl AuthnBackend for Backend {
         &self,
         creds: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
+        
         if verify_password(creds.password, &self.user.password).is_ok() && creds.username == self.user.username {
 
             return Ok(Some(self.user.clone()));

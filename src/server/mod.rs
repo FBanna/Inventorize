@@ -40,29 +40,20 @@ pub async fn start_server(config: Config, db: Components) {
     //let app = get_router(auth_layer);
 
 
-    let api_router = Router::new()
-        .route("/", get(handler))
-        .route("/post_component", post(post_component::post_component))
-        .route("/get_first_component", get(get_first_component::get_component))
-        .route("/get_all_component", get(get_all_component::get_component));
+
+    
 
     let app = Router::new()
         
         
         
 
-        .route("/", any_service(ServeDir::new("dist/src")))
-        .route_layer(login_required!(Backend, login_url = "/login"))
-
+        
+        
 
         
 
-
-
-        .nest("/api", api_router)
-        .route_layer(login_required!(Backend, login_url = "/login"))
-        
-
+        .merge(protected())
 
         .route("/login_api", post(handler::login))
 
@@ -72,9 +63,7 @@ pub async fn start_server(config: Config, db: Components) {
         .route("/logout", get(handler::logout))
         
         .layer(auth_layer)
-        //
         .layer(
-            //tower_http::cors::CorsLayer::permissive()
             tower_http::cors::CorsLayer::new()
                 .allow_origin(
                     [
@@ -101,6 +90,30 @@ pub async fn start_server(config: Config, db: Components) {
 
     let server = axum::serve(listener, app).await.unwrap();
 }
+
+
+fn api() -> Router<Arc<Components>>{
+    let api: Router<Arc<Components>> = Router::new()
+        .route("/", get(handler))
+        .route("/post_component", post(post_component::post_component))
+        .route("/get_first_component", get(get_first_component::get_component))
+        .route("/get_all_component", get(get_all_component::get_component));
+
+    return api;
+}
+fn protected() -> Router<Arc<Components>>{
+    let protected = Router::new()
+        .route("/", any_service(ServeDir::new("dist/src")))
+        .nest("/api", api());
+
+    #[cfg(not(debug_assertions))]
+    let protected = protected.route_layer(login_required!(Backend, login_url = "/login"));
+
+
+    return protected;
+
+}
+
 
 #[derive(serde::Serialize)]
 struct Message {
