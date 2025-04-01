@@ -40,24 +40,30 @@
   <div class="search-results-container">
 
     <table>
-      <tbody>
-        <th table-heading>name</th>
-        <th table-heading>size</th>
-        <th table-heading>value</th>
-        <th table-heading>info</th>
-        <th table-heading>stock</th>
-        <th table-heading>origin</th>
-        <th table-heading>url</th>
-      </tbody>
+      <thead>
+        <tr>
+          <th table-heading>name</th>
+          <th table-heading>size</th>
+          <th table-heading>value</th>
+          <th table-heading>info</th>
+          <th table-heading>stock</th>
+          <th table-heading>origin</th>
+          <th table-heading>url</th>
+        </tr>
+      </thead>
+
 
       <tbody v-for="c in components">
-        <td>{{ c.name }}</td>
-        <td>{{ c.size }}</td>
-        <td>{{ c.value }}</td>
-        <td>{{ c.info }}</td>
-        <td>{{ c.stock }}</td>
-        <td>{{ c.origin }}</td>
-        <td>{{ c.url }}</td>
+        <tr onclick="window.location='google.com';">
+          <td>{{ c.name }}</td>
+          <td>{{ c.size }}</td>
+          <td>{{ c.value }}</td>
+          <td>{{ c.info }}</td>
+          <td>{{ c.stock }}</td>
+          <td>{{ c.origin }}</td>
+          <td>{{ c.url }}</td>
+        </tr>
+        
       </tbody>
     </table>
   </div>
