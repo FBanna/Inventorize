@@ -5,6 +5,7 @@ use log::{debug};
 mod server;
 mod cli;
 mod db;
+mod lable;
 
 #[tokio::main]
 async fn main() {

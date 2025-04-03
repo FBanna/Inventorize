@@ -21,6 +21,7 @@ axum-login = "0.17.0"
 password-auth = "1.0.0"
 tower = "0.5.2"
 sqlx = { version = "0.8.3", features = ["runtime-tokio-native-tls", "sqlite"] }
+typst = "0.13.1"
 
 [profile.release]
 opt-level = 3

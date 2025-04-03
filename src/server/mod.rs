@@ -44,14 +44,6 @@ pub async fn start_server(config: Config, db: Components) {
     
 
     let app = Router::new()
-        
-        
-        
-
-        
-        
-
-        
 
         .merge(protected())
 
@@ -68,8 +60,8 @@ pub async fn start_server(config: Config, db: Components) {
                 .allow_origin(
                     [
                         "/".parse::<HeaderValue>().unwrap(), 
-                        #[cfg(debug_assertions)]
-                        "http://localhost:5173".parse::<HeaderValue>().unwrap()
+                        //#[cfg(debug_assertions)]
+                        //"http://localhost:5173".parse::<HeaderValue>().unwrap()
                     ]
                 )
                 .allow_headers([CONTENT_TYPE])
@@ -82,7 +74,7 @@ pub async fn start_server(config: Config, db: Components) {
     let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
 
 
-    let listener = tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], config.port)))
+    let listener = tokio::net::TcpListener::bind(addr)
     .await
     .unwrap();
  
