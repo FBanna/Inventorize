@@ -49,8 +49,8 @@ pub async fn start_server(config: Config, db: Components) {
 
         .route("/login_api", post(handler::login))
 
-        .nest_service("/login", ServeDir::new("dist/login"))
-        .nest_service("/assets", ServeDir::new("dist/assets"))
+        .nest_service("/login", ServeDir::new("../dist/login"))
+        .nest_service("/assets", ServeDir::new("../dist/assets"))
         
         .route("/logout", get(handler::logout))
         
@@ -95,7 +95,7 @@ fn api() -> Router<Arc<Components>>{
 }
 fn protected() -> Router<Arc<Components>>{
     let protected = Router::new()
-        .route("/", any_service(ServeDir::new("dist/src")))
+        .route("/", any_service(ServeDir::new("../dist/src")))
         .nest("/api", api());
 
     #[cfg(not(debug_assertions))]

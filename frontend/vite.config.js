@@ -14,7 +14,7 @@ export default defineConfig({
     vueDevTools(),
   ],
   build: {
-    outDir: "../dist",
+    outDir: "../target/dist",
     //emptyOutDir: true,
     rollupOptions: {
       input: {
