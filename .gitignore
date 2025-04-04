@@ -1,4 +1,5 @@
 /target
+/dist
 inventorize.db
 inventorize.db-shm
 inventorize.db-wal

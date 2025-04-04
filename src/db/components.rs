@@ -4,7 +4,7 @@ use sqlx::{migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::Sqlit
 static MIGRATOR: Migrator = sqlx::migrate!();
 
 
-#[derive(Serialize, Deserialize, FromRow)]
+#[derive(Serialize, Deserialize, FromRow, Clone)]
 pub struct Component{
     //pub ID: Option<i32>,
     pub name: String,
@@ -106,6 +106,7 @@ impl Components {
             .await
             .unwrap()
     }
+    
 
 }
 

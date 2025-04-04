@@ -1,11 +1,12 @@
 use crate::cli::config::Config;
+use label::label::Label;
 use log::{debug};
 
 
 mod server;
 mod cli;
 mod db;
-mod lable;
+mod label;
 
 #[tokio::main]
 async fn main() {
@@ -29,6 +30,10 @@ async fn main() {
         origin:None, 
         url: None
     };
+
+    component.build();
+
+    //label::label::Label::new(component).build();
 
     component_db.add(component).await;
 
