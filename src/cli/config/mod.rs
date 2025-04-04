@@ -9,6 +9,7 @@ const DEFAULT_DB_LOCATION: &str = "sqlite://inventorize.db";
 const DEFAULT_PORT_NUMBER: u16 = 3030;
 const DEFAULT_USER: &str = "user";
 const DEFAULT_PASSWORD: &str = "password";
+const DEFAULT_LABEL_LOCATION: &str = "labels";
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config{
@@ -16,15 +17,17 @@ pub struct Config{
     pub user: String,
     pub password: String,
     pub db_location: String,
+    pub label_location: String
 }
 
 impl Config{
     pub fn new() -> Config {
         Config{
-            port: DEFAULT_PORT_NUMBER,
-            user: DEFAULT_USER.to_string(),
-            password: DEFAULT_PASSWORD.to_string(),
-            db_location: DEFAULT_DB_LOCATION.to_string()
+            port:           DEFAULT_PORT_NUMBER,
+            user:           DEFAULT_USER.to_string(),
+            password:       DEFAULT_PASSWORD.to_string(),
+            db_location:    DEFAULT_DB_LOCATION.to_string(),
+            label_location: DEFAULT_LABEL_LOCATION.to_string()
         }
     }
 

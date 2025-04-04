@@ -1,7 +1,7 @@
 pub mod config;
 use crate::db::components::Components;
 
-use std::{path::PathBuf, process::exit};
+use std::{fs, path::{Path, PathBuf}, process::exit};
 use clap::{arg, command, value_parser, Command};
 use config::{Config, read_config, DEFAULT_CONFIG_FILE};
 use sqlx::{migrate::MigrateDatabase, FromRow, Row, Sqlite, SqlitePool};
@@ -32,6 +32,11 @@ pub async fn get_config() -> Config{
                 -d --db <DB> "sets db location"
             ).required(false).value_parser(value_parser!(String))
         )
+        .arg(
+            arg!(
+                -l --label <LABEL> "sets label location"
+            ).required(false).value_parser(value_parser!(String))
+        )
         .subcommand(
             Command::new("init")
                 .about("initalize the directory")
@@ -46,6 +51,8 @@ pub async fn get_config() -> Config{
         Config::write(&Config::new());
 
         Components::init(&config.db_location).await;
+
+        fs::create_dir(Path::new(&config.label_location)).expect("Could not create label directory!");
 
         //create::init(&config.db_location).await;
 
@@ -89,6 +96,10 @@ pub async fn get_config() -> Config{
 
     if let Some(db_location) = matches.get_one::<String>("db"){
         config.db_location = db_location.clone();
+    }
+
+    if let Some(label_location) = matches.get_one::<String>("label"){
+        config.label_location = label_location.clone();
     }
 
     return config;
