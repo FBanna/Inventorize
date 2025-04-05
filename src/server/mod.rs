@@ -2,8 +2,9 @@ use crate::{db::components::Components, Config};
 
 pub mod login_api;
 pub mod db_api;
+pub mod server_state;
 
-use db_api::{get_all_component, get_first_component, post_component};
+use db_api::{get_all_component, get_first_component, post_build_label, post_component};
 
 use axum::{
     extract::Query, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}, Form, Json, Router
@@ -12,6 +13,7 @@ use axum::{
 use axum_login::{login_required, tower_sessions::{MemoryStore, SessionManagerLayer}, AuthManagerLayer, AuthManagerLayerBuilder};
 use login_api::login::{Backend,User};
 use login_api::handler;
+use server_state::ServerState;
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::{cors::{Any, CorsLayer}, services::{ServeDir, ServeFile}};
 
@@ -25,11 +27,21 @@ pub async fn start_server(config: Config, db: Components) {
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store);
 
-    let backend = Backend::new(User {username: config.user, password: config.password});
+    let backend = Backend::new(User {username: config.user.to_owned(), password: config.password.to_owned()});
     let auth_layer: AuthManagerLayer<Backend, MemoryStore> = AuthManagerLayerBuilder::new(backend, session_layer).build();
 
+    
+    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
 
-    let shared_state = Arc::new(db);
+
+    let shared_state = Arc::new(
+        ServerState{
+            db,
+            config
+        }
+    );
+
+    
 
 
 
@@ -71,7 +83,7 @@ pub async fn start_server(config: Config, db: Components) {
         .with_state(shared_state);
 
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
+    
 
 
     let listener = tokio::net::TcpListener::bind(addr)
@@ -84,16 +96,17 @@ pub async fn start_server(config: Config, db: Components) {
 }
 
 
-fn api() -> Router<Arc<Components>>{
-    let api: Router<Arc<Components>> = Router::new()
+fn api() -> Router<Arc<ServerState>>{
+    let api: Router<Arc<ServerState>> = Router::new()
         .route("/", get(handler))
         .route("/post_component", post(post_component::post_component))
+        .route("/post_build", post(post_build_label::post_build_label))
         .route("/get_first_component", get(get_first_component::get_component))
         .route("/get_all_component", get(get_all_component::get_component));
 
     return api;
 }
-fn protected() -> Router<Arc<Components>>{
+fn protected() -> Router<Arc<ServerState>>{
     let protected = Router::new()
         .route("/", any_service(ServeDir::new("../dist/src")))
         .nest("/api", api());

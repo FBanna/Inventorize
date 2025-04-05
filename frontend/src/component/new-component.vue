@@ -14,37 +14,27 @@ const add_component_api = ref(import.meta.env.VITE_API_URL + "/post_component")
   <form :action="add_component_api" method="POST">
 
     <input class="input" type="text" name="name" placeholder="name" required>
-
     <br>
-
     
     <input class="input" type="text" name="size" placeholder="size">
-    
     <br>
-
     
     <input class="input" type="text" name="value" placeholder="value">
-    
     <br>
 
-    
     <input class="input" type="text" name="info" placeholder="info">
-    
     <br>
 
-    
     <input class="input" type="number" name="stock" placeholder="stock" required>
-    
     <br>
 
-    
     <input class="input" type="text" name="origin" placeholder="origin">
-    
     <br>
-
     
     <input class="input" type="text" name="url" placeholder="url">
-    
+    <br>
+
+    <input class="input" type="text" name="label" placeholder="label">
     <br>
 
     <button class="submit" type="submit">Submit</button>

@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS components
     info    TEXT,
     stock   INTEGER                 NOT NULL,
     origin  TEXT,
-    url     TEXT
+    url     TEXT,
+    label   TEXT
 );
 

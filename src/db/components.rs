@@ -13,7 +13,8 @@ pub struct Component{
     pub info: Option<String>,
     pub stock: i32,
     pub origin: Option<String>,
-    pub url: Option<String>
+    pub url: Option<String>,
+    pub label: Option<String>
 }
 
 // impl<'r> sqlx::FromRow<'r, SqliteRow> for Component {
@@ -79,7 +80,7 @@ impl Components {
     }
 
     pub async fn add(&self, c: Component){
-        sqlx::query("INSERT INTO components (name,size,value,info,stock,origin,url) VALUES (?,?,?,?,?,?,?)")
+        sqlx::query("INSERT INTO components (name,size,value,info,stock,origin,url,label) VALUES (?,?,?,?,?,?,?,?)")
             //.bind(c.ID)
             .bind(c.name)
             .bind(c.size)
@@ -88,6 +89,7 @@ impl Components {
             .bind(c.stock)
             .bind(c.origin)
             .bind(c.url)
+            .bind(c.label)
             .execute(&self.pool)
             .await
             .unwrap();

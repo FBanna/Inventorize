@@ -28,10 +28,11 @@ async fn main() {
         info:None,
         stock:5000,
         origin:None, 
-        url: None
+        url: None,
+        label: Some("vial".to_string())
     };
 
-    component.build();
+    //component.build();
 
     //label::label::Label::new(component).build();
 
@@ -45,7 +46,8 @@ async fn main() {
         info:Some("Thick Film".to_string()),
         stock:10,
         origin:None, 
-        url: None
+        url: None,
+        label: None
     };
 
     component_db.add(component).await;

@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
 use axum::{extract::State, Json};
-use crate::db::components::{Component, Components};
+use crate::{db::components::{Component, Components}, server::server_state::ServerState};
 
 
 pub async fn get_component(
-    State(shared_state): State<Arc<Components>>,
+    State(shared_state): State<Arc<ServerState>>,
 ) -> Json<Vec<Component>>{
 
-    let result = shared_state.get_all().await;
+    let result = shared_state.db.get_all().await;
 
     Json(result)
 }

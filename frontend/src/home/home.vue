@@ -49,6 +49,7 @@
           <th table-heading>stock</th>
           <th table-heading>origin</th>
           <th table-heading>url</th>
+          <th table-heading>label</th>
         </tr>
       </thead>
 
@@ -62,6 +63,7 @@
           <td>{{ c.stock }}</td>
           <td>{{ c.origin }}</td>
           <td>{{ c.url }}</td>
+          <td>{{ c.label }}</td>
         </tr>
         
       </tbody>
