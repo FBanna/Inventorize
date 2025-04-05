@@ -97,9 +97,9 @@ impl Components {
 
     pub async fn get_first(&self) -> Component{
         sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")
-        .fetch_one(&self.pool)
-        .await
-        .unwrap()
+            .fetch_one(&self.pool)
+            .await
+            .unwrap()
     }
 
     pub async fn get_all(&self) -> Vec<Component>{
@@ -107,6 +107,10 @@ impl Components {
             .fetch_all(&self.pool)
             .await
             .unwrap()
+    }
+
+    pub async fn get(&self, i: i32) -> Component {
+        
     }
     
 
