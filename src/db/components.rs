@@ -6,7 +6,7 @@ static MIGRATOR: Migrator = sqlx::migrate!();
 
 #[derive(Serialize, Deserialize, FromRow, Clone)]
 pub struct Component{
-    //pub ID: Option<i32>,
+    pub id: Option<i32>,
     pub name: String,
     pub size: Option<String>,
     pub value: Option<String>,
@@ -110,7 +110,26 @@ impl Components {
     }
 
     pub async fn get(&self, i: i32) -> Component {
-        
+        sqlx::query_as("SELECT * FROM components WHERE id = (?)")
+            .bind(i)
+            .fetch_one(&self.pool)
+            .await
+            .unwrap()
+    }
+
+    pub async fn search(&self, c: Component) -> Vec<Component> {
+
+        sqlx::query_as("
+            SELECT * FROM components
+            WHERE name LIKE %(?)%
+            WHERE size LIKE %(?)%
+        ")
+        .bind(c.name)
+        .bind(c.size)
+        .fetch_all(&self.pool)
+        .await
+        .unwrap()
+
     }
     
 

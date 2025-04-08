@@ -4,7 +4,8 @@ pub mod login_api;
 pub mod db_api;
 pub mod server_state;
 
-use db_api::{get_all_component, get_first_component, post_build_label, post_component};
+use db_api::{get_all_component, get_first_component, post_build_label, post_component, post_search_component::post_search_component};
+use post_build_label::BuildLabel;
 
 use axum::{
     extract::Query, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}, Form, Json, Router
@@ -101,8 +102,10 @@ fn api() -> Router<Arc<ServerState>>{
         .route("/", get(handler))
         .route("/post_component", post(post_component::post_component))
         .route("/post_build", post(post_build_label::post_build_label))
+        .route("/post_search_component", post(post_search_component))
         .route("/get_first_component", get(get_first_component::get_component))
         .route("/get_all_component", get(get_all_component::get_component));
+    
 
     return api;
 }

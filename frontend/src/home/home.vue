@@ -8,16 +8,48 @@
 
   let components = ref()
 
+  //let search_fields = []
+
+  let search_names = ["name", "size", "value", "info", "stock", "origin", "url", "label"]
+
+  let c = ref({
+    name: "",
+    size: "",
+    value: "",
+    info: "",
+    stock: 0,
+    origin: "",
+    url: "",
+    label: ""
+  })
+  
   async function search_components(){
 
-    let response = await fetch(import.meta.env.VITE_API_URL + "/get_all_component")
-    //let response = await fetch(import.meta.env.VITE_API_URL)
+    console.log(search_values.value[0], search_values.value[1], search_values.value[2])
+
+    const requestOptions = {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(c.value)
+    }
+
+    let response = await fetch(import.meta.env.VITE_API_URL + "/post_search_component", requestOptions)
     let json = await response.json()
     components.value = json
 
   }
-  search_components()
 
+  async function get_all_components(){
+
+    let response = await fetch(import.meta.env.VITE_API_URL + "/get_all_component")
+    let json = await response.json()
+    components.value = json
+
+  }
+
+  get_all_components()
+
+  
 </script>
 
 <template>
@@ -25,10 +57,14 @@
   <div class="search-container">
     <div class="search-scroll">
 
-      <div class="search-field">
-        hello
+      <div v-for="n in search_names.length" class="search-field">
+        {{ search_names[n] }}
+
+        {{ search_values[n] }}
+
         <br>
-        <input placeholder="Search" class="search">
+        <input @change="search_components()" placeholder="Search" v-model="search_values[n]"  class="search">
+        
 
         <div class="results"></div>
       
@@ -42,14 +78,17 @@
     <table>
       <thead>
         <tr>
-          <th table-heading>name</th>
+          <th v-for="name in search_names" table-heading>
+            {{ name }}
+          </th>
+          <!-- <th table-heading>name</th>
           <th table-heading>size</th>
           <th table-heading>value</th>
           <th table-heading>info</th>
           <th table-heading>stock</th>
           <th table-heading>origin</th>
           <th table-heading>url</th>
-          <th table-heading>label</th>
+          <th table-heading>label</th> -->
         </tr>
       </thead>
 
