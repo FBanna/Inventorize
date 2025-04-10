@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{extract::State, response::{IntoResponse, Redirect}, Form};
-use crate::{db::{self, components::{Component, Components}}, server::server_state::ServerState};
+use crate::{db::{self, components::{Component, ComponentServices}}, server::server_state::ServerState};
 
 
 pub async fn post_component(

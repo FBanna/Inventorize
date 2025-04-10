@@ -1,4 +1,4 @@
-use crate::{db::components::Components, Config};
+use crate::{db::db::DB, Config};
 
 pub mod login_api;
 pub mod db_api;
@@ -18,7 +18,7 @@ use server_state::ServerState;
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::{cors::{Any, CorsLayer}, services::{ServeDir, ServeFile}};
 
-pub async fn start_server(config: Config, db: Components) {
+pub async fn start_server(config: Config, db: DB) {
 
     println!("{0}",config.password);
 

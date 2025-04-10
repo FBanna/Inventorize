@@ -1,5 +1,5 @@
 pub mod config;
-use crate::db::components::Components;
+use crate::db::db::DB;
 
 use std::{fs, path::{Path, PathBuf}, process::exit};
 use clap::{arg, command, value_parser, Command};
@@ -50,7 +50,7 @@ pub async fn get_config() -> Config{
 
         Config::write(&Config::new());
 
-        Components::init(&config.db_location).await;
+        DB::init(&config.db_location).await;
 
         fs::create_dir(Path::new(&config.label_location)).expect("Could not create label directory!");
 

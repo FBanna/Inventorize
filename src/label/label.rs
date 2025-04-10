@@ -55,7 +55,7 @@ impl Label for Component{
         dict.insert("stock".into(), Value::Int(self.stock.into()));
 
         insert_optional(&mut dict, "origin", &self.origin);
-        insert_optional(&mut dict, "url", &self.url);
+        //insert_optional(&mut dict, "url", &self.url);
         
 
         Library::builder().with_inputs(dict).build()

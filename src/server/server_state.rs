@@ -1,10 +1,10 @@
-use crate::{cli::config::Config, db::components::Components};
+use crate::{cli::config::Config, db::db::DB};
 
 
 
 pub struct ServerState {
 
-    pub db: Components,
+    pub db: DB,
     pub config: Config
 
 }

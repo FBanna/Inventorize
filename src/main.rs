@@ -1,4 +1,5 @@
 use crate::cli::config::Config;
+use db::{components::ComponentServices, db::DB};
 use label::label::Label;
 use log::{debug};
 
@@ -18,7 +19,7 @@ async fn main() {
     config.print();
 
 
-    let component_db = db::components::Components::init(&config.db_location).await;
+    let component_db = DB::init(&config.db_location).await;
 
     let component = db::components::Component{
         //ID:5000,
@@ -29,7 +30,7 @@ async fn main() {
         info:None,
         stock:5000,
         origin:None, 
-        url: None,
+        //url: None,
         label: Some("vial".to_string())
     };
 
@@ -48,7 +49,7 @@ async fn main() {
         info:Some("Thick Film".to_string()),
         stock:10,
         origin:None, 
-        url: None,
+        //url: None,
         label: None
     };
 

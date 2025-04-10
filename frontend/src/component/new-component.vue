@@ -30,9 +30,6 @@ const add_component_api = ref(import.meta.env.VITE_API_URL + "/post_component")
 
     <input class="input" type="text" name="origin" placeholder="origin">
     <br>
-    
-    <input class="input" type="text" name="url" placeholder="url">
-    <br>
 
     <input class="input" type="text" name="label" placeholder="label">
     <br>

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{extract::State, http::StatusCode, response::{IntoResponse, Redirect}, Form, Json};
 use serde::Deserialize;
-use crate::{cli::config::Config, db::{self, components::{Component, Components}}, label::label::Label, server::server_state::ServerState};
+use crate::{cli::config::Config, db::{self, components::{Component, ComponentServices}, prompt::PromptServices}, label::label::Label, server::server_state::ServerState};
 
 
 
@@ -13,6 +13,10 @@ pub async fn post_search_component(
 ) -> Json<Vec<Component>> {
 
     let result = shared_state.db.search(c).await;
+
+    let test = shared_state.db.get_prompts().await;
+
+    println!("{:?}", test);
 
     return Json(result);
 }

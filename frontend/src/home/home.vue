@@ -10,7 +10,7 @@
 
   //let search_fields = []
 
-  let search_names = ["name", "size", "value", "info", "stock", "origin", "url", "label"]
+  let search_names = ["name", "size", "value", "info", "stock", "origin", "label"]
 
   let c = ref({
     name: "",
@@ -19,13 +19,13 @@
     info: "",
     stock: 0,
     origin: "",
-    url: "",
+    //url: "",
     label: ""
   })
   
   async function search_components(){
 
-    console.log(search_values.value[0], search_values.value[1], search_values.value[2])
+    console.log(c.value.name + "," + c.value.size)
 
     const requestOptions = {
       method: "POST",
@@ -57,18 +57,69 @@
   <div class="search-container">
     <div class="search-scroll">
 
-      <div v-for="n in search_names.length" class="search-field">
-        {{ search_names[n] }}
-
-        {{ search_values[n] }}
-
-        <br>
-        <input @change="search_components()" placeholder="Search" v-model="search_values[n]"  class="search">
+      <div class="search-field">
         
-
+        name
+        <br>
+        <input type="text" @change="search_components()" placeholder="Search" v-model="c.name"  class="search">
         <div class="results"></div>
       
       </div>
+
+      <div class="search-field">
+        
+        size
+        <br>
+        <input type="text" @change="search_components()" placeholder="Search" v-model="c.size"  class="search">
+        <div class="results"></div>
+      
+      </div>
+      
+      <div class="search-field">
+        
+        value
+        <br>
+        <input type="text" @change="search_components()" placeholder="Search" v-model="c.value"  class="search">
+        <div class="results"></div>
+      
+      </div>
+
+      <div class="search-field">
+        
+        info
+        <br>
+        <input type="text" @change="search_components()" placeholder="Search" v-model="c.info"  class="search">
+        <div class="results"></div>
+      
+      </div>
+
+      <div class="search-field">
+        
+        stock
+        <br>
+        <input type="number" @change="search_components()" placeholder="Search" v-model="c.stock"  class="search">
+        <div class="results"></div>
+      
+      </div>
+
+      <div class="search-field">
+        
+        origin
+        <br>
+        <input type="text" @change="search_components()" placeholder="Search" v-model="c.origin"  class="search">
+        <div class="results"></div>
+      
+      </div>
+
+      <div class="search-field">
+        
+        label
+        <br>
+        <input type="text" @change="search_components()" placeholder="Search" v-model="c.label"  class="search">
+        <div class="results"></div>
+      
+      </div>
+
 
     </div>
   </div>
@@ -101,7 +152,6 @@
           <td>{{ c.info }}</td>
           <td>{{ c.stock }}</td>
           <td>{{ c.origin }}</td>
-          <td>{{ c.url }}</td>
           <td>{{ c.label }}</td>
         </tr>
         
