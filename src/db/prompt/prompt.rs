@@ -7,7 +7,7 @@ use sqlx::{prelude::FromRow, Pool, Sqlite};
 use super::super::{components::Component, db::DB};
 
 
-#[derive(FromRow,Debug,Serialize,Clone)]
+#[derive(FromRow,Debug,Serialize)]
 pub struct PromptEntry( pub String );
 
 #[derive(Debug)]
