@@ -1,10 +1,10 @@
-use crate::{db::db::DB, Config};
+use crate::{db::{components::Component, db::DB}, Config};
 
 pub mod login_api;
 pub mod db_api;
 pub mod server_state;
 
-use db_api::{get_all_component, get_first_component, post_build_label, post_component, post_search_component::post_search_component};
+use db_api::{get_all_component, get_all_prompt, get_first_component, post_build_label, post_component, post_search_component::post_search_component};
 use post_build_label::BuildLabel;
 
 use axum::{
@@ -52,8 +52,6 @@ pub async fn start_server(config: Config, db: DB) {
     //#[cfg(not(debug_assertions))]
     //let app = get_router(auth_layer);
 
-
-
     
 
     let app = Router::new()
@@ -73,8 +71,8 @@ pub async fn start_server(config: Config, db: DB) {
                 .allow_origin(
                     [
                         "/".parse::<HeaderValue>().unwrap(), 
-                        //#[cfg(debug_assertions)]
-                        //"http://localhost:5173".parse::<HeaderValue>().unwrap()
+                        #[cfg(debug_assertions)]
+                        "http://localhost:5173".parse::<HeaderValue>().unwrap()
                     ]
                 )
                 .allow_headers([CONTENT_TYPE])
@@ -104,7 +102,8 @@ fn api() -> Router<Arc<ServerState>>{
         .route("/post_build", post(post_build_label::post_build_label))
         .route("/post_search_component", post(post_search_component))
         .route("/get_first_component", get(get_first_component::get_component))
-        .route("/get_all_component", get(get_all_component::get_component));
+        .route("/get_all_component", get(get_all_component::get_component))
+        .route("/get_all_prompt", get(get_all_prompt::get_all_prompt));
     
 
     return api;

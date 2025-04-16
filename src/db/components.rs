@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sqlx::{migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::SqliteRow, Pool, Row, Sqlite, SqlitePool};
 
-use super::db::{DB};
+use super::{db::DB, prompt::service::PromptServices};
 
 
 
@@ -23,7 +23,21 @@ impl Component{
     pub fn fmt(&self) -> String{
         return self.name.clone() + &self.size.clone().unwrap_or_else(|| {"none".to_string()}).clone();
     }
+
+    pub fn to_vec(&self) -> Vec<Option<&str>> {
+
+        vec![
+            Some(self.name.as_str()),
+            self.size.as_deref(),
+            self.value.as_deref(),
+            self.info.as_deref(),
+            self.origin.as_deref(),
+            self.label.as_deref()
+        ]
+
+    }
 }
+
 
 pub trait ComponentServices {
     async fn add(&self, c: Component);
@@ -43,17 +57,19 @@ impl ComponentServices for DB{
     async fn add(&self, c: Component){
         sqlx::query("INSERT INTO components (name,size,value,info,stock,origin,label) VALUES (?,?,?,?,?,?,?)")
             //.bind(c.ID)
-            .bind(c.name)
-            .bind(c.size)
-            .bind(c.value) 
-            .bind(c.info)
-            .bind(c.stock)
-            .bind(c.origin)
+            .bind(&c.name)
+            .bind(&c.size)
+            .bind(&c.value) 
+            .bind(&c.info)
+            .bind(&c.stock)
+            .bind(&c.origin)
             //.bind(c.url)
-            .bind(c.label)
+            .bind(&c.label)
             .execute(&self.pool)
             .await
             .unwrap();
+
+        self.update_prompts(c).await;
     }
 
     async fn get_first(&self) -> Component{

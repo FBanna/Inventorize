@@ -7,6 +7,7 @@
   // )
 
   let components = ref()
+  let prompts = ref()
 
   //let search_fields = []
 
@@ -47,7 +48,23 @@
 
   }
 
+  async function get_all_prompt() {
+    let response = await fetch(import.meta.env.VITE_API_URL + "/get_all_prompt")
+    let json = await response.json()
+
+    console.log(json)
+
+
+
+    for(let result of json[0].prompts){
+      console.log(result)
+    }
+    prompts.value = json
+
+  }
+
   get_all_components()
+  get_all_prompt()
 
   
 </script>
@@ -55,108 +72,90 @@
 <template>
   
   <div class="search-container">
-    <div class="search-scroll">
 
-      <div class="search-field">
+
+      <div class="search-field" v-for="prompt of prompts">
+
+            {{ prompt.name.slice(0, -1) }}
+            <br>
+            <input type="text" @change="search_components()" placeholder="Search" class="search">
+            <br>
+
+            <select multiple="multiple" class="results">
+              <option class="result" v-for="result in prompt.prompts">
+                {{ result }}
+              </option>
+            </select>
+
+            
+
+      </div>
+
+
+      <!-- <div class="search-field">
         
         name
         <br>
         <input type="text" @change="search_components()" placeholder="Search" v-model="c.name"  class="search">
-        <div class="results"></div>
-      
-      </div>
+        <div class="results">
 
-      <div class="search-field">
+          <div class="result" v-for="results of (prompts[1].prompts)">
+            {{ results }} HELLO
+          </div>
         
-        size
-        <br>
-        <input type="text" @change="search_components()" placeholder="Search" v-model="c.size"  class="search">
-        <div class="results"></div>
+        </div>
       
-      </div>
-      
-      <div class="search-field">
-        
-        value
-        <br>
-        <input type="text" @change="search_components()" placeholder="Search" v-model="c.value"  class="search">
-        <div class="results"></div>
-      
-      </div>
+      </div> -->
 
-      <div class="search-field">
-        
-        info
-        <br>
-        <input type="text" @change="search_components()" placeholder="Search" v-model="c.info"  class="search">
-        <div class="results"></div>
-      
-      </div>
-
-      <div class="search-field">
-        
-        stock
-        <br>
-        <input type="number" @change="search_components()" placeholder="Search" v-model="c.stock"  class="search">
-        <div class="results"></div>
-      
-      </div>
-
-      <div class="search-field">
-        
-        origin
-        <br>
-        <input type="text" @change="search_components()" placeholder="Search" v-model="c.origin"  class="search">
-        <div class="results"></div>
-      
-      </div>
-
-      <div class="search-field">
+      <!-- <div class="search-field">
         
         label
         <br>
         <input type="text" @change="search_components()" placeholder="Search" v-model="c.label"  class="search">
-        <div class="results"></div>
+        <div class="results">
+
+        </div>
       
-      </div>
+      </div> -->
 
 
-    </div>
+
   </div>
 
   <div class="search-results-container">
 
-    <table>
-      <thead>
-        <tr>
-          <th v-for="name in search_names" table-heading>
-            {{ name }}
-          </th>
-          <!-- <th table-heading>name</th>
-          <th table-heading>size</th>
-          <th table-heading>value</th>
-          <th table-heading>info</th>
-          <th table-heading>stock</th>
-          <th table-heading>origin</th>
-          <th table-heading>url</th>
-          <th table-heading>label</th> -->
-        </tr>
-      </thead>
+      <table>
+        <thead>
+          <tr>
+            <th v-for="name in search_names" table-heading>
+              {{ name }}
+            </th>
+            <!-- <th table-heading>name</th>
+            <th table-heading>size</th>
+            <th table-heading>value</th>
+            <th table-heading>info</th>
+            <th table-heading>stock</th>
+            <th table-heading>origin</th>
+            <th table-heading>url</th>
+            <th table-heading>label</th> -->
+          </tr>
+        </thead>
 
 
-      <tbody v-for="c in components">
-        <tr onclick="window.location='google.com';">
-          <td>{{ c.name }}</td>
-          <td>{{ c.size }}</td>
-          <td>{{ c.value }}</td>
-          <td>{{ c.info }}</td>
-          <td>{{ c.stock }}</td>
-          <td>{{ c.origin }}</td>
-          <td>{{ c.label }}</td>
-        </tr>
-        
-      </tbody>
-    </table>
+        <tbody v-for="c in components">
+          <tr onclick="window.location='google.com';">
+            <td>{{ c.name }}</td>
+            <td>{{ c.size }}</td>
+            <td>{{ c.value }}</td>
+            <td>{{ c.info }}</td>
+            <td>{{ c.stock }}</td>
+            <td>{{ c.origin }}</td>
+            <td>{{ c.label }}</td>
+          </tr>
+          
+        </tbody>
+      </table>
+
   </div>
 
 
@@ -184,40 +183,39 @@ table{
   border-collapse: collapse;
 }
 
+
+
+.search-results-container{
+  width: 100%;
+  background-color: import.$white;
+  box-sizing: border-box;
+  padding: 5px;
+}
+
 .search-container{
   width: 100%;
   height: 200px;
   background-color: import.$secondary;
   margin-top: 0px;
   box-sizing: border-box;
+  display: inline-flex;
   padding: 5px;
-}
 
-.search-results-container{
-  width: 100%;
-  background-color: import.$white;
-  margin-top: 0px;
-  box-sizing: border-box;
-  padding: 5px;
-}
-
-.search-scroll {
   white-space: nowrap;
-  
-  height: 100%;
   overflow-y: hidden;
-  overflow-x: scroll;
+  overflow-x: auto;
 }
+
 
 .search-field {
-  height: calc(100% - 5px);
+
+  height: 100%;
   box-sizing: border-box;
   padding: 5px;
   width: 200px;
   background-color: white;
   margin-right: 5px;
 
-  display: inline-block;
   font-weight: bolder;
   
 }
@@ -228,6 +226,29 @@ table{
   border-radius: 4px;
   border-width: 1px;
   border-style: solid;
+}
+
+.results {
+
+  margin-top: 3pt;
+  margin-bottom: 3pt;
+  width: 100%;
+  height: 135px;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+
+  white-space: nowrap;
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  
+}
+
+.result {
+  font-weight: normal;
+  height: 15pt;
+
 }
 
 

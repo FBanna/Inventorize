@@ -34,7 +34,7 @@ impl DB {
 
         let mut db = Self::new(path).await;
 
-        db.sync_prompts();
+        db.sync_prompts().await;
 
         return db;
     

@@ -19,7 +19,7 @@ async fn main() {
     config.print();
 
 
-    let component_db = DB::init(&config.db_location).await;
+    let mut component_db = DB::init(&config.db_location).await;
 
     let component = db::components::Component{
         //ID:5000,

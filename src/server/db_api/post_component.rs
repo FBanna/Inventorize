@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::{extract::State, response::{IntoResponse, Redirect}, Form};
+use axum::{extract::State, response::{IntoResponse, Redirect}, Form, debug_handler};
 use crate::{db::{self, components::{Component, ComponentServices}}, server::server_state::ServerState};
 
 
@@ -10,9 +10,9 @@ pub async fn post_component(
     Form(c): Form<Component>,
 ) -> impl IntoResponse {
 
-    println!("IM HERE!");
+    // println!("IM HERE!");
 
-    println!("{}", c.fmt());
+    // println!("{}", c.fmt());
 
     shared_state.db.add(c).await;
 

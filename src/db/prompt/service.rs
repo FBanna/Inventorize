@@ -1,83 +1,135 @@
 
+use std::{ops::Deref, sync::MutexGuard};
+
 use crate::db::{components::Component, db::DB};
 
-use super::prompt::{Prompt, PromptEntry};
+use super::{prompt::{Prompt, PromptEntry}, prompts::Prompts};
 
 
 
 pub trait PromptServices {
-    async fn update_prompt(&self, prompt: String, value: String);
-    async fn add_prompt(&mut self, prompt: String, value: String);
-    async fn check_option(&self, prompt: String, value: Option<String>);
-    async fn check_prompt_exists(&self, prompt: String, value: String) -> bool;
+    //async fn update_prompt(&self, prompt: String, value: String);
+    async fn add_prompt(&self, i: usize, value: &str);
+    //async fn check_option(&mut self, prompt: &mut Prompt, value: Option<&str>);
+    fn check_prompt_exists(&self, value: &str, mutex: &MutexGuard<'_, Vec<PromptEntry>>) -> bool;
     async fn update_prompts(&self, c: Component);
-    async fn sync_prompts(&mut self);
+    async fn sync_prompts(&self);
 }
 
 
 
 impl PromptServices for DB{
 
-    async fn check_option(&self, prompt: String, value: Option<String>){
+    // async fn check_option(&mut self, prompt: &mut Prompt, value: Option<&str>){
     
-        if let Some(some) = value{
-            self.check_prompt_exists(prompt, some);
+    //     if let Some(some) = value{
+    //         if !self.check_prompt_exists(prompt, some).await {
+    //             self.add_prompt(prompt, some);
+    //         }
+    //     }
+    // }
+
+    fn check_prompt_exists(&self, value: &str, mutex: &MutexGuard<'_, Vec<PromptEntry>>) -> bool {
+
+        // ADD FAST ORDERED SEARCH HERE
+
+        for entry in mutex.iter() {
+
+            if value == &entry.0 {
+                return true;
+            }
         }
+
+        return false;
+        
+        
+        // let i: i32 = sqlx::query_scalar("SELECT COUNT(*) FROM (?) where entry = (?)")
+        //     .bind(prompt)
+        //     .bind(value)
+        //     .fetch_one(&self.pool)
+        //     .await
+        //     .unwrap();
+
+        // if i > 0{
+        //     return false;
+        // } else {
+        //     return true;
+        // }
+
     }
     
     async fn update_prompts(&self, c: Component) {
 
-        let prompts = &self.prompt_cache.0;
-        self.check_prompt_exists(prompts[0].name.clone(), c.name);
-        self.check_option(prompts[1].name.clone(), c.size).await;
-        self.check_option(prompts[2].name.clone(), c.value).await;
-        self.check_option(prompts[3].name.clone(), c.info).await;
-        self.check_option(prompts[4].name.clone(), c.origin).await;
-        self.check_option(prompts[5].name.clone(), c.label).await;
-    }
+        for (i, entry) in c.to_vec().iter().enumerate(){
 
-    async fn update_prompt(&self, prompt: String, value: String){
-        if !self.check_prompt_exists(prompt.clone(), value.clone()).await {
-            self.add_prompt(prompt, value).await
-        }
-    }
+            if let Some(some) = *entry{ // if the entyr has a value
 
-    async fn check_prompt_exists(&self, prompt: String, value: String) -> bool {
+                let exists = {
+                    let mut entries = self.prompt_cache.0[i].prompts.lock().unwrap();
+                    let bool = self.check_prompt_exists(some, &entries);
+
+                    if !bool {
+                        
+                        entries.push(PromptEntry(some.to_owned()));
+                    }
+
+                    bool
+                };
+
+                if !exists {
+
+                    self.add_prompt(i, some).await;
+                }
         
-        let i: i32 = sqlx::query_scalar("SELECT COUNT(*) FROM (?) where entry = (?)")
-            .bind(prompt)
-            .bind(value)
-            .fetch_one(&self.pool)
-            .await
-            .unwrap();
-
-        if i > 0{
-            return false;
-        } else {
-            return true;
+            }
         }
-
     }
 
-    async fn add_prompt(&mut self, prompt: String, value: String) {
-        sqlx::query("INSERT INTO (?) (entry) VALUES (?)")
-            .bind(prompt)
+    // async fn update_prompt(&self, prompt: String, value: String){
+    //     if !self.check_prompt_exists(prompt.clone(), value.clone()).await {
+    //         self.add_prompt(prompt, value).await
+    //     }
+    // }
+
+    
+
+    async fn add_prompt(&self, i: usize, value: &str) {
+
+        
+
+        let prompt = &self.prompt_cache.0[i];
+
+        println!("{} + {}",&prompt.name, value);
+
+        let string = "INSERT INTO ".to_owned() + &prompt.name + " (entry) VALUES (?)";
+        
+        sqlx::query(&string)
             .bind(value)
             .execute(&self.pool)
             .await
             .unwrap();
     }
     
-    async fn sync_prompts(&mut self) {
+    async fn sync_prompts(&self) {
+
+        
 
         for i in 0..self.prompt_cache.0.len(){
-            let result: Vec<PromptEntry> = sqlx::query_as("SELECT * FROM (?)")
-            .bind(self.prompt_cache.0[i].name.clone())
-            .fetch_all(&self.pool)
-            .await
-            .unwrap();
 
-            self.prompt_cache.0[i].prompts = result;    
+
+            let mut entries_mutex = self.prompt_cache.0[i].prompts.lock().unwrap();
+
+            let string = "SELECT * FROM ".to_owned() + &self.prompt_cache.0[i].name;
+            
+            let result: Vec<PromptEntry> = sqlx::query_as(&string)
+                
+                .fetch_all(&self.pool)
+                .await
+                .unwrap();
+
+            *entries_mutex = result;
+
+            //self.prompt_cache.0[i].prompts = result;    
         }
     }
 
