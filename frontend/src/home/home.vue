@@ -74,7 +74,7 @@
   <div class="search-container">
 
 
-      <div class="search-field" v-for="prompt of prompts">
+      <span class="search-field" v-for="prompt of prompts">
 
             {{ prompt.name.slice(0, -1) }}
             <br>
@@ -89,7 +89,7 @@
 
             
 
-      </div>
+          </span>
 
 
       <!-- <div class="search-field">
@@ -198,7 +198,6 @@ table{
   background-color: import.$secondary;
   margin-top: 0px;
   box-sizing: border-box;
-  display: inline-flex;
   padding: 5px;
 
   white-space: nowrap;
@@ -211,6 +210,7 @@ table{
 
   height: 100%;
   box-sizing: border-box;
+  display: inline-block;
   padding: 5px;
   width: 200px;
   background-color: white;
@@ -230,10 +230,10 @@ table{
 
 .results {
 
-  margin-top: 3pt;
-  margin-bottom: 3pt;
+  margin-top: 3px;
+  margin-bottom: 3px;
   width: 100%;
-  height: 135px;
+  height: calc(100% - 45px);
   box-sizing: border-box;
   border: none;
   outline: none;
