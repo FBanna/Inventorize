@@ -9,7 +9,6 @@ const login_api = ref("http://localhost:3030/login_api")
 
 <template>
 
-  
 
 
     <div class="content page">
@@ -38,7 +37,8 @@ const login_api = ref("http://localhost:3030/login_api")
 
           <br>
 
-          <button class="submit" type="submit">Login</button>
+
+          <button class="button submit" type="submit">Login</button>
         </div>
 
         </form>
@@ -59,10 +59,6 @@ const login_api = ref("http://localhost:3030/login_api")
 @use "../public/import.scss";
 
 .submit {
-  background-color: import.$accent;
-  color: white !important;
-  border-style: hidden;
-  border-radius: 1px;
   width: calc(90% + 6px);
   height: 34px;
   margin-top: 4px;

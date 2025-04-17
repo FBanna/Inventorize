@@ -9,30 +9,25 @@
   let components = ref()
   let prompts = ref()
 
+  let prompt_search = ref(["","","","","",""])
+  let prompt_selected = ref([[],[],[],[],[],[]])
+
   //let search_fields = []
 
   let search_names = ["name", "size", "value", "info", "stock", "origin", "label"]
-
-  let c = ref({
-    name: "",
-    size: "",
-    value: "",
-    info: "",
-    stock: 0,
-    origin: "",
-    //url: "",
-    label: ""
-  })
+  
   
   async function search_components(){
 
-    console.log(c.value.name + "," + c.value.size)
+    console.log(JSON.stringify(prompt_selected.value))
 
     const requestOptions = {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(c.value)
+      body: JSON.stringify(prompt_selected.value)
     }
+
+    
 
     let response = await fetch(import.meta.env.VITE_API_URL + "/post_search_component", requestOptions)
     let json = await response.json()
@@ -52,13 +47,6 @@
     let response = await fetch(import.meta.env.VITE_API_URL + "/get_all_prompt")
     let json = await response.json()
 
-    console.log(json)
-
-
-
-    for(let result of json[0].prompts){
-      console.log(result)
-    }
     prompts.value = json
 
   }
@@ -70,26 +58,30 @@
 </script>
 
 <template>
+
+  <span class="search-tools">
+    <button class="button search-button" @click="search_components">Search</button>
+  </span>
   
-  <div class="search-container">
+  <span class="search-container">
 
+    <span class="search-field" v-for="(prompt, index) of prompts">
 
-      <span class="search-field" v-for="prompt of prompts">
+      {{ prompt.name.slice(0, -1) }}
 
-            {{ prompt.name.slice(0, -1) }}
-            <br>
-            <input type="text" @change="search_components()" placeholder="Search" class="search">
-            <br>
+      <br>
+      <input type="text" v-model="prompt_search[index]" placeholder="Search" class="search">
+      <br>
 
-            <select multiple="multiple" class="results">
-              <option class="result" v-for="result in prompt.prompts">
-                {{ result }}
-              </option>
-            </select>
+      <select v-model="prompt_selected[index]" multiple="multiple" class="results">
+        <option class="result" v-for="result in prompt.prompts" v-show="(result.toLowerCase()).includes(prompt_search[index].toLowerCase())">
+          {{ result }}
+        </option>
+      </select>
 
-            
+      
 
-          </span>
+    </span>
 
 
       <!-- <div class="search-field">
@@ -120,7 +112,7 @@
 
 
 
-  </div>
+  </span>
 
   <div class="search-results-container">
 
@@ -130,14 +122,6 @@
             <th v-for="name in search_names" table-heading>
               {{ name }}
             </th>
-            <!-- <th table-heading>name</th>
-            <th table-heading>size</th>
-            <th table-heading>value</th>
-            <th table-heading>info</th>
-            <th table-heading>stock</th>
-            <th table-heading>origin</th>
-            <th table-heading>url</th>
-            <th table-heading>label</th> -->
           </tr>
         </thead>
 
@@ -193,16 +177,37 @@ table{
 }
 
 .search-container{
-  width: 100%;
+
   height: 200px;
   background-color: import.$secondary;
-  margin-top: 0px;
   box-sizing: border-box;
+  display: block;
   padding: 5px;
 
   white-space: nowrap;
   overflow-y: hidden;
   overflow-x: auto;
+}
+
+.search-tools {
+  float: left;
+  height: 200px;
+  box-sizing: border-box;
+  //display: inline-block;
+  padding: 5px;
+  width: 200px;
+  background-color: import.$white;
+  margin: 0;
+
+
+  font-weight: bolder;
+  
+}
+
+.search-button {
+  width: 100%;
+  height: 30px;
+
 }
 
 

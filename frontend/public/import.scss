@@ -12,3 +12,10 @@ html *
     font-size: 16px !important;
     color: $text !important;
 }
+
+.button {
+    background-color: $accent;
+    color: white !important;
+    border-style: hidden;
+    border-radius: 1px;
+}
