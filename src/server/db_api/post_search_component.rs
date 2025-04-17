@@ -9,7 +9,7 @@ use crate::{cli::config::Config, db::{self, components::{Component, ComponentSer
 pub async fn post_search_component(
 
     State(shared_state): State<Arc<ServerState>>,
-    Json(c): Json<Component>
+    Json(c): Json<Vec<Vec<String>>>
 ) -> Json<Vec<Component>> {
 
     let result = shared_state.db.search(c).await;

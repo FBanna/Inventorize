@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
-use sqlx::{migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::SqliteRow, Pool, Row, Sqlite, SqlitePool};
+use sqlx::{migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::SqliteRow, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool};
 
 use super::{db::DB, prompt::service::PromptServices};
 
 
+pub const ELEMENTS: [&str;6] = ["name","size","value","info","origin","label"];
 
 
 #[derive(Serialize, Deserialize, FromRow, Clone, Debug)]
@@ -48,7 +49,7 @@ pub trait ComponentServices {
 
     async fn get(&self, i: i32) -> Component;
 
-    async fn search(&self, c: Component) -> Vec<Component>;
+    async fn search(&self, c: Vec<Vec<String>>) -> Vec<Component>;
 }
 
 
@@ -95,35 +96,53 @@ impl ComponentServices for DB{
             .unwrap()
     }
 
-    async fn search(&self, c: Component) -> Vec<Component> {
 
-        sqlx::query_as("
-            SELECT * FROM components
-            WHERE name LIKE (?) AND
-            stock > (?)
-        ")
-        .bind(c.name)
-        // .bind(c.size)
-        // .bind(c.value)
-        .bind(c.stock)
-        // .bind(c.origin)
-        // .bind(c.label)
-        .fetch_all(&self.pool)
-        .await
-        .unwrap()
+    async fn search(&self, c: Vec<Vec<String>>) -> Vec<Component> {
+
+
+        let mut emptied = Vec::new();
+
+        // EMPTY INPUT
+        for (i, element) in c.into_iter().enumerate() {
+            if !element.is_empty(){
+                emptied.push((element, ELEMENTS[i]));
+            }
+        }
+
+        let len = emptied.len();
+
+
+        // RETURN IF NOTHING TO SEARCH
+        if len == 0 {
+            return Vec::new();
+        }
+
+        // BUILD QUERY
+
+        let mut query: QueryBuilder<Sqlite> = QueryBuilder::new("SELECT * FROM components WHERE ");
+
+        for (index, list) in emptied.into_iter().enumerate() {
+
+            query.push(list.1.to_owned() + " IN (");
+
+            let mut list_query = query.separated(",");
+
+            for value in list.0 {
+                list_query.push_bind(value);
+            }
+
+            if len-1 == index {
+                
+                query.push(")");
+            } else {
+                query.push(") AND ");
+            }
+            
+        }
+
+        query.build_query_as::<Component>().fetch_all(&self.pool).await.unwrap()
 
     }
 
-    // // GET ALL UNIQUE ENTRIES IN A COLUMN EG. RESISTOR, CAPACITOR
-    // pub async fn get_component_prompts(&self) -> ComponentPrompts{
-
-    //     sqlx::query_as("
-    //         SELECT DISTINCT * FROM components
-    //     ")
-    //     //.bind(column)
-    //     .fetch_all(&self.pool)
-    //     .await
-    //     .unwrap()
-    // }
 
 }

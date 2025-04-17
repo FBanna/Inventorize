@@ -1,7 +1,6 @@
 use crate::cli::config::Config;
 use db::{components::ComponentServices, db::DB};
 use label::label::Label;
-use log::{debug};
 
 
 mod server;
@@ -11,8 +10,6 @@ mod label;
 
 #[tokio::main]
 async fn main() {
-
-    env_logger::init();
 
     let config: Config = cli::get_config().await;
 

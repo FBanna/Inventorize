@@ -1,5 +1,7 @@
 use serde::Serialize;
 
+use crate::db::components::ELEMENTS;
+
 use super::prompt::Prompt;
 
 
@@ -10,7 +12,7 @@ pub struct Prompts(pub Vec<Prompt>);
 
 impl Prompts{
     pub fn new() -> Self {
-        let prompt_names = ["namep","sizep","valuep","infop","originp","labelp"];
+        let prompt_names = ELEMENTS;
 
         let mut prompts = Vec::with_capacity(6);
 

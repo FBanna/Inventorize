@@ -1,5 +1,5 @@
 use std::{fs::{self, File}, io::Read, path::PathBuf};
-use log::{info,debug,log_enabled,Level};
+// use log::{info,debug,log_enabled,Level};
 use serde::{Deserialize, Serialize};
 
 
@@ -40,7 +40,8 @@ impl Config{
     pub fn debug_print(&self){
 
         let string = serde_yaml::to_string(self).expect("Could not serialize");
-        info!("config is {string}");
+        println!("config is {string}");
+        // info!("config is {string}");
     }
 
 

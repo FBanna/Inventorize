@@ -67,7 +67,7 @@
 
     <span class="search-field" v-for="(prompt, index) of prompts">
 
-      {{ prompt.name.slice(0, -1) }}
+      {{ prompt.name }}
 
       <br>
       <input type="text" v-model="prompt_search[index]" placeholder="Search" class="search">

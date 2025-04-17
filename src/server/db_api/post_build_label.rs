@@ -16,7 +16,6 @@ pub async fn post_build_label(
     Json(component): Json<BuildLabel>
 ) -> impl IntoResponse {
 
-    println!("IM HERE!! {}",component.i);
 
     shared_state.db.get(component.i).await.build(&shared_state.config.label_location);
     //shared_state.db.get_first().await.build(&shared_state.config.label_location);
