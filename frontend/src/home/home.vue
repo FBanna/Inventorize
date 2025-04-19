@@ -134,9 +134,8 @@
 
 
         <tbody v-for="c in components">
+          
           <tr @click="navigate_to_component(c)">
-            <!-- <RouterLink class="link" :to="'component/'+c.id" v-slot="bottomSlot"> -->
-            
               <td>{{ c.name }}</td>
               <td>{{ c.size }}</td>
               <td>{{ c.value }}</td>
@@ -144,11 +143,7 @@
               <td>{{ c.stock }}</td>
               <td>{{ c.origin }}</td>
               <td>{{ c.label }}</td>
-            
           </tr>
-
-          <!-- onclick="window.location='component/'+{{c.id}}" -->
-          
           
         </tbody>
       </table>
