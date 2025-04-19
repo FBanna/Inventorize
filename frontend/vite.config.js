@@ -6,6 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import { dirname, resolve } from 'node:path'
 
 
+
 const __dirname = dirname(fileURLToPath(import.meta.url))
 // https://vite.dev/config/
 export default defineConfig({
@@ -15,18 +16,22 @@ export default defineConfig({
   ],
   build: {
     outDir: "../target/dist",
-    //emptyOutDir: true,
+    emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: resolve(__dirname, "src/index.html"),
+        main: resolve(__dirname, "index.html"),
         login: resolve(__dirname, "login/index.html") // go to "/login/" last slash important!!!!
       }
     }
   },
   // resolve: {
   //   alias: {
-  //     '@': fileURLToPath(new URL('./src', import.meta.url)),
-  //     '@login': fileURLToPath(new URL('./login-src', import.meta.url))
+  //     '@': path.resolve(__dirname, "./src")
   //   }
+    
+  //   // {
+  //   //   '@': fileURLToPath(new URL('src', import.meta.url)),
+  //   //   //'@login': fileURLToPath(new URL('./login-src', import.meta.url))
+  //   // }
   // },
 })

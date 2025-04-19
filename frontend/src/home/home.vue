@@ -1,11 +1,12 @@
 <script setup>
   import { ref } from 'vue';
+  import { useRouter } from 'vue-router'
 
   
   // let test = JSON.parse(
   //   '[{"name": "Error","size": "Error","value": "Error OHM","info": null,"stock": 0,"origin": null,"url": null}]'
   // )
-
+  const router = useRouter()
   let components = ref()
   let prompts = ref()
 
@@ -15,6 +16,12 @@
   //let search_fields = []
 
   let search_names = ["name", "size", "value", "info", "stock", "origin", "label"]
+
+  function navigate_to_component(c){
+    console.log("HELLO")
+    let route = router.resolve({ path: "/component/" + c.id })
+    window.open(route.href)
+  }
   
   
   async function search_components(){
@@ -127,15 +134,21 @@
 
 
         <tbody v-for="c in components">
-          <tr onclick="window.location='google.com';">
-            <td>{{ c.name }}</td>
-            <td>{{ c.size }}</td>
-            <td>{{ c.value }}</td>
-            <td>{{ c.info }}</td>
-            <td>{{ c.stock }}</td>
-            <td>{{ c.origin }}</td>
-            <td>{{ c.label }}</td>
+          <tr @click="navigate_to_component(c)">
+            <!-- <RouterLink class="link" :to="'component/'+c.id" v-slot="bottomSlot"> -->
+            
+              <td>{{ c.name }}</td>
+              <td>{{ c.size }}</td>
+              <td>{{ c.value }}</td>
+              <td>{{ c.info }}</td>
+              <td>{{ c.stock }}</td>
+              <td>{{ c.origin }}</td>
+              <td>{{ c.label }}</td>
+            
           </tr>
+
+          <!-- onclick="window.location='component/'+{{c.id}}" -->
+          
           
         </tbody>
       </table>
@@ -256,5 +269,8 @@ table{
 
 }
 
+.link {
+  text-decoration: none;
+}
 
 </style> 
