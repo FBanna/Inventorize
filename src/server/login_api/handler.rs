@@ -10,10 +10,8 @@ use super::login::Credentials;
 
 pub async fn login(
     mut auth_session: AuthSession,
-    Form(creds): Form<Credentials>,
+    Json(creds): Json<Credentials>,
 ) -> impl IntoResponse {
-
-    println!("username: {0}, password: {1}", creds.username,creds.password);
 
     let user = match auth_session.authenticate(creds.clone()).await {
         Ok(Some(user)) => user,
@@ -24,6 +22,8 @@ pub async fn login(
     if auth_session.login(&user).await.is_err() {
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     }
+
+    println!("{0} logged in!", creds.username);
 
     Redirect::to("/").into_response()
 }

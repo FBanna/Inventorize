@@ -19,7 +19,7 @@ pub async fn get_config() -> Config{
     let matches = command!()
         .arg(
             arg!(
-                -c --config <FILE> "sets config file location"
+                -c --config <CONFIG> "sets config file location"
             ).required(false).value_parser(value_parser!(PathBuf))
         )
         .arg(
@@ -57,10 +57,17 @@ pub async fn get_config() -> Config{
 
         DB::init(&config.db_location).await;
 
-        fs::create_dir(Path::new(&config.label_location)).expect("Could not create label directory!");
 
-        //create::init(&config.db_location).await;
 
+        let label = Path::new(&config.label_location);
+
+        if !label.exists(){
+            fs::create_dir(label).expect("Could not create label directory!");
+        } else {
+            println!("Label directory already exists");
+        }
+
+    
 
         println!("INTITAILIZED DIRECTORY!");
 

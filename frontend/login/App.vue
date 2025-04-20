@@ -1,9 +1,49 @@
 <script setup>
 import { ref } from 'vue';
+import { errorMessages } from 'vue/compiler-sfc';
 
 const login_api = ref("http://localhost:3030/login_api")
 
 
+const username = ref("")
+const password = ref("")
+
+async function login() {
+
+
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value
+    })
+  };
+
+
+  //const response = await fetch(import.meta.env.VITE_API_URL+"/post_id_get_component", requestOptions)
+  fetch("http://localhost:3030/login_api", requestOptions)
+    .then(response => {
+
+
+      if(response.redirected) {
+        window.location.href = response.url;
+      } else if (response.status == 401) {
+
+        console.log("INCORRECT BITCH")
+      }
+
+    })
+
+
+
+    // }).catch(error => {
+    //   console.log("what" + error)
+    // }) 
+      
+    
+
+}
 
 </script>
 
@@ -26,26 +66,28 @@ const login_api = ref("http://localhost:3030/login_api")
 
       <div style="width: 350px;">
 
-        <form :action=login_api  method="POST">
-
-        <div >
-          <input class="input" type="text" name="username" placeholder="Username" required />
-
-          <br>
-
-          <input class="input" type="password" name="password" placeholder="Password" required />
-
-          <br>
+        <!-- :action=login_api  method="POST" -->
 
 
-          <button class="button submit" type="submit">Login</button>
-        </div>
+        <input class="input" v-model="username" type="text" placeholder="Username" required />
 
-        </form>
+        <br>
 
+        <input class="input" v-model="password" type="password" placeholder="Password" required />
+
+        <br>
+
+
+        <button class="button submit" @click="login">Login</button>
+        
+        
       </div>
       
+
+      
+      
     </div>
+    ERROR
 
 
   
@@ -71,6 +113,7 @@ const login_api = ref("http://localhost:3030/login_api")
   left: 0; 
   height: 100%; 
   width: 100%;
+  vertical-align: top;
 
   font-weight: bolder;
   font-size: 30px !important;
@@ -78,12 +121,24 @@ const login_api = ref("http://localhost:3030/login_api")
 
 }
 
+// .error {
+//   //background-color: red;
+
+//   position: absolute; 
+//   top: 0; 
+//   left: 0; 
+//   height: 100%; 
+//   width: 100%;
+
+
+// }
+
 .content{
   display: grid;
   place-content: center;
 
   text-align: center;
-  outline: 1px solid black;
+  //outline: 1px solid black;
 }
 
 .image {
