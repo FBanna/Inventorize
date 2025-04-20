@@ -29,6 +29,11 @@ pub async fn get_config() -> Config{
         )
         .arg(
             arg!(
+                -a --address <ADDRESS> "sets host address"
+            ).required(false).value_parser(value_parser!(String))
+        )
+        .arg(
+            arg!(
                 -d --db <DB> "sets db location"
             ).required(false).value_parser(value_parser!(String))
         )
@@ -94,11 +99,15 @@ pub async fn get_config() -> Config{
         }
     }
 
-    if let Some(db_location) = matches.get_one::<String>("db"){
+    if let Some(host_address) = matches.get_one::<String>("address") {
+        config.host_address = host_address.clone();
+    }
+
+    if let Some(db_location) = matches.get_one::<String>("db") {
         config.db_location = db_location.clone();
     }
 
-    if let Some(label_location) = matches.get_one::<String>("label"){
+    if let Some(label_location) = matches.get_one::<String>("label") {
         config.label_location = label_location.clone();
     }
 

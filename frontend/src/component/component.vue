@@ -45,7 +45,24 @@ async function build_label() {
   };
   //const response = await fetch(import.meta.env.VITE_API_URL+"/post_id_get_component", requestOptions)
   const response = await fetch(import.meta.env.VITE_API_URL+"/post_build", requestOptions);
-  console.log(await response.json())
+  let data = await response.bytes
+
+
+  // CHANGE FOR AN ACTUAL NAME
+  const file = new File([data], 'output.pdf', {
+    type: 'application/pdf',
+  })
+
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(file)
+
+  link.href = url
+  link.download = file.name
+  document.body.appendChild(link)
+  link.click()
+
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
   
 }
 

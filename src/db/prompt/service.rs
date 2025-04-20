@@ -64,22 +64,26 @@ impl PromptServices for DB{
 
             if let Some(some) = *entry{ // if the entyr has a value
 
-                let exists = {
-                    let mut entries = self.prompt_cache.0[i].prompts.lock().unwrap();
-                    let bool = self.check_prompt_exists(some, &entries);
-
-                    if !bool {
-                        
-                        entries.push(PromptEntry(some.to_owned()));
+                if !some.is_empty() {
+                    let exists = {
+                        let mut entries = self.prompt_cache.0[i].prompts.lock().unwrap();
+                        let bool = self.check_prompt_exists(some, &entries);
+    
+                        if !bool {
+                            
+                            entries.push(PromptEntry(some.to_owned()));
+                        }
+    
+                        bool
+                    };
+    
+                    if !exists {
+    
+                        self.add_prompt(i, some).await;
                     }
-
-                    bool
-                };
-
-                if !exists {
-
-                    self.add_prompt(i, some).await;
                 }
+
+                
         
             }
         }

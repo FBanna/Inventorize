@@ -12,14 +12,31 @@ pub trait Label {
 
     //fn debug_build(&self, label_path: String);
     
-    fn build(&self, label_location: &str);
+    fn build(&self, label_location: &str, config: &Config) -> Option<Vec<u8>>;
 
-    fn get_inputs(&self) -> Library;
+    fn get_inputs(&self, config: &Config) -> Library;
+
+    fn build_save(&self, label_location: &str, config: &Config);
+
 }
 
-impl Label for Component{
-    fn build(&self, label_location: &str) {
 
+impl Label for Component{
+
+    fn build_save(&self, label_location: &str, config: &Config) {
+
+        let bytes = self.build(label_location, config);
+
+
+        if let Some(some) = bytes {
+            fs::write("./output.pdf",some).expect("Error Writing");
+        }
+
+        
+        
+    }
+
+    fn build(&self, label_location: &str, config: &Config) -> Option<Vec<u8>> {
         if let Some(label) = &self.label {
             let path = PathBuf::new().join(label_location).join(label.to_owned()+".typ");
             //let path = Path::new(label_location).join(label.to_owned()+".typ");
@@ -27,7 +44,7 @@ impl Label for Component{
             if fs::exists(&path).is_ok(){
                 let data = fs::read_to_string(path).expect("Unable to read File!");
 
-                let world = typst_wrapper::TypstWrapperWorld::new("./".to_owned(), data, self.get_inputs());
+                let world = typst_wrapper::TypstWrapperWorld::new("./".to_owned(), data, self.get_inputs(config));
 
                 let document: typst::layout::PagedDocument = typst::compile(&world)
                     .output
@@ -35,18 +52,20 @@ impl Label for Component{
 
                 let pdf = typst_pdf::pdf(&document, &PdfOptions::default()).expect("ERROR EXPORTING");
 
-                fs::write("./output.pdf",pdf).expect("Error Writing");
+                return Some(pdf);
+
+                
             }
         }
 
-        
+        return None;
     }
 
-    fn get_inputs(&self) -> Library {
+    fn get_inputs(&self, config: &Config) -> Library {
 
         let mut dict: Dict = Dict::new();
 
-        dict.insert("name".into(), Value::Str(self.name.clone().into()));
+        dict.insert("name".into(), Value::Str(self.name.to_owned().into()));
         
         insert_optional(&mut dict, "size", &self.size);
         insert_optional(&mut dict, "value", &self.value);
@@ -55,6 +74,8 @@ impl Label for Component{
         dict.insert("stock".into(), Value::Int(self.stock.into()));
 
         insert_optional(&mut dict, "origin", &self.origin);
+
+        dict.insert("url".into(), Value::Str((config.host_address.to_owned() + "/component/" + &self.id.clone().get_or_insert_default().to_string()).into()));
         //insert_optional(&mut dict, "url", &self.url);
         
 
