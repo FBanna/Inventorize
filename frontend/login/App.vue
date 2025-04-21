@@ -8,6 +8,8 @@ const login_api = ref("http://localhost:3030/login_api")
 const username = ref("")
 const password = ref("")
 
+const error = ref("")
+
 async function login() {
 
 
@@ -22,15 +24,21 @@ async function login() {
 
 
   //const response = await fetch(import.meta.env.VITE_API_URL+"/post_id_get_component", requestOptions)
-  fetch("http://localhost:3030/login_api", requestOptions)
+  fetch(import.meta.env.VITE_API_URL + "login_api", requestOptions)
     .then(response => {
 
 
       if(response.redirected) {
         window.location.href = response.url;
+
+        error.value = "You should be redirected now"
+
+
       } else if (response.status == 401) {
 
-        console.log("INCORRECT BITCH")
+        error.value = "incorrect login!"
+      } else if (response.status == 500) {
+        error.value = "internal server error!"
       }
 
     })
@@ -79,15 +87,29 @@ async function login() {
 
 
         <button class="button submit" @click="login">Login</button>
+
+      
         
         
       </div>
+
+      
+
+      
+
+      <div class="error">
+        {{ error }}
+      </div>
+
+      
       
 
       
       
     </div>
-    ERROR
+
+    
+    
 
 
   
@@ -121,17 +143,18 @@ async function login() {
 
 }
 
-// .error {
-//   //background-color: red;
+.error {
 
-//   position: absolute; 
-//   top: 0; 
-//   left: 0; 
-//   height: 100%; 
-//   width: 100%;
+  //background-color: red;
 
+  margin-left: auto;
+  margin-right: auto;
 
-// }
+  margin-top: 10px;
+
+  color: red !important;
+
+}
 
 .content{
   display: grid;

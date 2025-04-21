@@ -39,9 +39,8 @@ impl Label for Component{
     fn build(&self, label_location: &str, config: &Config) -> Option<Vec<u8>> {
         if let Some(label) = &self.label {
             let path = PathBuf::new().join(label_location).join(label.to_owned()+".typ");
-            //let path = Path::new(label_location).join(label.to_owned()+".typ");
             
-            if fs::exists(&path).is_ok(){
+            if path.exists(){
                 let data = fs::read_to_string(path).expect("Unable to read File!");
 
                 let world = typst_wrapper::TypstWrapperWorld::new("./".to_owned(), data, self.get_inputs(config));
@@ -58,6 +57,7 @@ impl Label for Component{
             }
         }
 
+        println!("failed for some reason");
         return None;
     }
 

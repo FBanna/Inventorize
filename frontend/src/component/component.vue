@@ -17,6 +17,8 @@ let c = ref({
 
 let id = useRoute().params.id
 
+const error = ref("")
+
 
 async function setup() {
 
@@ -27,7 +29,7 @@ async function setup() {
       i: Number(id)
     })
   };
-  const response = await fetch(import.meta.env.VITE_API_URL+"/post_id_get_component", requestOptions)
+  const response = await fetch(import.meta.env.VITE_API_URL+"api/post_id_get_component", requestOptions)
   //const response = await fetch(import.meta.env.VITE_API_URL+"/post_build", requestOptions);
   c.value = await response.json();
   //this.postId = data.id;
@@ -43,26 +45,45 @@ async function build_label() {
       i: Number(id)
     })
   };
-  //const response = await fetch(import.meta.env.VITE_API_URL+"/post_id_get_component", requestOptions)
-  const response = await fetch(import.meta.env.VITE_API_URL+"/post_build", requestOptions);
-  let data = await response.bytes
+
+  await fetch(import.meta.env.VITE_API_URL+"api/post_build", requestOptions)
+    .then(async response => {
 
 
-  // CHANGE FOR AN ACTUAL NAME
-  const file = new File([data], 'output.pdf', {
-    type: 'application/pdf',
-  })
+      if (response.status == 200) {
 
-  const link = document.createElement('a')
-  const url = URL.createObjectURL(file)
+        
 
-  link.href = url
-  link.download = file.name
-  document.body.appendChild(link)
-  link.click()
+        let data = await response.bytes()
 
-  document.body.removeChild(link)
-  window.URL.revokeObjectURL(url)
+        // CHANGE FOR AN ACTUAL NAME
+        const file = new File([data], 'output.pdf', {
+          type: 'application/pdf',
+        })
+
+        const link = document.createElement('a')
+        const url = URL.createObjectURL(file)
+
+        link.href = url
+        link.download = file.name
+        document.body.appendChild(link)
+        link.click()
+
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+
+      } else if (response.status == 404) {
+
+        error.value = "Error making label"
+
+      }
+
+    })
+
+
+
+
+  
   
 }
 
@@ -113,6 +134,10 @@ setup()
 
   <div class="actions-box box" @click="build_label">
     <button class="button build-button">Build Label</button>
+
+
+    <br>
+    {{ error }}
   </div>
 
   

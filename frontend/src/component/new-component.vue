@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 
-const add_component_api = ref(import.meta.env.VITE_API_URL + "/post_component")
+const add_component_api = ref(import.meta.env.VITE_API_URL + "api/post_component")
 
 
 </script>

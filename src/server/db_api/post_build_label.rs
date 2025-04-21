@@ -15,7 +15,7 @@ pub async fn post_build_label(
     State(shared_state): State<Arc<ServerState>>,
     Json(component): Json<BuildLabel>
     
-) -> Bytes {
+) -> impl IntoResponse {
 
     let option = shared_state.db.get(component.i).await.build(&shared_state.config.label_location, &shared_state.config);
 
@@ -23,9 +23,9 @@ pub async fn post_build_label(
 
         let array = Bytes::from_owner(bytes);
 
-        return array;
+        return array.into_response();
     } else {
-        return Bytes::new();
+        return StatusCode::NOT_FOUND.into_response();
     }
 
 }

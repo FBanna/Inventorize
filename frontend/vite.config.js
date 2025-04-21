@@ -15,6 +15,7 @@ export default defineConfig({
     vueDevTools(),
   ],
   build: {
+    chunkSizeWarningLimit: 1600,
     outDir: "../target/dist",
     emptyOutDir: true,
     rollupOptions: {

@@ -18,15 +18,13 @@
   let search_names = ["name", "size", "value", "info", "stock", "origin", "label"]
 
   function navigate_to_component(c){
-    console.log("HELLO")
+
     let route = router.resolve({ path: "/component/" + c.id })
     window.open(route.href)
   }
   
   
   async function search_components(){
-
-    console.log(JSON.stringify(prompt_selected.value))
 
     const requestOptions = {
       method: "POST",
@@ -36,7 +34,7 @@
 
     
 
-    let response = await fetch(import.meta.env.VITE_API_URL + "/post_search_component", requestOptions)
+    let response = await fetch(import.meta.env.VITE_API_URL + "api/post_search_component", requestOptions)
     let json = await response.json()
     components.value = json
 
@@ -44,14 +42,14 @@
 
   async function get_all_components(){
 
-    let response = await fetch(import.meta.env.VITE_API_URL + "/get_all_component")
+    let response = await fetch(import.meta.env.VITE_API_URL + "api/get_all_component")
     let json = await response.json()
     components.value = json
 
   }
 
   async function get_all_prompt() {
-    let response = await fetch(import.meta.env.VITE_API_URL + "/get_all_prompt")
+    let response = await fetch(import.meta.env.VITE_API_URL + "api/get_all_prompt")
     let json = await response.json()
 
     prompts.value = json
