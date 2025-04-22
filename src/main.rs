@@ -28,7 +28,9 @@ async fn main() {
         stock:5000,
         origin:None, 
         //url: None,
-        label: Some("vial".to_string())
+        label: Some("vial".to_string()),
+        image: None,
+        datasheet: None
     };
 
     //component.build();
@@ -47,7 +49,9 @@ async fn main() {
         stock:10,
         origin:None, 
         //url: None,
-        label: None
+        label: None,
+        image: None,
+        datasheet: None
     };
 
     component_db.add(component).await;

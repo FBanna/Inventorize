@@ -7,7 +7,10 @@ CREATE TABLE IF NOT EXISTS components
     info    TEXT,
     stock   INTEGER                 NOT NULL,
     origin  TEXT,
-    label   TEXT
+    label   TEXT,
+    image   BOOLEAN                 NOT NULL,
+    datasheet BOOLEAN               NOT NULL
+
 );
 
 CREATE TABLE IF NOT EXISTS name(     entry   TEXT    NOT NULL);

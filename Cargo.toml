@@ -29,6 +29,7 @@ zune-inflate = "0.2.54"
 tar = "0.4.44"
 typst-pdf = "0.13.1"
 axum-extra = { version = "0.10.1", features = ["erased-json"]}
+image = "0.25.6"
 
 [profile.release]
 opt-level = 3

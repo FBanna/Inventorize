@@ -42,6 +42,11 @@ pub async fn get_config() -> Config{
                 -l --label <LABEL> "sets label location"
             ).required(false).value_parser(value_parser!(String))
         )
+        .arg(
+            arg!(
+                -a --asset <ASSET> "sets asset location"
+            ).required(false).value_parser(value_parser!(String))
+        )
         .subcommand(
             Command::new("init")
                 .about("initalize the directory")
@@ -65,6 +70,14 @@ pub async fn get_config() -> Config{
             fs::create_dir(label).expect("Could not create label directory!");
         } else {
             println!("Label directory already exists");
+        }
+
+        let asset = Path::new(&config.asset_location);
+
+        if !asset.exists(){
+            fs::create_dir(asset).expect("Could not create label directory!");
+        } else {
+            println!("Asset directory already exists");
         }
 
     
@@ -116,6 +129,10 @@ pub async fn get_config() -> Config{
 
     if let Some(label_location) = matches.get_one::<String>("label") {
         config.label_location = label_location.clone();
+    }
+
+    if let Some(asset_location) = matches.get_one::<String>("asset") {
+        config.asset_location = asset_location.clone();
     }
 
     return config;

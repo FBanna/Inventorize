@@ -8,7 +8,7 @@ pub async fn get_component(
     State(shared_state): State<Arc<ServerState>>,
 ) -> Json<Component>{
 
-    let result = shared_state.db.get_first().await;
+    let result = shared_state.db.get_first(&shared_state.config).await;
 
     Json(result)
 }
