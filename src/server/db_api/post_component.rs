@@ -18,7 +18,7 @@ pub async fn post_component(
 
     c.optimise_image();
 
-    shared_state.db.add(c).await;
+    shared_state.db.add(c, &shared_state.config).await;
 
     Redirect::to("/").into_response()
 }

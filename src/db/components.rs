@@ -89,9 +89,9 @@ impl Component{
         self.image = None;
     }
 
-    fn create_assets(&self, config: &str) {
-        write_files(self.id, "full", config, &self.image);
-        write_files(id, "datasheet", config, &self.datasheet);
+    fn create_assets(&self, id: i64, config: &Config) {
+        write_files(id, "full", &config.asset_location, &self.image);
+        write_files(id, "datasheet", &config.asset_location, &self.datasheet);
     }
 
 }
@@ -169,7 +169,7 @@ impl ComponentDB {
 // }
 
 pub trait ComponentServices {
-    async fn add(&self, c: Component);
+    async fn add(&self, c: Component, config: &Config);
 
     async fn get_first(&self, config: &Config) -> Component;
 
@@ -188,12 +188,12 @@ impl ComponentServices for DB{
 
     
     
-    async fn add(&self, c: Component){
+    async fn add(&self, mut c: Component, config: &Config){
 
         c.optimise_image();
-        c.create_assets(id, name, config);
+        
 
-        sqlx::query("INSERT INTO components (name,size,value,info,stock,origin,label,image,datasheet) VALUES (?,?,?,?,?,?,?,?,?)")
+        let result = sqlx::query("INSERT INTO components (name,size,value,info,stock,origin,label,image,datasheet) VALUES (?,?,?,?,?,?,?,?,?)")
             //.bind(c.ID)
             .bind(&c.name)
             .bind(&c.size)
@@ -208,6 +208,10 @@ impl ComponentServices for DB{
             .execute(&self.pool)
             .await
             .unwrap();
+
+        
+
+        c.create_assets(result.last_insert_rowid(), &config);
 
 
 
@@ -332,7 +336,7 @@ pub fn find_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>
 
 
 
-fn write_files(id: i32, name: &str, config: &str, option: &Option<Vec<u8>>) {
+fn write_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>) {
 
     if let Some(data) = option {
         let binding = config.to_owned() + &id.to_string();

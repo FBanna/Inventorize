@@ -37,7 +37,7 @@ async fn main() {
 
     //label::label::Label::new(component).build();
 
-    component_db.add(component).await;
+    component_db.add(component, &config).await;
 
     let component = db::components::Component{
         //ID:5000,
@@ -54,7 +54,7 @@ async fn main() {
         datasheet: None
     };
 
-    component_db.add(component).await;
+    component_db.add(component, &config).await;
 
     
     Config::debug_print(&config);

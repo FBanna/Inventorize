@@ -44,7 +44,7 @@ pub async fn get_config() -> Config{
         )
         .arg(
             arg!(
-                -a --asset <ASSET> "sets asset location"
+                --asset <ASSET> "sets asset location"
             ).required(false).value_parser(value_parser!(String))
         )
         .subcommand(
