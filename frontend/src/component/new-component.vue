@@ -8,10 +8,6 @@ const image = useTemplateRef("image");
 const datasheet = useTemplateRef("datasheet");
 
 
-onMounted(() => {
-  image.value.focus()
-  datasheet.value.focus()
-})
 
 
 let c = ref({
@@ -26,6 +22,30 @@ let c = ref({
   image: null,
   datasheet: null
 })
+
+function onFileChanged($event) {
+    const target = $event.target;
+    if (!target || !target.files) {
+      return
+        //c.value.image = target.files[0];
+    }
+
+    var reader = new FileReader();
+    var fileByteArray = [];
+    reader.readAsArrayBuffer(target.files[0]);
+
+    reader.onloadend = (evt) => {
+    if (evt.target.readyState === FileReader.DONE) {
+      const arrayBuffer = evt.target.result,
+        array = new Uint8Array(arrayBuffer);
+      for (const a of array) {
+        fileByteArray.push(a);
+      }
+      console.log(fileByteArray)
+      c.value.image = fileByteArray
+    }
+  }
+}
 
 function updateImage() {
 
@@ -148,10 +168,10 @@ async function submit() {
     <input class="input" type="text" v-model="c.label" placeholder="label">
     <br>
 
-    <input class="input" type="file" ref="image" @change="updateImage"  placeholder="image">
+    <input class="input" type="file" @change="onFileChanged"  placeholder="image">
     <br>
 
-    <input class="input" type="file" ref="datasheet" @change="updateDatasheet"  placeholder="datasheet">
+    <input class="input" type="file" @change="updateDatasheet"  placeholder="datasheet">
     <br>
 
 
