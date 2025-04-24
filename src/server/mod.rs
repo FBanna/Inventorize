@@ -8,7 +8,7 @@ use db_api::{get_all_component, get_all_prompt, get_first_component, post_build_
 use post_build_label::BuildLabel;
 
 use axum::{
-    extract::Query, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}, Form, Json, Router
+    extract::{DefaultBodyLimit, Query}, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}, Form, Json, Router
 };
 
 use axum_login::{login_required, predicate_required, tower_sessions::{MemoryStore, SessionManagerLayer}, AuthManagerLayer, AuthManagerLayerBuilder, AuthSession, AuthUser};
@@ -78,6 +78,7 @@ pub async fn start_server(config: Config, db: DB) {
                 .allow_headers([CONTENT_TYPE])
                 .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE]),
         )
+        .layer(DefaultBodyLimit::disable()) // 10 MB
         
         .with_state(shared_state);
 

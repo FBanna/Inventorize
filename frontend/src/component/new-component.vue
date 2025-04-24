@@ -23,7 +23,7 @@ let c = ref({
   datasheet: null
 })
 
-function onFileChanged($event) {
+function updateImage($event) {
     const target = $event.target;
     if (!target || !target.files) {
       return
@@ -47,35 +47,50 @@ function onFileChanged($event) {
   }
 }
 
-function updateImage() {
+// function updateImage() {
 
-  var files = image.value.files;
+//   var files = image.value.files;
 
-  var reader = new FileReader();
+//   var reader = new FileReader();
 
-  reader.addEventListener("load", function() {
-    some_file.src = reader.result;
-  })
+//   reader.addEventListener("load", function() {
+//     some_file.src = reader.result;
+//   })
 
-  reader.readAsDataURL(files[0])
+//   reader.readAsDataURL(files[0])
 
-  var data = new FormData();
-  data.append("file", files[0])
+//   var data = new FormData();
+//   data.append("file", files[0])
 
-  c.value.image = data
+//   c.value.image = data
 
-  console.log(c.value.image, "ok ok ", files.body)
+//   console.log(c.value.image, "ok ok ", files.body)
 
-}
+// }
 
-function updateDatasheet() {
+function updateDatasheet($event) {
 
-  var files = datasheet.value.files;
+  const target = $event.target;
+    if (!target || !target.files) {
+      return
+        //c.value.image = target.files[0];
+    }
 
-  var data = new FormData();
-  data.append("file", files[0])
+    var reader = new FileReader();
+    var fileByteArray = [];
+    reader.readAsArrayBuffer(target.files[0]);
 
-  c.value.datasheet = data
+    reader.onloadend = (evt) => {
+    if (evt.target.readyState === FileReader.DONE) {
+      const arrayBuffer = evt.target.result,
+        array = new Uint8Array(arrayBuffer);
+      for (const a of array) {
+        fileByteArray.push(a);
+      }
+      console.log(fileByteArray)
+      c.value.datasheet = fileByteArray
+    }
+  }
 
 }
 
@@ -100,14 +115,14 @@ async function submit() {
       stock: c.value.stock,
       origin: c.value.origin,
       label: c.value.label,
-      image: c.value.image.files[0].arrayBuffer(),
-      datasheet: c.value.datasheet.files[0].arrayBuffer(),
+      image: c.value.image,
+      datasheet: c.value.datasheet,
     })
   };
 
 
   //const response = await fetch(import.meta.env.VITE_API_URL+"/post_id_get_component", requestOptions)
-  fetch(import.meta.env.VITE_API_URL + "api/add_component", requestOptions)
+  fetch(import.meta.env.VITE_API_URL + "api/post_component", requestOptions)
     .then(response => {
 
 
@@ -168,7 +183,7 @@ async function submit() {
     <input class="input" type="text" v-model="c.label" placeholder="label">
     <br>
 
-    <input class="input" type="file" @change="onFileChanged"  placeholder="image">
+    <input class="input" type="file" @change="updateImage"  placeholder="image">
     <br>
 
     <input class="input" type="file" @change="updateDatasheet"  placeholder="datasheet">

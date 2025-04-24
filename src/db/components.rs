@@ -70,28 +70,40 @@ impl Component{
                 let res_img = img_reader.decode();
 
                 if let Ok(img) = res_img {
+
+                    let new_img;
                     
                     if img.dimensions() != (1000, 1000) {
 
-                        let new_img = img.resize(1000, 1000, FilterType::Nearest);
+                        new_img = img.resize(1000, 1000, FilterType::Nearest);
 
-                        let mut bytes: Vec<u8> = Vec::new();
-                        
-                        new_img.write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Jpeg);
-
-                        self.image = Some(bytes);
-
+                    } else {
+                        new_img = img;
                     }
+
+                    let mut bytes: Vec<u8> = Vec::new();
+                        
+                    new_img.write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png);
+
+                    self.image = Some(bytes);
+
+                    println!("optimised!");
+
+                    return;
+
+
                 }
             }
         }
+
+        println!("not optimised!");
 
         self.image = None;
     }
 
     fn create_assets(&self, id: i64, config: &Config) {
-        write_files(id, "full", &config.asset_location, &self.image);
-        write_files(id, "datasheet", &config.asset_location, &self.datasheet);
+        write_files(id, "full.png", &config.asset_location, &self.image);
+        write_files(id, "datasheet.pdf", &config.asset_location, &self.datasheet);
     }
 
 }
@@ -321,8 +333,10 @@ impl ComponentServices for DB{
 
 pub fn find_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>> {
     
-    let binding = config.to_owned() + &id.to_string() + name;
+    let binding = config.to_owned() + "/" + &id.to_string() + name;
     let asset_location = Path::new(&binding);
+
+    println!("finding file {} at {}", name, binding);
 
     if asset_location.exists() {
 
@@ -338,12 +352,18 @@ pub fn find_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>
 
 fn write_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>) {
 
+    println!("im writing {}", name);
+
     if let Some(data) = option {
-        let binding = config.to_owned() + &id.to_string();
+        let binding = config.to_owned() + "\\" + &id.to_string();
+
+        
         let path = Path::new(&binding);
 
+        println!("trying to access path at {}", path.as_os_str().to_str().get_or_insert_default());
+
         if !path.exists() {
-            fs::create_dir(path).expect("could not create asset dir for component!");
+            fs::create_dir_all(path).expect("could not create asset dir for component!");
         }
 
         fs::write(path.join(name.to_owned()), data).expect("Could not write asset file");
