@@ -134,6 +134,7 @@
         <tbody v-for="c in components">
           
           <tr @click="navigate_to_component(c)">
+              <td>{{ c.image }}</td>
               <td>{{ c.name }}</td>
               <td>{{ c.size }}</td>
               <td>{{ c.value }}</td>

@@ -27,7 +27,6 @@ function updateImage($event) {
     const target = $event.target;
     if (!target || !target.files) {
       return
-        //c.value.image = target.files[0];
     }
 
     var reader = new FileReader();
@@ -47,33 +46,12 @@ function updateImage($event) {
   }
 }
 
-// function updateImage() {
-
-//   var files = image.value.files;
-
-//   var reader = new FileReader();
-
-//   reader.addEventListener("load", function() {
-//     some_file.src = reader.result;
-//   })
-
-//   reader.readAsDataURL(files[0])
-
-//   var data = new FormData();
-//   data.append("file", files[0])
-
-//   c.value.image = data
-
-//   console.log(c.value.image, "ok ok ", files.body)
-
-// }
 
 function updateDatasheet($event) {
 
   const target = $event.target;
     if (!target || !target.files) {
       return
-        //c.value.image = target.files[0];
     }
 
     var reader = new FileReader();
@@ -120,8 +98,6 @@ async function submit() {
     })
   };
 
-
-  //const response = await fetch(import.meta.env.VITE_API_URL+"/post_id_get_component", requestOptions)
   fetch(import.meta.env.VITE_API_URL + "api/post_component", requestOptions)
     .then(response => {
 

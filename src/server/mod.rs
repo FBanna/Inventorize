@@ -62,7 +62,8 @@ pub async fn start_server(config: Config, db: DB) {
 
         .nest_service("/login", ServeDir::new("../dist/login/index.html"))
         .nest_service("/assets", ServeDir::new("../dist/assets"))
-        
+        .nest_service("/data", ServeDir::new("./data"))
+
         .route("/logout", get(handler::logout))
         
         .layer(auth_layer)

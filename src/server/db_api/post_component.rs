@@ -5,6 +5,13 @@ use crate::{db::{self, components::{Component, ComponentServices}}, server::serv
 
 
 
+pub struct PostComponent {
+    component: Component,
+    image: Option<Vec<u8>>,
+    datasheet: Option<Vec<u8>>,
+
+}
+
 
 pub async fn post_component(
 

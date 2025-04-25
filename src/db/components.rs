@@ -333,7 +333,7 @@ impl ComponentServices for DB{
 
 pub fn find_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>> {
     
-    let binding = config.to_owned() + "/" + &id.to_string() + name;
+    let binding = config.to_owned() + "/" + &id.to_string() + "/" + name;
     let asset_location = Path::new(&binding);
 
     println!("finding file {} at {}", name, binding);

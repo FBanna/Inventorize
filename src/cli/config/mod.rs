@@ -12,7 +12,7 @@ const DEFAULT_PASSWORD: &str = "password";
 const DEFAULT_HOST_NAME: &str = "localhost";
 const DEFAULT_DB_LOCATION: &str = "sqlite://inventorize.db";
 const DEFAULT_LABEL_LOCATION: &str = "labels";
-const DEFAULT_ASSET_LOCATION: &str = "assets";
+const DEFAULT_ASSET_LOCATION: &str = "data";
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config{
