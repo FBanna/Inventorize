@@ -20,5 +20,5 @@ pub async fn post_id_get_component(
     
     //shared_state.db.get_first().await.build(&shared_state.config.label_location);
 
-    return Json(shared_state.db.get(component.i,&shared_state.config).await);
+    return Json(shared_state.db.get(component.i).await);
 }

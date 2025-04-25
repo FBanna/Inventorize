@@ -12,11 +12,7 @@ pub async fn post_search_component(
     Json(c): Json<Vec<Vec<String>>>
 ) -> Json<Vec<Component>> {
 
-    let result = shared_state.db.search(c,&shared_state.config).await;
-
-    let test = &shared_state.db.prompt_cache;
-
-    println!("{:?}", test);
+    let result = shared_state.db.search(c).await;
 
     return Json(result);
 }

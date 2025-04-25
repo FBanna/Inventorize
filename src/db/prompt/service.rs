@@ -12,7 +12,7 @@ pub trait PromptServices {
     async fn add_prompt(&self, i: usize, value: &str);
     //async fn check_option(&mut self, prompt: &mut Prompt, value: Option<&str>);
     fn check_prompt_exists(&self, value: &str, mutex: &MutexGuard<'_, Vec<PromptEntry>>) -> bool;
-    async fn update_prompts(&self, c: Component);
+    async fn update_prompts(&self, c: &Component);
     async fn sync_prompts(&self);
 }
 
@@ -58,7 +58,7 @@ impl PromptServices for DB{
 
     }
     
-    async fn update_prompts(&self, c: Component) {
+    async fn update_prompts(&self, c: &Component) {
 
         for (i, entry) in c.to_vec().iter().enumerate(){
 
@@ -102,8 +102,6 @@ impl PromptServices for DB{
         
 
         let prompt = &self.prompt_cache.0[i];
-
-        println!("{} + {}",&prompt.name, value);
 
         let string = "INSERT INTO ".to_owned() + &prompt.name + " (entry) VALUES (?)";
         

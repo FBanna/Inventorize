@@ -56,6 +56,10 @@
 
   }
 
+  function get_image_src(c) {
+    return import.meta.env.VITE_API_URL + "data/" + c.id + "/full.png"
+  }
+
   get_all_components()
   get_all_prompt()
 
@@ -124,6 +128,7 @@
       <table>
         <thead>
           <tr>
+            <th table-heading>image</th>
             <th v-for="name in search_names" table-heading>
               {{ name }}
             </th>
@@ -134,7 +139,9 @@
         <tbody v-for="c in components">
           
           <tr @click="navigate_to_component(c)">
-              <td>{{ c.image }}</td>
+
+              <td><img v-if="c.image" class="thumbnail" :src=get_image_src(c)></td>
+              
               <td>{{ c.name }}</td>
               <td>{{ c.size }}</td>
               <td>{{ c.value }}</td>
@@ -152,7 +159,7 @@
 
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 
 @use "../../public/import";
 
@@ -265,6 +272,10 @@ table{
 
 .link {
   text-decoration: none;
+}
+
+.thumbnail {
+  width: 100px;
 }
 
 </style> 

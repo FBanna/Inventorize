@@ -1,6 +1,5 @@
 use crate::cli::config::Config;
 use db::{components::ComponentServices, db::DB};
-use label::label::Label;
 
 
 mod server;
@@ -16,7 +15,7 @@ async fn main() {
     config.print();
 
 
-    let mut component_db = DB::init(&config.db_location).await;
+    let component_db = DB::init(&config.db_location).await;
 
     let component = db::components::Component{
         //ID:5000,
@@ -29,15 +28,15 @@ async fn main() {
         origin:None, 
         //url: None,
         label: Some("vial".to_string()),
-        image: None,
-        datasheet: None
+        image: false,
+        datasheet: false
     };
 
     //component.build();
 
     //label::label::Label::new(component).build();
 
-    component_db.add(component, &config).await;
+    component_db.add(&component).await;
 
     let component = db::components::Component{
         //ID:5000,
@@ -50,11 +49,11 @@ async fn main() {
         origin:None, 
         //url: None,
         label: None,
-        image: None,
-        datasheet: None
+        image: false,
+        datasheet: false
     };
 
-    component_db.add(component, &config).await;
+    component_db.add(&component).await;
 
     
     Config::debug_print(&config);

@@ -2,32 +2,32 @@ use std::{fs, io::Cursor, path::Path};
 
 use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
-use sqlx::{migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::{SqliteRow, SqliteValueRef}, ColumnIndex, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool};
+use sqlx::{migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::{SqliteQueryResult, SqliteRow, SqliteValueRef}, ColumnIndex, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool};
 
 use crate::cli::config::Config;
 
-use super::{db::DB, prompt::service::PromptServices};
+use super::{db::DB, prompt::service::PromptServices, transport::post_component::PostComponent};
 
 
 pub const ELEMENTS: [&str;6] = ["name","size","value","info","origin","label"];
 
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Component{
-    pub id: Option<i32>,
-    pub name: String,
-    pub size: Option<String>,
-    pub value: Option<String>,
-    pub info: Option<String>,
-    pub stock: i32,
-    pub origin: Option<String>,
-    pub label: Option<String>,
-    pub image: Option<Vec<u8>>,
-    pub datasheet: Option<Vec<u8>>
-}
+// #[derive(Serialize, Deserialize, Clone, Debug)]
+// pub struct Component{
+//     pub id: Option<i32>,
+//     pub name: String,
+//     pub size: Option<String>,
+//     pub value: Option<String>,
+//     pub info: Option<String>,
+//     pub stock: i32,
+//     pub origin: Option<String>,
+//     pub label: Option<String>,
+//     pub image: Option<Vec<u8>>,
+//     pub datasheet: Option<Vec<u8>>
+// }
 
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
-pub struct ComponentDB{
+pub struct Component{
     pub id: Option<i32>,
     pub name: String,
     pub size: Option<String>,
@@ -62,91 +62,47 @@ impl Component{
 
     } 
 
-    pub fn optimise_image(&mut self) {
-        if let Some(some_image) = &self.image {
-            let res_img_reader = ImageReader::new(Cursor::new(some_image)).with_guessed_format();
-
-            if let Ok(img_reader) = res_img_reader{
-                let res_img = img_reader.decode();
-
-                if let Ok(img) = res_img {
-
-                    let new_img;
-                    
-                    if img.dimensions() != (1000, 1000) {
-
-                        new_img = img.resize(1000, 1000, FilterType::Nearest);
-
-                    } else {
-                        new_img = img;
-                    }
-
-                    let mut bytes: Vec<u8> = Vec::new();
-                        
-                    new_img.write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png);
-
-                    self.image = Some(bytes);
-
-                    println!("optimised!");
-
-                    return;
-
-
-                }
-            }
-        }
-
-        println!("not optimised!");
-
-        self.image = None;
-    }
-
-    fn create_assets(&self, id: i64, config: &Config) {
-        write_files(id, "full.png", &config.asset_location, &self.image);
-        write_files(id, "datasheet.pdf", &config.asset_location, &self.datasheet);
-    }
-
 }
 
-impl ComponentDB {
+// impl Component {
 
-    fn component(&self, config: &Config) -> Component {
+//     fn component(&self, config: &Config) -> Component {
 
-        let id = unsafe { self.id.unwrap_unchecked() };
+//         let id = unsafe { self.id.unwrap_unchecked() };
         
-        let mut image: Option<Vec<u8>> = None;
-        let mut datasheet: Option<Vec<u8>> = None;
+//         let mut image: Option<Vec<u8>> = None;
+//         let mut datasheet: Option<Vec<u8>> = None;
 
-        if self.image {
-            println!("theres an image! just having a look now");
+//         if self.image {
+//             println!("theres an image! just having a look now");
 
-            image = find_component_files(id, "full.png", &config.asset_location);
-        }
+//             image = find_component_files(id, "full.png", &config.asset_location);
+//         }
 
-        if self.datasheet {
-            println!("theres an image! just having a look now");
+//         if self.datasheet {
+//             println!("theres an image! just having a look now");
 
-            datasheet = find_component_files(id, "datasheet", &config.asset_location);
-        }
+//             datasheet = find_component_files(id, "datasheet", &config.asset_location);
+//         }
 
-        return Component {
-            id: self.id.clone(),
-            name: self.name.clone(),
-            size: self.size.clone(),
-            value: self.value.clone(),
-            info: self.info.clone(),
-            stock: self.stock.clone(),
-            origin: self.origin.clone(),
-            label: self.label.clone(),
-            image,
-            datasheet,
-        };
+//         return Component {
+//             id: self.id.clone(),
+//             name: self.name.clone(),
+//             size: self.size.clone(),
+//             value: self.value.clone(),
+//             info: self.info.clone(),
+//             stock: self.stock.clone(),
+//             origin: self.origin.clone(),
+//             label: self.label.clone(),
+//             image,
+//             datasheet,
+//         };
 
-    }
+//     }
 
 
 
-}
+// }
 
 // impl FromRow<'_, SqliteRow> for Component {
 //     fn from_row(row: &SqliteRow) -> sqlx::Result<Self> {
@@ -181,15 +137,17 @@ impl ComponentDB {
 // }
 
 pub trait ComponentServices {
-    async fn add(&self, c: Component, config: &Config);
+    async fn add_with_files(&self, c: PostComponent, config: &Config);
 
-    async fn get_first(&self, config: &Config) -> Component;
+    async fn add(&self, c: &Component) -> SqliteQueryResult;
 
-    async fn get_all(&self, config: &Config) -> Vec<Component>;
+    async fn get_first(&self) -> Component;
 
-    async fn get(&self, i: i32, config: &Config) -> Component;
+    async fn get_all(&self) -> Vec<Component>;
 
-    async fn search(&self, c: Vec<Vec<String>>, config: &Config) -> Vec<Component>;
+    async fn get(&self, i: i32) -> Component;
+
+    async fn search(&self, c: Vec<Vec<String>>) -> Vec<Component>;
 
     
 
@@ -198,12 +156,21 @@ pub trait ComponentServices {
 
 impl ComponentServices for DB{
 
-    
-    
-    async fn add(&self, mut c: Component, config: &Config){
+    async fn add_with_files(&self, mut c: PostComponent, config: &Config) {
+
+        c.update_component_file_bools();
 
         c.optimise_image();
-        
+
+        let result = self.add(&c.component);
+
+        c.create_assets(result.await.last_insert_rowid(), config);
+
+    }
+
+    
+    
+    async fn add(&self, c: &Component) -> SqliteQueryResult{
 
         let result = sqlx::query("INSERT INTO components (name,size,value,info,stock,origin,label,image,datasheet) VALUES (?,?,?,?,?,?,?,?,?)")
             //.bind(c.ID)
@@ -215,60 +182,44 @@ impl ComponentServices for DB{
             .bind(&c.origin)
             //.bind(c.url)
             .bind(&c.label)
-            .bind(&c.image.is_some())
-            .bind(&c.datasheet.is_some())
+            .bind(&c.image)
+            .bind(&c.datasheet)
             .execute(&self.pool)
             .await
             .unwrap();
 
-        
 
-        c.create_assets(result.last_insert_rowid(), &config);
+        self.update_prompts(&c).await;
 
-
-
-        self.update_prompts(c).await;
+        return result;
     }
 
-    async fn get_first(&self, config: &Config) -> Component{
-        let result: ComponentDB = sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")
+    async fn get_first(&self) -> Component{
+        sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")
             .fetch_one(&self.pool)
             .await
-            .unwrap();
-
-        result.component(config)
+            .unwrap()
 
     }
 
-    async fn get_all(&self, config: &Config) -> Vec<Component>{
-        let result: Vec<ComponentDB> = sqlx::query_as("SELECT * FROM components")
+    async fn get_all(&self) -> Vec<Component>{
+        sqlx::query_as("SELECT * FROM components")
             .fetch_all(&self.pool)
             .await
-            .unwrap();
-
-        let mut components = Vec::new();
-
-        for componentdb in result {
-            components.push(componentdb.component(config));
-        }
-
-        return components;
-        
+            .unwrap()
     }
     
 
-    async fn get(&self, i: i32, config: &Config) -> Component {
-        let result: ComponentDB = sqlx::query_as("SELECT * FROM components WHERE id = (?)")
+    async fn get(&self, i: i32) -> Component {
+        sqlx::query_as("SELECT * FROM components WHERE id = (?)")
             .bind(i)
             .fetch_one(&self.pool)
             .await
-            .unwrap();
-
-        result.component(config)
+            .unwrap()
     }
 
 
-    async fn search(&self, c: Vec<Vec<String>>, config: &Config) -> Vec<Component> {
+    async fn search(&self, c: Vec<Vec<String>>) -> Vec<Component> {
 
 
         let mut emptied = Vec::new();
@@ -285,7 +236,7 @@ impl ComponentServices for DB{
 
         // RETURN IF NOTHING TO SEARCH
         if len == 0 {
-            return Vec::new();
+            return self.get_all().await;
         }
 
         // BUILD QUERY
@@ -311,15 +262,7 @@ impl ComponentServices for DB{
             
         }
 
-        let result: Vec<ComponentDB> = query.build_query_as::<ComponentDB>().fetch_all(&self.pool).await.unwrap();
-
-        let mut components = Vec::new();
-
-        for componentdb in result {
-            components.push(componentdb.component(config));
-        }
-
-        return components;
+        query.build_query_as::<Component>().fetch_all(&self.pool).await.unwrap()
 
 
 
@@ -350,7 +293,7 @@ pub fn find_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>
 
 
 
-fn write_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>) {
+pub fn write_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>) {
 
     println!("im writing {}", name);
 

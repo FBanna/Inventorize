@@ -19,9 +19,11 @@ let c = ref({
   stock: null,
   origin: "",
   label: "",
-  image: null,
-  datasheet: null
+  image: false,
+  datasheet: false
 })
+
+
 
 function updateImage($event) {
     const target = $event.target;
@@ -86,15 +88,21 @@ async function submit() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      name: c.value.name,
-      size: c.value.size,
-      value: c.value.value,
-      info: c.value.info,
-      stock: c.value.stock,
-      origin: c.value.origin,
-      label: c.value.label,
+
+      component: {
+        name: c.value.name,
+        size: c.value.size,
+        value: c.value.value,
+        info: c.value.info,
+        stock: c.value.stock,
+        origin: c.value.origin,
+        label: c.value.label,
+        image: false,
+        datasheet: false
+      },
       image: c.value.image,
-      datasheet: c.value.datasheet,
+      datasheet: c.value.datasheet
+      
     })
   };
 
@@ -102,18 +110,21 @@ async function submit() {
     .then(response => {
 
 
-      if(response.redirected) {
-        window.location.href = response.url;
+      if(response.status == 200) {
+        window.location.href = "/";
 
-        error.value = "You should be redirected now"
+        //error.value = "You should be redirected now"
 
 
-      } else if (response.status == 401) {
-
-        error.value = "incorrect login!"
-      } else if (response.status == 500) {
-        error.value = "internal server error!"
+      } else {
+        console.log("ERROR")
       }
+      //  else if (response.status == 401) {
+
+      //   error.value = "incorrect login!"
+      // } else if (response.status == 500) {
+      //   error.value = "internal server error!"
+      // }
 
     })
 
@@ -175,7 +186,7 @@ async function submit() {
 
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 
 @use "../../public/import";
 

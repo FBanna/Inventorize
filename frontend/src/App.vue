@@ -35,11 +35,12 @@ import { RouterLink, RouterView } from 'vue-router'
   <RouterView />
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 
 @use "../public/import";
 
   .nav {
+    margin: 0;
     z-index: 10;
     position: relative;
     top: 0;
@@ -70,10 +71,6 @@ import { RouterLink, RouterView } from 'vue-router'
 
   .image {
     height: 30pt;
-  }
-
-  body { 
-    margin: 0px;
   }
 
   .right_side{

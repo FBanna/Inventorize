@@ -79,12 +79,14 @@ async function build_label() {
       }
 
     })
+}
 
+function get_datasheet_src(c) {
+  return import.meta.env.VITE_API_URL + "data/" + c.id + "/datasheet.pdf"
+}
 
-
-
-  
-  
+function get_image_src(c) {
+  return import.meta.env.VITE_API_URL + "data/" + c.id + "/full.png"
 }
 
 setup()
@@ -94,41 +96,60 @@ setup()
 <template>
   <div class="info-box box">
 
-    <h1 class="heading">
-      {{ c.name }}
-    </h1>
+    <div v-if="c.image" class="image-container">
+      <img class="image" :src=get_image_src(c)>
+    </div>
+
+
     
-    <br>
 
-    <table>
-      <tbody>
+    <span class="details">
 
-        <tr>
-          <td data-row class="title">size:</td>
-          <td data-row class="info">{{ c.size }}</td>
-        </tr>
+      <h1 class="heading">
+        {{ c.name }}
+      </h1>
 
-        <tr>
-          <td data-row class="title">value:</td>
-          <td data-row class="info">{{ c.value }}</td>
-        </tr>
+      <table>
+        <tbody>
 
-        <tr>
-          <td data-row class="title">info:</td>
-          <td data-row class="info">{{ c.info }}</td>
-        </tr>
+          <tr>
+            <td data-row class="title">size:</td>
+            <td data-row class="info">{{ c.size }}</td>
+          </tr>
 
-        <tr>
-          <td data-row class="title">origin:</td>
-          <td data-row class="info">{{ c.origin }}</td>
-        </tr>
+          <tr>
+            <td data-row class="title">value:</td>
+            <td data-row class="info">{{ c.value }}</td>
+          </tr>
 
-        <tr>
-          <td data-row class="title">label:</td>
-          <td data-row class="info">{{ c.label }}</td>
-        </tr>
-      </tbody>
-    </table>
+          <tr>
+            <td data-row class="title">info:</td>
+            <td data-row class="info">{{ c.info }}</td>
+          </tr>
+
+          <tr>
+            <td data-row class="title">origin:</td>
+            <td data-row class="info">{{ c.origin }}</td>
+          </tr>
+
+          <tr>
+            <td data-row class="title">label:</td>
+            <td data-row class="info">{{ c.label }}</td>
+          </tr>
+
+          <tr>
+            <td data-row class="title">datasheet:</td>
+            <td data-row class="info"><a v-if="c.datasheet" :href=get_datasheet_src(c)>Datasheet</a><p v-if="!c.datasheet">n/a</p></td>
+          </tr>
+        </tbody>
+      </table>
+    </span>
+
+
+
+
+    
+  
 
   </div>
 
@@ -145,12 +166,38 @@ setup()
 
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 @use "../../public/import";
+
+.image {
+
+  max-width: inherit;
+  border-radius: 5px;
+
+}
+
+.image-container {
+
+  max-width: 100%;
+
+  width: 40%;
+  aspect-ratio: 1/1;
+
+  margin-right: 10px;
+
+  display: inline-block;
+  float: left;
+
+}
+
+.details {
+  margin-top: 3px;
+  display: inline;
+  float: left;
+}
 
 .info-box {
   
-
   height: 500px;
   width: 500px;
   float: left;
@@ -159,6 +206,7 @@ setup()
 .heading {
   margin: 0px;
   width: min-content;
+  font-size: 20px !important;
 }
 
 td[data-row] {

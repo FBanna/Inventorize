@@ -118,7 +118,7 @@ async function login() {
 
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 
 @use "../public/import.scss";
 

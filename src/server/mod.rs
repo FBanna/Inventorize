@@ -5,7 +5,6 @@ pub mod db_api;
 pub mod server_state;
 
 use db_api::{get_all_component, get_all_prompt, get_first_component, post_build_label, post_component, post_id_get_component, post_search_component::post_search_component};
-use post_build_label::BuildLabel;
 
 use axum::{
     extract::{DefaultBodyLimit, Query}, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}, Form, Json, Router
@@ -79,7 +78,7 @@ pub async fn start_server(config: Config, db: DB) {
                 .allow_headers([CONTENT_TYPE])
                 .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE]),
         )
-        .layer(DefaultBodyLimit::disable()) // 10 MB
+        .layer(DefaultBodyLimit::disable()) // ALLOW LARGE FILE UPLOADS, NEED TO DO CHUNKED UPLOADS
         
         .with_state(shared_state);
 
