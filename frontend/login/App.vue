@@ -1,9 +1,12 @@
 <script setup>
 import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { errorMessages } from 'vue/compiler-sfc';
 
 const login_api = ref("http://localhost:3030/login_api")
 
+const urlParams = new URLSearchParams(window.location.search);
+const next = urlParams.get('next');
 
 const username = ref("")
 const password = ref("")
@@ -18,7 +21,8 @@ async function login() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       username: username.value,
-      password: password.value
+      password: password.value,
+      next: next
     })
   };
 

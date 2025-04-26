@@ -25,7 +25,14 @@ pub async fn login(
 
     println!("{0} logged in!", creds.username);
 
-    Redirect::to("/").into_response()
+    if let Some(ref next) = creds.next {
+        Redirect::to(next).into_response()
+    } else {
+        Redirect::to("/").into_response()
+    }
+
+
+    //Redirect::to("/").into_response()
 }
 
 pub async fn logout(mut auth_session: AuthSession) -> impl IntoResponse {
@@ -33,4 +40,4 @@ pub async fn logout(mut auth_session: AuthSession) -> impl IntoResponse {
         Ok(_) => Redirect::to("/login").into_response(),
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
-}
+} 

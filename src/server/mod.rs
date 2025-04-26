@@ -93,6 +93,7 @@ pub async fn start_server(config: Config, db: DB) {
     println!("Server started, listening on {addr}");
 
     let server = axum::serve(listener, app).await.unwrap();
+
 }
 
 

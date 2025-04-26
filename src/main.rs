@@ -59,4 +59,5 @@ async fn main() {
     Config::debug_print(&config);
 
     server::start_server(config, component_db).await;
+
 }
