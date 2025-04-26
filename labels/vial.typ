@@ -30,66 +30,76 @@
 
 #{
 
-  
-  
   rect(
-    width: width,
-    height: height,
+    stroke: (thickness: 0.5mm, dash: "densely-dash-dotted"),
+    inset: 0mm,
     outset: 0mm,
-    stroke: none,
-    //stroke: (thickness: 0.1mm, dash: "densely-dash-dotted"),
-    inset: 2mm
+    width: 100%,
+    height: 100%
   )[
+    #rect(
+      width: width,
+      height: height,
+      outset: 0mm,
+      stroke: none,
+      //stroke: (thickness: 0.1mm, dash: "densely-dash-dotted"),
+      inset: 2mm
+    )[
 
-    #set block(above: 1mm, below: 0mm)
+      #set block(above: 1mm, below: 0mm)
 
-    #inputs.at("name", default: "name")\
-    #inputs.at("size", default: "size")\
-    #inputs.at("value", default: "value")\
-    #inputs.at("info", default: "info")
+      #inputs.at("name", default: "name")\
+      #inputs.at("size", default: "size")\
+      #inputs.at("value", default: "value")\
+      #inputs.at("info", default: "info")
 
 
-    #align(bottom+ right)[
-      #qr-code(
-        inputs.at("url", default: "https://typst.app"),
-        width: 1cm,
-        error-correction: "L",
-        background: background
-      )
+      #align(bottom+ right)[
+        #qr-code(
+          inputs.at("url", default: "https://typst.app"),
+          width: 1cm,
+          error-correction: "L",
+          background: background
+        )
+      ]
+
+      
     ]
 
-    
+    #line(end: (100%, 0mm))
+
+    #rect(
+      stroke: none,
+      outset: 0mm,
+      inset: 1mm,
+      width: 100%,
+
+      
+    )[
+      #align(horizon + center)[
+        #circle(
+            radius: diameter/2,
+            stroke: 0.5mm + black,
+            outset: 0mm,
+          )[
+
+            #text(size: 3mm)[
+              #inputs.at("name", default: "name")\
+              #inputs.at("value", default: "value")\
+
+              //#sys.inputs.name
+            ]
+            
+            
+          ]
+      ]
+    ]
+
   ]
-
-line(end: (100%, 0mm))
-
-rect(
-  stroke: none,
-  outset: 0mm,
-  inset: 1mm,
-  width: 100%,
 
   
-)[
-  #align(horizon + center)[
-    #circle(
-        radius: diameter/2,
-        stroke: 0.5mm + black,
-        outset: 0mm,
-      )[
-
-        #text(size: 3mm)[
-          #inputs.at("name", default: "name")\
-          #inputs.at("value", default: "value")\
-
-          //#sys.inputs.name
-        ]
-        
-        
-      ]
-  ]
-]
-
+  
+  
 
 
 }
