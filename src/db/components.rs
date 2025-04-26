@@ -1,4 +1,4 @@
-use std::{fs, io::Cursor, path::Path};
+use std::{fs, io::Cursor, path::{Path, PathBuf}};
 
 use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
@@ -274,12 +274,14 @@ impl ComponentServices for DB{
 }
 
 
-pub fn find_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>> {
+pub fn get_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>> {
     
-    let binding = config.to_owned() + "/" + &id.to_string() + "/" + name;
-    let asset_location = Path::new(&binding);
+    //let binding = config.to_owned() + "/" + &id.to_string() + "/" + name;
 
-    println!("finding file {} at {}", name, binding);
+
+    let asset_location = Path::new(config).join(id.to_string()).join(name);
+
+    println!("finding file {} at {}", name, asset_location.display());
 
     if asset_location.exists() {
 
@@ -293,20 +295,20 @@ pub fn find_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>
 
 
 
-pub fn write_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>) {
+pub fn write_component_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>) {
 
     println!("im writing {}", name);
 
     if let Some(data) = option {
-        let binding = config.to_owned() + "\\" + &id.to_string();
+        //let binding = config.to_owned() + "\\" + &id.to_string();
 
         
-        let path = Path::new(&binding);
+        let path: PathBuf = Path::new(config).join(id.to_string());
 
         println!("trying to access path at {}", path.as_os_str().to_str().get_or_insert_default());
 
         if !path.exists() {
-            fs::create_dir_all(path).expect("could not create asset dir for component!");
+            fs::create_dir_all(&path).expect("could not create asset dir for component!");
         }
 
         fs::write(path.join(name.to_owned()), data).expect("Could not write asset file");

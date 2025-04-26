@@ -3,7 +3,7 @@ use std::io::Cursor;
 use image::{imageops::FilterType, GenericImageView, ImageReader};
 use serde::{Deserialize, Serialize};
 
-use crate::{cli::config::Config, db::components::{write_files, Component}};
+use crate::{cli::config::Config, db::components::{write_component_files, Component}};
 
 
 #[derive(Serialize, Deserialize)]
@@ -73,8 +73,8 @@ impl PostComponent {
     }
 
     pub fn create_assets(&self, id: i64, config: &Config) {
-        write_files(id, "full.png", &config.asset_location, &self.image);
-        write_files(id, "datasheet.pdf", &config.asset_location, &self.datasheet);
+        write_component_files(id, "full.png", &config.asset_location, &self.image);
+        write_component_files(id, "datasheet.pdf", &config.asset_location, &self.datasheet);
     }
 }
 
