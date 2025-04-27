@@ -12,6 +12,7 @@ const DEFAULT_PASSWORD: &str = "password";
 const DEFAULT_HOST_NAME: &str = "localhost";
 const DEFAULT_DB_LOCATION: &str = "sqlite://inventorize.db";
 const DEFAULT_LABEL_LOCATION: &str = "labels";
+const DEFAULT_FONT_LOCATION: &str = "fonts";
 const DEFAULT_ASSET_LOCATION: &str = "data";
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -22,6 +23,7 @@ pub struct Config{
     pub host_address: String,
     pub db_location: String,
     pub label_location: String,
+    pub font_location: String,
     pub asset_location: String
 
 }
@@ -35,6 +37,7 @@ impl Config{
             host_address:   DEFAULT_HOST_NAME.to_owned(),
             db_location:    DEFAULT_DB_LOCATION.to_owned(),
             label_location: DEFAULT_LABEL_LOCATION.to_owned(),
+            font_location: DEFAULT_FONT_LOCATION.to_owned(),
             asset_location: DEFAULT_ASSET_LOCATION.to_owned()
 
         }

@@ -46,9 +46,11 @@ pub struct TypstWrapperWorld {
 }
 
 impl TypstWrapperWorld {
-    pub fn new(root: String, source: String, inputs: Library) -> Self {
-        let root = PathBuf::from(root);
-        let fonts = FontSearcher::new().include_system_fonts(true).search();
+    pub fn new(root: String, source: String, inputs: Library, fonts: String) -> Self {
+
+ 
+        let root_path = PathBuf::from(root);
+        let fonts = FontSearcher::new().include_system_fonts(true).search_with([root_path.join(fonts)]);
 
 
 
@@ -57,7 +59,7 @@ impl TypstWrapperWorld {
         Self {
             library: LazyHash::new(inputs),
             book: LazyHash::new(fonts.book),
-            root,
+            root: root_path,
             fonts: fonts.fonts,
             source: Source::detached(source),
             time: time::OffsetDateTime::now_utc(),

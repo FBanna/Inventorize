@@ -44,6 +44,11 @@ pub async fn get_config() -> Config{
         )
         .arg(
             arg!(
+                --f --font <FONT> "sets font location"
+            ).required(false).value_parser(value_parser!(String))
+        )
+        .arg(
+            arg!(
                 --asset <ASSET> "sets asset location"
             ).required(false).value_parser(value_parser!(String))
         )
@@ -129,6 +134,10 @@ pub async fn get_config() -> Config{
 
     if let Some(label_location) = matches.get_one::<String>("label") {
         config.label_location = label_location.clone();
+    }
+
+    if let Some(font_location) = matches.get_one::<String>("font") {
+        config.font_location = font_location.clone();
     }
 
     if let Some(asset_location) = matches.get_one::<String>("asset") {

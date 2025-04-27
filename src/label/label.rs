@@ -12,20 +12,20 @@ pub trait Label {
 
     //fn debug_build(&self, label_path: String);
     
-    fn build(&self, label_location: &str, config: &Config) -> Option<Vec<u8>>;
+    fn build(&self, config: &Config) -> Option<Vec<u8>>;
 
     fn get_inputs(&self, config: &Config) -> Library;
 
-    fn build_save(&self, label_location: &str, config: &Config);
+    fn build_save(&self, config: &Config);
 
 }
 
 
 impl Label for Component{
 
-    fn build_save(&self, label_location: &str, config: &Config) {
+    fn build_save(&self, config: &Config) {
 
-        let bytes = self.build(label_location, config);
+        let bytes = self.build(config);
 
 
         if let Some(some) = bytes {
@@ -36,14 +36,17 @@ impl Label for Component{
         
     }
 
-    fn build(&self, label_location: &str, config: &Config) -> Option<Vec<u8>> {
+    fn build(&self, config: &Config) -> Option<Vec<u8>> {
         if let Some(label) = &self.label {
-            let path = PathBuf::new().join(label_location).join(label.to_owned()+".typ");
+
+            let location: &str = &config.label_location;
+            let fonts: &str = &config.font_location;
+            let path = PathBuf::new().join(location).join(label.to_owned()+".typ");
             
             if path.exists(){
                 let data = fs::read_to_string(path).expect("Unable to read File!");
 
-                let world = typst_wrapper::TypstWrapperWorld::new("./".to_owned(), data, self.get_inputs(config));
+                let world = typst_wrapper::TypstWrapperWorld::new(location.to_owned(), data, self.get_inputs(config), fonts.to_owned());
 
                 let document: typst::layout::PagedDocument = typst::compile(&world)
                     .output
