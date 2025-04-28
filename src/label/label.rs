@@ -1,8 +1,9 @@
-use std::{fs, path::{Path, PathBuf}, sync::Arc};
+use std::{fs, io::{Cursor, Write}, path::{Path, PathBuf}, sync::Arc};
 
 use axum::extract::State;
-use typst::{foundations::{Dict, Value}, Library};
+use typst::{foundations::{Dict, Value}, pdf, Library};
 use typst_pdf::PdfOptions;
+use zip::write::SimpleFileOptions;
 
 use crate::{cli::config::Config, db::components::Component};
 
@@ -17,6 +18,8 @@ pub trait Label {
     fn get_inputs(&self, config: &Config) -> Library;
 
     fn build_save(&self, config: &Config);
+
+    fn build_zip(labels: Vec<&Self>, config: &Config) -> Option<Vec<u8>>;
 
 }
 
@@ -62,6 +65,47 @@ impl Label for Component{
 
         println!("failed for some reason");
         return None;
+    }
+    
+
+    fn build_zip(labels: Vec<&Self>, config: &Config) -> Option<Vec<u8>> {
+
+        let mut bytes: Vec<u8> = Vec::new();
+
+        let mut zip = zip::ZipWriter::new(Cursor::new(&mut bytes));
+
+        let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+        
+        for label in labels {
+
+            let r1 = zip.start_file("", options);
+
+            if r1.is_err() {
+                println!("failed to add label to zip!");
+            }
+
+            let option_pdf_bytes = label.build(&config);
+
+            if let Some(pdf_bytes) = option_pdf_bytes {
+
+                let r2 = zip.write(&pdf_bytes);
+
+                if r2.is_err(){
+                    println!("failed to write label to zip!")
+                }
+                
+            } 
+
+            
+        }
+
+        let result = zip.finish();
+
+        if result.is_err() {
+            return None;
+        }
+
+        return Some(bytes);
     }
 
     fn get_inputs(&self, config: &Config) -> Library {
