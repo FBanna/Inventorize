@@ -147,9 +147,9 @@ pub trait ComponentServices {
 
     async fn get(&self, i: i32) -> Component;
 
-    async fn search(&self, c: Vec<Vec<String>>) -> Vec<Component>;
+    async fn get_from_list(&self, list: Vec<i32>) -> Vec<Component>;
 
-    
+    async fn search(&self, c: Vec<Vec<String>>) -> Vec<Component>;    
 
 }
 
@@ -216,6 +216,27 @@ impl ComponentServices for DB{
             .fetch_one(&self.pool)
             .await
             .unwrap()
+    }
+
+    async fn get_from_list(&self, list: Vec<i32>) -> Vec<Component> {
+
+        let mut result: Vec<Component> = Vec::new();
+
+        for i in list {
+
+            let component_result = sqlx::query_as("SELECT * FROM components WHERE id = (?)")
+                .bind(i)
+                .fetch_one(&self.pool)
+                .await;
+
+            if let Ok(compnent) = component_result {
+
+                result.push(compnent);
+            }           
+        }
+
+        return result;
+
     }
 
 

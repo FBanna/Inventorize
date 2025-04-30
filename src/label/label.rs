@@ -106,7 +106,10 @@ impl Label for Component{
         }
 
         return Some(bytes);
+        
     }
+
+
 
     fn get_inputs(&self, config: &Config) -> Library {
 
