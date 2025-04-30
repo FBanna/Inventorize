@@ -13,11 +13,18 @@
   let prompt_search = ref(["","","","","",""])
   let prompt_selected = ref([[],[],[],[],[],[]])
 
+  const selecting = ref(false)
+  const selected = ref([])
+
   //let search_fields = []
 
   let search_names = ["name", "size", "value", "info", "stock", "origin", "label"]
 
   function navigate_to_component(c){
+
+    if(selecting.value){
+      return
+    }
 
     let route = router.resolve({ path: "/component/" + c.id })
     window.open(route.href)
@@ -60,6 +67,56 @@
     return import.meta.env.VITE_API_URL + "data/" + c.id + "/full.png"
   }
 
+  async function build_label_zip() {
+
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        list: selected.value.map(function(str) {
+          return Number(str)
+        })
+
+      })
+    };
+
+    await fetch(import.meta.env.VITE_API_URL+"api/post_build_zip", requestOptions)
+      .then(async response => {
+
+
+        if (response.status == 200) {
+
+          
+
+          let data = await response.bytes()
+
+          // CHANGE FOR AN ACTUAL NAME
+          const file = new File([data], 'output.zip', {
+            type: 'application/zip',
+          })
+
+          const link = document.createElement('a')
+          const url = URL.createObjectURL(file)
+
+          link.href = url
+          link.download = file.name
+          document.body.appendChild(link)
+          link.click()
+
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(url)
+
+        } else if (response.status == 404) {
+
+          console.log("error making labels!")
+
+        }
+
+      })
+    }
+
+
+
   get_all_components()
   get_all_prompt()
 
@@ -70,6 +127,15 @@
 
   <span class="search-tools">
     <button class="button search-button" @click="search_components">Search</button>
+
+    <br>
+
+    <input type="checkbox" v-model="selecting"> SELECT
+
+
+    <br>
+
+    <button class="button search-button" @click="build_label_zip">BUILD</button>
   </span>
   
   <span class="search-container">
@@ -92,35 +158,6 @@
 
     </span>
 
-
-      <!-- <div class="search-field">
-        
-        name
-        <br>
-        <input type="text" @change="search_components()" placeholder="Search" v-model="c.name"  class="search">
-        <div class="results">
-
-          <div class="result" v-for="results of (prompts[1].prompts)">
-            {{ results }} HELLO
-          </div>
-        
-        </div>
-      
-      </div> -->
-
-      <!-- <div class="search-field">
-        
-        label
-        <br>
-        <input type="text" @change="search_components()" placeholder="Search" v-model="c.label"  class="search">
-        <div class="results">
-
-        </div>
-      
-      </div> -->
-
-
-
   </span>
 
   <div class="search-results-container">
@@ -128,7 +165,13 @@
       <table>
         <thead>
           <tr>
+
+            <th table-heading v-if="selecting">select</th>
+
+
             <th table-heading>image</th>
+
+            
             <th v-for="name in search_names" table-heading>
               {{ name }}
             </th>
@@ -140,8 +183,10 @@
           
           <tr @click="navigate_to_component(c)">
 
+              <td v-if="selecting"><input type="checkbox" :value="c.id" v-model="selected"></td>
+
               <td><img v-if="c.image" class="thumbnail" :src=get_image_src(c)></td>
-              
+            
               <td>{{ c.name }}</td>
               <td>{{ c.size }}</td>
               <td>{{ c.value }}</td>

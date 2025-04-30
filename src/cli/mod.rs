@@ -44,7 +44,7 @@ pub async fn get_config() -> Config{
         )
         .arg(
             arg!(
-                --f --font <FONT> "sets font location"
+                -f --font <FONT> "sets font location"
             ).required(false).value_parser(value_parser!(String))
         )
         .arg(

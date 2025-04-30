@@ -19,7 +19,7 @@ pub trait Label {
 
     fn build_save(&self, config: &Config);
 
-    fn build_zip(labels: Vec<&Self>, config: &Config) -> Option<Vec<u8>>;
+    fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> where Self:Sized;
 
 }
 
@@ -68,7 +68,7 @@ impl Label for Component{
     }
     
 
-    fn build_zip(labels: Vec<&Self>, config: &Config) -> Option<Vec<u8>> {
+    fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> {
 
         let mut bytes: Vec<u8> = Vec::new();
 
@@ -78,28 +78,43 @@ impl Label for Component{
         
         for label in labels {
 
-            let r1 = zip.start_file("", options);
+            let r1 = zip.start_file((&label.name).to_owned() + ".pdf", options);
 
             if r1.is_err() {
                 println!("failed to add label to zip!");
+                zip.abort_file();
+                continue;
             }
 
+            println!("building!");
+
             let option_pdf_bytes = label.build(&config);
+
+            println!("finished building!");
 
             if let Some(pdf_bytes) = option_pdf_bytes {
 
                 let r2 = zip.write(&pdf_bytes);
 
                 if r2.is_err(){
-                    println!("failed to write label to zip!")
+                    println!("failed to write label to zip!");
+                    zip.abort_file();
+                continue;
                 }
                 
-            } 
+            } else {
+                zip.abort_file();
+                continue;
+            }
 
             
         }
 
+        println!("compressing!");
+
         let result = zip.finish();
+
+        println!("finished compressing!");
 
         if result.is_err() {
             return None;
