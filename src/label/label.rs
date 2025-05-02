@@ -78,7 +78,20 @@ impl Label for Component{
         
         for label in labels {
 
-            let r1 = zip.start_file((&label.name).to_owned() + ".pdf", options);
+            let name: String;
+
+            if let Some(id) = label.id {
+                name = format!("{}-{}.pdf", label.name, id);
+            } else {
+
+                println!("ERROR COULDNT FIND ID");
+                continue;
+
+            }
+
+            
+
+            let r1 = zip.start_file(name, options);
 
             if r1.is_err() {
                 println!("failed to add label to zip!");

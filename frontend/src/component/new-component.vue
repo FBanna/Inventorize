@@ -19,15 +19,16 @@ let c = ref({
   stock: null,
   origin: "",
   label: "",
-  image: false,
-  datasheet: false
+  image: null,
+  datasheet: null
 })
 
 
 
 function updateImage($event) {
     const target = $event.target;
-    if (!target || !target.files) {
+    if (!target || !target.files || target.files.length == 0) {
+      c.value.image = null
       return
     }
 
@@ -52,7 +53,8 @@ function updateImage($event) {
 function updateDatasheet($event) {
 
   const target = $event.target;
-    if (!target || !target.files) {
+    if (!target || !target.files || target.files.length == 0) {
+      c.value.datasheet = null
       return
     }
 
