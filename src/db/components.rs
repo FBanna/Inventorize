@@ -141,6 +141,8 @@ pub trait ComponentServices {
 
     async fn add(&self, c: &Component) -> SqliteQueryResult;
 
+    async fn update(&self, id: i32, c: &Component);
+
     async fn get_first(&self) -> Component;
 
     async fn get_all(&self) -> Vec<Component>;
@@ -165,6 +167,14 @@ impl ComponentServices for DB{
         let result = self.add(&c.component);
 
         c.create_assets(result.await.last_insert_rowid(), config);
+
+    }
+
+    async fn update(&self, id: i32, c: &Component) {
+        
+        let result = sqlx::query!(r#"
+            UPDATE components
+            SET name = "#, c.name)
 
     }
 
