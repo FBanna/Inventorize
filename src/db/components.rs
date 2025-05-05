@@ -139,9 +139,11 @@ impl Component{
 pub trait ComponentServices {
     async fn add_with_files(&self, c: PostComponent, config: &Config);
 
+    async fn update_with_files(&self, id: i64, c: PostComponent, config: &Config);
+
     async fn add(&self, c: &Component) -> SqliteQueryResult;
 
-    async fn update(&self, id: i32, c: &Component);
+    async fn update(&self, id: i64, c: &Component);
 
     async fn get_first(&self) -> Component;
 
@@ -158,6 +160,18 @@ pub trait ComponentServices {
 
 impl ComponentServices for DB{
 
+    async fn update_with_files(&self, id: i64, mut c: PostComponent, config: &Config){
+
+        c.update_component_file_bools();
+
+        c.optimise_image();
+
+        self.update(id,&c.component).await;
+
+        c.create_assets(id.into(), config);
+
+    }
+
     async fn add_with_files(&self, mut c: PostComponent, config: &Config) {
 
         c.update_component_file_bools();
@@ -170,11 +184,36 @@ impl ComponentServices for DB{
 
     }
 
-    async fn update(&self, id: i32, c: &Component) {
+    async fn update(&self, id: i64, c: &Component) {
         
-        let result = sqlx::query!(r#"
+        let result = sqlx::query("
             UPDATE components
-            SET name = "#, c.name)
+            SET
+                name = (?),
+                size = (?),
+                value = (?),
+                info = (?),
+                stock = (?),
+                origin = (?),
+                label = (?),
+                image = (?),
+                datasheet = (?)
+            WHERE
+                ROWID = (?)
+            ")
+            .bind(&c.name)
+            .bind(&c.size)
+            .bind(&c.value) 
+            .bind(&c.info)
+            .bind(&c.stock)
+            .bind(&c.origin)
+            .bind(&c.label)
+            .bind(&c.image)
+            .bind(&c.datasheet)
+            .bind(id)
+            .execute(&self.pool)
+            .await
+            .unwrap();
 
     }
 

@@ -4,7 +4,7 @@ pub mod login_api;
 pub mod db_api;
 pub mod server_state;
 
-use db_api::{get_all_component, get_all_prompt, get_first_component, post_build_label, post_build_label_zip::post_build_label_zip, post_component, post_id_get_component, post_search_component::post_search_component};
+use db_api::{get_all_component, get_all_prompt, get_first_component, post_build_label, post_build_label_zip::post_build_label_zip, post_component, post_id_get_component, post_search_component::post_search_component, post_update_component};
 
 use axum::{
     extract::{DefaultBodyLimit, Query}, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}, Form, Json, Router
@@ -14,6 +14,7 @@ use axum_login::{login_required, predicate_required, tower_sessions::{MemoryStor
 use login_api::login::{Backend,User};
 use login_api::handler;
 use server_state::ServerState;
+use typst::foundations::ops::pos;
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::{cors::{Any, CorsLayer}, services::{ServeDir, ServeFile}};
 
@@ -101,6 +102,7 @@ fn api() -> Router<Arc<ServerState>>{
     let api: Router<Arc<ServerState>> = Router::new()
         .route("/", get(handler))
         .route("/post_component", post(post_component::post_component))
+        .route("/post_update_component", post(post_update_component::post_update_component))
         .route("/post_build", post(post_build_label::post_build_label))
         .route("/post_build_zip", post(post_build_label_zip))
         .route("/post_search_component", post(post_search_component))
@@ -114,14 +116,15 @@ fn api() -> Router<Arc<ServerState>>{
 }
 
 fn protected() -> Router<Arc<ServerState>>{
+    println!("ive been called! PANIC");
     let service = ServeFile::new("../dist/index.html");
     let protected = Router::new()
         .route_service("/", service.clone())
         .route_service("/addcomponent", service.clone())
-        .route_service("/component/{id}", service)
+        .route_service("/component/{id}", service.clone())
+        .route_service("/component/{id}/update", service)
         .nest("/api", api());
-        //.fallback_service(ServeFile::new("../dist/index.html"));
-
+    
     #[cfg(not(debug_assertions))]
     let protected = protected.route_layer(login_required!(Backend, login_url = "/login"));
 
