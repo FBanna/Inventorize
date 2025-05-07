@@ -20,14 +20,24 @@
 
   let search_names = ["name", "size", "value", "info", "stock", "origin", "label"]
 
-  function navigate_to_component(c){
+  function row_click(c){
 
     if(selecting.value){
-      return
+
+      let i = selected.value.indexOf(c.id)
+
+      if (i == -1){
+        selected.value.push(c.id)
+      } else {
+        selected.value.splice(i , 1)
+      }
+
+    } else {
+      let route = router.resolve({ path: "/component/" + c.id })
+      window.open(route.href)
     }
 
-    let route = router.resolve({ path: "/component/" + c.id })
-    window.open(route.href)
+    
   }
   
   
@@ -130,12 +140,13 @@
 
     <br>
 
-    <input type="checkbox" v-model="selecting"> SELECT
+    <input @click="selected = []" class="selector" type="checkbox" v-model="selecting" id="select_check">
+    <label for="select_check"></label>
 
 
     <br>
 
-    <button class="button search-button" @click="build_label_zip">BUILD</button>
+    <button v-if="selecting" class="button search-button" @click="build_label_zip">BUILD</button>
   </span>
   
   <span class="search-container">
@@ -166,7 +177,7 @@
         <thead>
           <tr>
 
-            <th table-heading v-if="selecting">select</th>
+            <!-- <th table-heading v-if="selecting">select</th> -->
 
 
             <th table-heading>image</th>
@@ -181,20 +192,21 @@
 
         <tbody v-for="c in components">
           
-          <tr @click="navigate_to_component(c)">
+          <tr @click="row_click(c)" v-bind:style="[selected.includes(c.id) ? {'background-color': 'rgba(0, 110, 255, 0.445)'} : {}]">
 
-              <td v-if="selecting"><input type="checkbox" :value="c.id" v-model="selected"></td>
+              <!-- <td v-if="selecting"><input type="checkbox" :value="c.id" v-model="selected"></td> -->
 
               <td><img v-if="c.image" class="thumbnail" :src=get_image_src(c)></td>
             
-              <td>{{ c.name }}</td>
-              <td>{{ c.size }}</td>
-              <td>{{ c.value }}</td>
-              <td>{{ c.info }}</td>
-              <td>{{ c.stock }}</td>
-              <td>{{ c.origin }}</td>
-              <td>{{ c.label }}</td>
+              <td style="width: 80px;">{{ c.name }}</td>
+              <td style="width: 50px;">{{ c.size }}</td>
+              <td style="width: 80px;">{{ c.value }}</td>
+              <td style="width: 80px;">{{ c.info }}</td>
+              <td style="width: 50px;">{{ c.stock }}</td>
+              <td style="width: 80px;">{{ c.origin }}</td>
+              <td style="width: 50px;">{{ c.label }}</td>
           </tr>
+          
           
         </tbody>
       </table>
@@ -208,18 +220,45 @@
 
 @use "../../public/import";
 
+input.selector[type=checkbox] {
+  display: none;
+}
+
+
+input.selector[type=checkbox] + label {
+  background-image: url("../../public/unselecting.svg");
+  background-size: contain;
+  height: 30px;
+  width: 30px;
+  margin: 1px;
+  display: inline-block;
+  
+}
+
+input.selector[type=checkbox]:checked + label{
+  background-image: url("../../public/selecting.svg");
+  background-size: contain;
+  height: 30px;
+  width: 30px;
+  display: inline-block;
+  margin: 1px;
+}
+
 th[table-heading]{
   background-color: import.$text;
   color: import.$white !important;
   height: 35px;
   border: 1px import.$grey solid;
+
   
 }
 
+
 td{
   border: 1px import.$grey solid;
-  height: 25px;
+  height: 35px;
   padding: 3px;
+
 }
 
 table{
@@ -249,6 +288,7 @@ table{
 }
 
 .search-tools {
+  position: relative;
   float: left;
   height: 200px;
   box-sizing: border-box;
@@ -261,6 +301,12 @@ table{
 
   font-weight: bolder;
   
+}
+
+.search-tools label {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
 }
 
 .search-button {
