@@ -17,43 +17,43 @@ async fn main() {
 
     let component_db = DB::init(&config.db_location).await;
 
-    let component = db::components::Component{
-        //ID:5000,
-        id: None,
-        name:("Resistor".to_string()),
-        size:Some("0402".to_string()),
-        value:Some("60 OHM".to_string()),
-        info:None,
-        stock:5000,
-        origin:None, 
-        //url: None,
-        label: Some("vial".to_string()),
-        image: false,
-        datasheet: false
-    };
+    // let component = db::components::Component{
+    //     //ID:5000,
+    //     id: None,
+    //     name:("Resistor".to_string()),
+    //     size:Some("0402".to_string()),
+    //     value:Some("60 OHM".to_string()),
+    //     info:None,
+    //     stock:5000,
+    //     origin:None, 
+    //     //url: None,
+    //     label: Some("vial".to_string()),
+    //     image: false,
+    //     datasheet: false
+    // };
 
-    //component.build();
+    // //component.build();
 
-    //label::label::Label::new(component).build();
+    // //label::label::Label::new(component).build();
 
-    component_db.add(&component).await;
+    // component_db.add(&component).await;
 
-    let component = db::components::Component{
-        //ID:5000,
-        id: None,
-        name:("Resistor".to_string()),
-        size:Some("0603".to_string()),
-        value:Some("180 OHM".to_string()),
-        info:Some("Thick Film".to_string()),
-        stock:10,
-        origin:None, 
-        //url: None,
-        label: None,
-        image: false,
-        datasheet: false
-    };
+    // let component = db::components::Component{
+    //     //ID:5000,
+    //     id: None,
+    //     name:("Resistor".to_string()),
+    //     size:Some("0603".to_string()),
+    //     value:Some("180 OHM".to_string()),
+    //     info:Some("Thick Film".to_string()),
+    //     stock:10,
+    //     origin:None, 
+    //     //url: None,
+    //     label: None,
+    //     image: false,
+    //     datasheet: false
+    // };
 
-    component_db.add(&component).await;
+    // component_db.add(&component).await;
 
     
     Config::debug_print(&config);

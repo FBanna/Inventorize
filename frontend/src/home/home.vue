@@ -50,6 +50,10 @@
     } 
 
     let response = await fetch(import.meta.env.VITE_API_URL + "api/post_id_remove_list_component", requestOptions)
+
+    selected.value = []
+
+    await search_components()
     
   }
   
@@ -153,15 +157,14 @@
 
     <br>
 
-    <input @click="selected = []" class="selector" type="checkbox" v-model="selecting" id="select_check">
-    <label for="select_check"></label>
-
-
-    <br>
-
     <button v-if="selecting" class="button search-button" @click="build_label_zip">BUILD</button>
     <br>
     <button v-if="selecting" class="button search-button" @click="remove_component">DELETE</button>
+
+    <input @click="selected = []" class="selector" type="checkbox" v-model="selecting" id="select_check">
+    <label for="select_check"></label>
+
+    
   </span>
   
   <span class="search-container">
@@ -327,6 +330,7 @@ table{
 .search-button {
   width: 100%;
   height: 30px;
+  margin-top: 2px;
 
 }
 
