@@ -153,12 +153,32 @@ pub trait ComponentServices {
 
     async fn get_from_list(&self, list: Vec<i32>) -> Vec<Component>;
 
-    async fn search(&self, c: Vec<Vec<String>>) -> Vec<Component>;    
+    async fn search(&self, c: Vec<Vec<String>>) -> Vec<Component>;
+
+    async fn remove(&self, i: i32);   
+
+    async fn remove_list(&self, list: Vec<i32>);
 
 }
 
 
 impl ComponentServices for DB{
+
+    async fn remove(&self, i: i32) {
+        sqlx::query("
+            DELETE FROM components
+            WHERE ROWID = (?)
+        ").bind(i)
+        .execute(&self.pool)
+        .await
+        .unwrap();
+    }
+
+    async fn remove_list(&self, list: Vec<i32>) {
+        for i in list{
+            self.remove(i).await
+        }
+    }
 
     async fn update_with_files(&self, id: i64, mut c: PostComponent, config: &Config){
 

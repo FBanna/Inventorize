@@ -39,6 +39,19 @@
 
     
   }
+
+  async function remove_component() {
+    const requestOptions = {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        i: selected.value
+      })
+    } 
+
+    let response = await fetch(import.meta.env.VITE_API_URL + "api/post_id_remove_list_component", requestOptions)
+    
+  }
   
   
   async function search_components(){
@@ -147,6 +160,8 @@
     <br>
 
     <button v-if="selecting" class="button search-button" @click="build_label_zip">BUILD</button>
+    <br>
+    <button v-if="selecting" class="button search-button" @click="remove_component">DELETE</button>
   </span>
   
   <span class="search-container">
