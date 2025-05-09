@@ -15,16 +15,23 @@ jobs:
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
+
+      - name: Export Tag
+        run: |
+          echo "RELEASE_TAG=${{ github.ref_name }}" >> "$GITHUB_ENV"
+
+      - name: Use Node.js 23.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23.x"
+          cache: 'yarn'
       
       - name: update rust
         run: rustup update
 
       - name: install yarn
-        run: yarn install
+        run: yarn install --immutable
 
-      - name: Export Tag
-        run: |
-          echo "RELEASE_TAG=${{ github.ref_name }}" >> "$GITHUB_ENV"
 
       - name: build
         run: ./build.sh
