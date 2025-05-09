@@ -10,7 +10,7 @@ on:
       - '*'
 
 jobs:
-  build:
+  build-backend:
     runs-on: ubuntu-latest
     container:
       image: rust:latest
@@ -19,9 +19,9 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v4
 
-      - name: Export Tag
-        run: |
-          echo "RELEASE_TAG=${{ github.ref_name }}" >> "$GITHUB_ENV"
+      # - name: Export Tag
+      #   run: |
+      #     echo "RELEASE_TAG=${{ github.ref_name }}" >> "$GITHUB_ENV"
 
       # - name: Use Node.js 23.x
       #   uses: actions/setup-node@v4
@@ -33,6 +33,28 @@ jobs:
       - name: update rust
         run: rustup update
 
+      - name: rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: build
+        run: cargo build --release
+        
+      - name: capture build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: BACKEND
+          path: |
+            target/release/inventorize
+            labels/*
+
+  build-frontend:
+    runs-on: ubuntu-latest
+      
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+
       - name: install yarn
         run: yarn install --immutable
         working-directory: frontend
@@ -41,24 +63,26 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: build
-        run: ./build.sh
+        run: yarn build
+        working-directory: frontend
 
         
         
       - name: capture build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: inventorize
+          name: FRONTEND
           path: |
-            target/release/inventorize
             frontend/dist/*
-            labels/*
+            
+
 
   release-artifacts:
     permissions:
       contents: write
     needs:
-      - build
+      - build-backend
+      - build-frontend
     runs-on: ubuntu-latest
     steps:
 
