@@ -24,7 +24,7 @@ jobs:
           echo "RELEASE_TAG=${{ github.ref_name }}" >> "$GITHUB_ENV"
 
       - name: build
-        run: ./build
+        run: ./build.sh
         
       # - name: capture build artifacts
       #   uses: actions/upload-artifact@v4
