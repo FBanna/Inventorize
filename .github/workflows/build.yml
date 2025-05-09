@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "23.x"
-          cache-dependency-path: frontend/
+          cache-dependency-path: frontend/yarn.lock
           cache: 'yarn'
       
       - name: update rust
