@@ -20,7 +20,7 @@ jobs:
         run: rustup update
 
       - name: install yarn
-        run: yarn
+        run: yarn install
 
       - name: Export Tag
         run: |
