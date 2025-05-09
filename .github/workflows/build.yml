@@ -54,11 +54,19 @@ jobs:
       - build
     runs-on: ubuntu-latest
     steps:
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           merge-multiple: true
           path: artifacts/
+      
+        
+      - name: zip artifacts
+        uses: vimtor/action-zip@v1.2
+        with:
+          files: artifacts/*
+          dest: inventorize.zip
 
       - name: Release
         uses: ncipollo/release-action@v1
@@ -66,6 +74,6 @@ jobs:
           #tag: "test"
           #tag: ${{ env.TAG }}
           tag: ${{ github.ref_name }}
-          artifacts: "artifacts/*"
+          artifacts: "artifacts/inventorize.zip"
           prerelease: false
           body: "pre release, do not use"
