@@ -20,18 +20,19 @@ jobs:
         run: |
           echo "RELEASE_TAG=${{ github.ref_name }}" >> "$GITHUB_ENV"
 
-      - name: Use Node.js 23.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: "23.x"
-          cache-dependency-path: frontend/yarn.lock
-          cache: 'yarn'
+      # - name: Use Node.js 23.x
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: "23.x"
+      #     cache-dependency-path: frontend/yarn.lock
+      #     cache: 'yarn'
       
       - name: update rust
         run: rustup update
 
       - name: install yarn
         run: yarn install --immutable
+        working-directory: frontend
 
 
       - name: build
