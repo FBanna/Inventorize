@@ -3,33 +3,6 @@
 version = 4
 
 [[package]]
-name = "Inventorize"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "axum",
- "axum-extra",
- "axum-login",
- "clap",
- "image",
- "password-auth",
- "serde",
- "serde_yaml",
- "sqlx",
- "tar",
- "time",
- "tokio",
- "tower",
- "tower-http",
- "typst",
- "typst-kit",
- "typst-pdf",
- "ureq 3.0.10",
- "zip",
- "zune-inflate",
-]
-
-[[package]]
 name = "addr2line"
 version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1828,6 +1801,33 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "inventorize"
+version = "0.0.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "axum-extra",
+ "axum-login",
+ "clap",
+ "image",
+ "password-auth",
+ "serde",
+ "serde_yaml",
+ "sqlx",
+ "tar",
+ "time",
+ "tokio",
+ "tower",
+ "tower-http",
+ "typst",
+ "typst-kit",
+ "typst-pdf",
+ "ureq 3.0.10",
+ "zip",
+ "zune-inflate",
 ]
 
 [[package]]

@@ -18,6 +18,7 @@ use typst::foundations::ops::pos;
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::{cors::{Any, CorsLayer}, services::{ServeDir, ServeFile}};
 
+
 pub async fn start_server(config: Config, db: DB) {
 
     println!("{0}",config.password);

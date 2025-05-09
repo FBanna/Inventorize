@@ -1,6 +1,6 @@
 [package]
-name = "Inventorize"
-version = "0.1.0"
+name = "inventorize"
+version = "0.0.0"
 edition = "2024"
 authors = ["FBanna"]
 description = "organise parts inventory using a web app and qr code stickers!"
