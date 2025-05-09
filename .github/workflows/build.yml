@@ -47,9 +47,9 @@ jobs:
         with:
           name: inventorize
           path: |
-            "target/release/inventorize"
-            "frontend/dist/*"
-            "labels/*"
+            target/release/inventorize
+            frontend/dist/*
+            labels/*
 
   release-artifacts:
     permissions:
