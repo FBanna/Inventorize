@@ -19,6 +19,9 @@ jobs:
       - name: update rust
         run: rustup update
 
+      - name: install yarn
+        run: yarn
+
       - name: Export Tag
         run: |
           echo "RELEASE_TAG=${{ github.ref_name }}" >> "$GITHUB_ENV"
