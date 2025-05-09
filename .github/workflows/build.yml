@@ -38,45 +38,34 @@ jobs:
       - name: build
         run: ./build.sh
         
-      # - name: capture build artifacts
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: Artifacts
-      #     path: build/libs/
+      - name: capture build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: inventorize
+          path: |
+            target/release/inventorize
+            frontend/dist/
+            labels/
 
-  # release-artifacts:
-  #   permissions:
-  #     contents: write
-  #   needs:
-  #     - build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Download artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         merge-multiple: true
-  #         path: artifacts/
+  release-artifacts:
+    permissions:
+      contents: write
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: artifacts/
 
-  #     - name: Release
-  #       uses: ncipollo/release-action@v1
-  #       with:
-  #         #tag: "test"
-  #         #tag: ${{ env.TAG }}
-  #         tag: ${{ github.ref_name }}
-  #         artifacts: "artifacts/*.jar"
-  #         prerelease: false
-  #         body: "pre release, do not use"
-
-  #     - name: Modrinth
-  #       uses: Kir-Antipov/mc-publish@v3.3.0
-  #       with:
-  #         # Only include this section if you wish to publish
-  #         # your assets on Modrinth.
-  #         #tag: ${{ github.ref_name }}
-
-  #         modrinth-id: fEwhuw0Y
-  #         modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-  #         loaders: fabric
-  #         version-type: release
-  #         files: |
-  #           artifacts/!(*-@(dev|sources|javadoc)).jar
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          #tag: "test"
+          #tag: ${{ env.TAG }}
+          tag: ${{ github.ref_name }}
+          artifacts: "artifacts/*"
+          prerelease: false
+          body: "pre release, do not use"
