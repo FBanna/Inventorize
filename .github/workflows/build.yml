@@ -31,7 +31,7 @@ jobs:
       #     cache: 'yarn'
       
       - name: update rust
-        run: rustup update
+        run: rustup toolchain install stable --profile minimal --no-self-update
 
       - name: rust cache
         uses: Swatinem/rust-cache@v2
@@ -58,9 +58,6 @@ jobs:
       - name: install yarn
         run: yarn install --immutable
         working-directory: frontend
-
-      - name: rust cache
-        uses: Swatinem/rust-cache@v2
 
       - name: build
         run: yarn build
