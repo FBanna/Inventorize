@@ -96,7 +96,7 @@ jobs:
           files: |
             artifacts/labels/
             artifacts/target/release/*
-            artifacts/dest/
+            artifacts/dist/
           dest: inventorize.zip
 
       - name: Release
