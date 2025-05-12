@@ -35,6 +35,8 @@ jobs:
 
       - name: rust cache
         uses: Swatinem/rust-cache@v2
+        with:
+          verbose: true
 
       - name: build
         run: cargo build --release
