@@ -12,8 +12,8 @@ on:
 jobs:
   build-backend:
     runs-on: ubuntu-latest
-    container:
-      image: rust:latest
+    # container:
+    #   image: rust:latest
       
     steps:
       - name: checkout repository
@@ -45,7 +45,7 @@ jobs:
           name: BACKEND
           path: |
             target/release/inventorize
-            labels/*
+            labels/
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -70,7 +70,7 @@ jobs:
         with:
           name: FRONTEND
           path: |
-            frontend/dist/*
+            frontend/dist/
             
 
 
@@ -93,7 +93,10 @@ jobs:
       - name: zip artifacts
         uses: vimtor/action-zip@v1.2
         with:
-          files: artifacts/
+          files: |
+            artifacts/labels/
+            artifacts/target/release/*
+            artifacts/dest/
           dest: inventorize.zip
 
       - name: Release
