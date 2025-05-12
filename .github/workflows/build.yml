@@ -43,7 +43,8 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: rust-cache-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: rust-cache-
 
       - name: build
         run: cargo build --release
@@ -96,12 +97,15 @@ jobs:
         with:
           merge-multiple: true
           path: artifacts/
+
+      - name: Move dist
+        run: mkdir temp && mv artifacts/dist/ temp/
       
         
       - name: zip artifacts
         uses: vimtor/action-zip@v1.2
         with:
-          files: artifacts/labels/ artifacts/target/release/inventorize artifacts/dist/
+          files: artifacts/labels/ artifacts/target/release/inventorize temp/
           dest: inventorize.zip
 
       - name: Release
