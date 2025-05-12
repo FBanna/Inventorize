@@ -34,9 +34,16 @@ jobs:
         run: rustup toolchain install stable --profile minimal --no-self-update
 
       - name: rust cache
-        uses: Swatinem/rust-cache@v2
+#        uses: Swatinem/rust-cache@v2
+        uses: actions/cache@v4
         with:
-          verbose: true
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: build
         run: cargo build --release
@@ -71,8 +78,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: FRONTEND
-          path: |
-            frontend
+          path: frontend/dist
             
 
 
@@ -95,10 +101,7 @@ jobs:
       - name: zip artifacts
         uses: vimtor/action-zip@v1.2
         with:
-          files: |
-            artifacts/labels/
-            artifacts/target/release/*
-            artifacts/dist/
+          files: artifacts/labels/ artifacts/target/release/* artifacts/dist/
           dest: inventorize.zip
 
       - name: Release
