@@ -78,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: FRONTEND
-          path: frontend/dist
+          path: frontend
             
 
 
