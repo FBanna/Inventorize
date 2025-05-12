@@ -99,13 +99,13 @@ jobs:
           path: artifacts/
 
       - name: Move dist
-        run: mkdir temp && mv artifacts/dist/ temp/
+        run: mkdir temp-frontend && mv artifacts/dist/ temp-frontend/ && mkdir temp-labels && mv artifacts/labels temp-labels/
       
         
       - name: zip artifacts
         uses: vimtor/action-zip@v1.2
         with:
-          files: artifacts/labels/ artifacts/target/release/inventorize temp/
+          files: temp-labels/ artifacts/target/release/inventorize temp-frontend/
           dest: inventorize.zip
 
       - name: Release
