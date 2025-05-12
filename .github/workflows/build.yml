@@ -101,7 +101,7 @@ jobs:
       - name: zip artifacts
         uses: vimtor/action-zip@v1.2
         with:
-          files: artifacts/labels/ artifacts/target/release/* artifacts/dist/
+          files: artifacts/labels/ artifacts/target/release/inventorize artifacts/dist/
           dest: inventorize.zip
 
       - name: Release
