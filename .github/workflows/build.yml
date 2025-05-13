@@ -23,6 +23,8 @@ jobs:
     
     name: Build and release on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    if: ${{ github.ref_name }} != main
+      #run: exit -1
 
     env:
       CARGO_TERM_COLOR: always
@@ -46,17 +48,17 @@ jobs:
         run: rustup toolchain install stable --profile minimal --no-self-update
 
       - name: rust cache
-        uses: Swatinem/rust-cache@v2
-        # uses: actions/cache@v4
-        # with:
-        #   path: |
-        #     ~/.cargo/bin/
-        #     ~/.cargo/registry/index/
-        #     ~/.cargo/registry/cache/
-        #     ~/.cargo/git/db/
-        #     target/
-        #   key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        #   restore-keys: ${{ runner.os }}-
+        #uses: Swatinem/rust-cache@v2
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-
 
       - name: build
         run: cargo build --release
@@ -70,7 +72,9 @@ jobs:
             labels/
 
   build-frontend:
+    
     runs-on: ubuntu-latest
+    if: ${{ github.ref_name }} != main
       
     steps:
       - name: checkout repository
