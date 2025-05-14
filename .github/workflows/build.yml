@@ -24,7 +24,7 @@ jobs:
     
     name: Build and release on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    if: ${{ github.ref_name }} != main
+    
       #run: exit -1
 
     env:
@@ -75,7 +75,6 @@ jobs:
   build-frontend:
     
     runs-on: ubuntu-latest
-    if: ${{ github.ref_name }} != main
       
     steps:
       - name: checkout repository
@@ -134,6 +133,7 @@ jobs:
 
 
       - name: Release
+        if: ${{ github.ref_name }} != main
         uses: ncipollo/release-action@v1
         with:
           #tag: "test"
