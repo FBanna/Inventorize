@@ -136,7 +136,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           #tag: "test"
-          #tag: ${{ env.TAG }}
+          #tag: ${{ env.TAG }
           tag: ${{ github.ref_name }}
           artifacts: "inventorize-linux.zip, inventorize-windows.zip"
           prerelease: false
