@@ -9,7 +9,8 @@ on:
     branches:
       - main
     tags:
-      - '*'
+      - '0.*'
+      - '1.*'
 
 jobs:
   build-backend:
