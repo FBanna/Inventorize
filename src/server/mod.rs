@@ -61,8 +61,8 @@ pub async fn start_server(config: Config, db: DB) {
 
         .route("/login_api", post(handler::login))
 
-        .nest_service("/login", ServeDir::new("../dist/login/index.html"))
-        .nest_service("/assets", ServeDir::new("../dist/assets"))
+        .nest_service("/login", ServeDir::new("./dist/login/index.html"))
+        .nest_service("/assets", ServeDir::new("./dist/assets"))
         .nest_service("/data", ServeDir::new("./data"))
 
         .route("/logout", get(handler::logout))
@@ -120,7 +120,7 @@ fn api() -> Router<Arc<ServerState>>{
 
 fn protected() -> Router<Arc<ServerState>>{
     println!("ive been called! PANIC");
-    let service = ServeFile::new("../dist/index.html");
+    let service = ServeFile::new("./dist/index.html");
     let protected = Router::new()
         .route_service("/", service.clone())
         .route_service("/addcomponent", service.clone())

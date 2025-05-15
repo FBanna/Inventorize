@@ -8,11 +8,10 @@ name: build
 on:
   
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
     tags:
-      - '0.*'
-      - '1.*'
+      - '*'
   
 
 jobs:
