@@ -4,16 +4,21 @@
 # against bad commits.
 
 name: build
+
 on:
+  
   push:
     branches:
       - main
     tags:
       - '0.*'
       - '1.*'
+  
 
 jobs:
+  
   build-backend:
+    
     #runs-on: ubuntu-latest
     # container:
     #   image: rust:latest
@@ -133,7 +138,8 @@ jobs:
 
 
       - name: Release
-        if: ${{ github.ref_name }} != main
+        # if: ${{ github.ref_name }} != main
+        if: github.ref_type == 'tag'
         uses: ncipollo/release-action@v1
         with:
           #tag: "test"
