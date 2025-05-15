@@ -58,7 +58,6 @@ impl PostComponent {
 
                     self.image = Some(bytes);
 
-                    println!("optimised!");
 
                     return;
 
@@ -67,7 +66,6 @@ impl PostComponent {
             }
         }
 
-        println!("not optimised!");
 
         self.image = None;
     }

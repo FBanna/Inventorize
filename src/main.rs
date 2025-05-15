@@ -12,8 +12,6 @@ async fn main() {
 
     let config: Config = cli::get_config().await;
 
-    config.print();
-
 
     let component_db = DB::init(&config.db_location).await;
 
@@ -54,9 +52,6 @@ async fn main() {
     // };
 
     // component_db.add(&component).await;
-
-    
-    Config::debug_print(&config);
 
     server::start_server(config, component_db).await;
 

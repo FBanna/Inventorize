@@ -387,7 +387,6 @@ pub fn get_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>>
 
 pub fn write_component_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>) {
 
-    println!("im writing {}", name);
 
     if let Some(data) = option {
         //let binding = config.to_owned() + "\\" + &id.to_string();
@@ -395,7 +394,7 @@ pub fn write_component_files(id: i64, name: &str, config: &str, option: &Option<
         
         let path: PathBuf = Path::new(config).join(id.to_string());
 
-        println!("trying to access path at {}", path.as_os_str().to_str().get_or_insert_default());
+        //println!("trying to access path at {}", path.as_os_str().to_str().get_or_insert_default());
 
         if !path.exists() {
             fs::create_dir_all(&path).expect("could not create asset dir for component!");

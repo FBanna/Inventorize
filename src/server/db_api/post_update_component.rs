@@ -22,8 +22,6 @@ pub async fn post_update_component(
 
     //c.optimise_image();
 
-    println!("trying to update!");
-
     shared_state.db.update_with_files(c.id, c.component, &shared_state.config).await;
 
     //shared_state.db.add(c, &shared_state.config).await;
