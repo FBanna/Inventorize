@@ -42,11 +42,18 @@ pub async fn start_server(config: Config, db: DB) {
 
 
 
-    //#[cfg(debug_assertions)]
-    //let app = get_router_debug();
+    // RELEASE BUILD
+    #[cfg(not(debug_assertions))]
+    let prot_frontend: Router<Arc<ServerState>> = Router::new()
+        .nest_service("/login", ServeDir::new("./dist/login/index.html"))
+        .nest_service("/assets", ServeDir::new("./dist/assets"));
 
-    //#[cfg(not(debug_assertions))]
-    //let app = get_router(auth_layer);
+    // DEBUG BUILD
+    #[cfg(debug_assertions)]
+    let prot_frontend: Router<Arc<ServerState>> = Router::new()
+        .nest_service("/login", ServeDir::new("../dist/login/index.html"))
+        .nest_service("/assets", ServeDir::new("../dist/assets"));
+
 
     
 
@@ -56,8 +63,7 @@ pub async fn start_server(config: Config, db: DB) {
 
         .route("/login_api", post(handler::login))
 
-        .nest_service("/login", ServeDir::new("./dist/login/index.html"))
-        .nest_service("/assets", ServeDir::new("./dist/assets"))
+        .merge(prot_frontend)
         .nest_service("/data", ServeDir::new("./data"))
 
         .route("/logout", get(handler::logout))
@@ -115,7 +121,13 @@ fn api() -> Router<Arc<ServerState>>{
 
 fn protected() -> Router<Arc<ServerState>>{
     println!("ive been called! PANIC");
+
+    #[cfg(not(debug_assertions))]
+    let service = ServeFile::new("../dist/index.html");
+    #[cfg(debug_assertions)]
     let service = ServeFile::new("./dist/index.html");
+
+
     let protected = Router::new()
         .route_service("/", service.clone())
         .route_service("/addcomponent", service.clone())
