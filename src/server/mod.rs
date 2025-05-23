@@ -120,12 +120,11 @@ fn api() -> Router<Arc<ServerState>>{
 }
 
 fn protected() -> Router<Arc<ServerState>>{
-    println!("ive been called! PANIC");
 
     #[cfg(not(debug_assertions))]
-    let service = ServeFile::new("../dist/index.html");
-    #[cfg(debug_assertions)]
     let service = ServeFile::new("./dist/index.html");
+    #[cfg(debug_assertions)]
+    let service = ServeFile::new("../dist/index.html");
 
 
     let protected = Router::new()
