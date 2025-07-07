@@ -165,6 +165,11 @@ pub trait ComponentServices {
 impl ComponentServices for DB{
 
     async fn remove(&self, i: i32) {
+
+        let c = self.get(i).await;
+
+        self.update_prompts_del(&c).await;
+
         sqlx::query("
             DELETE FROM components
             WHERE ROWID = (?)
@@ -172,6 +177,8 @@ impl ComponentServices for DB{
         .execute(&self.pool)
         .await
         .unwrap();
+
+        
     }
 
     async fn remove_list(&self, list: Vec<i32>) {
@@ -258,7 +265,7 @@ impl ComponentServices for DB{
             .unwrap();
 
 
-        self.update_prompts(&c).await;
+        self.update_prompts_add(&c).await;
 
         return result;
     }

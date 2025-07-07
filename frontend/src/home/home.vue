@@ -53,7 +53,9 @@
 
     selected.value = []
 
-    await search_components()
+    await search_components() // MIGHT BE WRONG!
+
+    await get_all_prompt()
     
   }
   
@@ -85,6 +87,8 @@
   async function get_all_prompt() {
     let response = await fetch(import.meta.env.VITE_API_URL + "api/get_all_prompt")
     let json = await response.json()
+
+    console.log(json)
 
     prompts.value = json
 
@@ -178,8 +182,8 @@
       <br>
 
       <select v-model="prompt_selected[index]" multiple="multiple" class="results">
-        <option class="result" v-for="result in prompt.prompts" v-show="(result.toLowerCase()).includes(prompt_search[index].toLowerCase())">
-          {{ result }}
+        <option class="result" v-for="result in prompt.prompts" v-show="(result[0].toLowerCase()).includes(prompt_search[index].toLowerCase())">
+          {{ result[0] }}
         </option>
       </select>
 

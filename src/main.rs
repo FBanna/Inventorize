@@ -53,6 +53,6 @@ async fn main() {
 
     // component_db.add(&component).await;
 
-    server::start_server(config, component_db).await;
+    server::entry::start_server(config, component_db).await;
 
 }

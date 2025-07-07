@@ -1,5 +1,6 @@
 // thanks to https://github.com/tfachmann/typst-as-library/blob/main/src/lib.rs
 
+
 use std::collections::HashMap;
 use std::io::Read;
 use std::path::PathBuf;
@@ -48,18 +49,18 @@ pub struct TypstWrapperWorld {
 impl TypstWrapperWorld {
     pub fn new(root: String, source: String, inputs: Library, fonts: String) -> Self {
 
- 
-        let root_path = PathBuf::from(root);
-        let fonts = FontSearcher::new().include_system_fonts(true).search_with([root_path.join(fonts)]);
+        let root = PathBuf::from(root);
+        let fonts = FontSearcher::new().include_system_fonts(true).search();
+
 
 
 
         //let inputs: Dict = Dict::new()
 
         Self {
-            library: LazyHash::new(inputs),
+            library: LazyHash::new(Library::default()),
             book: LazyHash::new(fonts.book),
-            root: root_path,
+            root,
             fonts: fonts.fonts,
             source: Source::detached(source),
             time: time::OffsetDateTime::now_utc(),

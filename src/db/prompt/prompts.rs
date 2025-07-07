@@ -14,7 +14,7 @@ impl Prompts{
     pub fn new() -> Self {
         let prompt_names = ELEMENTS;
 
-        let mut prompts = Vec::with_capacity(6);
+        let mut prompts = Vec::with_capacity(ELEMENTS.len());
 
         for prompt in prompt_names {
             prompts.push(Prompt::new(prompt.to_owned()));

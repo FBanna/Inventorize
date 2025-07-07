@@ -8,7 +8,7 @@ use super::super::{components::Component, db::DB};
 
 
 #[derive(FromRow,Debug,Serialize)]
-pub struct PromptEntry( pub String );
+pub struct PromptEntry( pub String, pub i32);
 
 #[derive(Debug)]
 pub struct Prompt{
