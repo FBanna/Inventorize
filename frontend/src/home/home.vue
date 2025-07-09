@@ -214,7 +214,7 @@
 
         <tbody v-for="c in components">
           
-          <tr @click="row_click(c)" v-bind:style="[selected.includes(c.id) ? {'background-color': 'rgba(0, 110, 255, 0.445)'} : {}]">
+          <tr @click="row_click(c)" @mouseenter="row_click(c)" v-bind:style="[selected.includes(c.id) ? {'background-color': 'rgba(0, 110, 255, 0.445)'} : {}]">
 
               <!-- <td v-if="selecting"><input type="checkbox" :value="c.id" v-model="selected"></td> -->
 

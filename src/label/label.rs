@@ -1,7 +1,7 @@
-use std::{fs, io::{Cursor, Write}, path::{Path, PathBuf}, sync::Arc};
+use std::{collections::HashMap, fs, io::{Cursor, Write}, path::{Path, PathBuf}, sync::{Arc, Mutex}, thread};
 
 use axum::extract::State;
-use typst::{foundations::{Dict, Value}, pdf, Library};
+use typst::{foundations::{Dict, Value}, html::tag::template, pdf, Library};
 use typst_pdf::PdfOptions;
 use zip::write::SimpleFileOptions;
 
@@ -15,11 +15,14 @@ pub trait Label {
     
     fn build(&self, config: &Config) -> Option<Vec<u8>>;
 
+    fn build_cached(&self, file: String, config: &Config) -> Vec<u8>;
+
     fn get_inputs(&self, config: &Config) -> Library;
 
     fn build_save(&self, config: &Config);
 
     fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> where Self:Sized;
+    
 
 }
 
@@ -44,10 +47,10 @@ impl Label for Component{
 
             let location: &str = &config.label_location;
             let fonts: &str = &config.font_location;
-            let path = PathBuf::new().join(location).join(label.to_owned()+".typ");
+            let path = PathBuf::new().join(location).join(label.to_owned()+".typ"); // VERY SLOW OPPERATION
             
-            if path.exists(){
-                let data = fs::read_to_string(path).expect("Unable to read File!");
+            if path.exists(){// VERY SLOW OPPERATION
+                let data = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
 
                 let world = typst_wrapper::TypstWrapperWorld::new(location.to_owned(), data, self.get_inputs(config), fonts.to_owned());
 
@@ -66,72 +69,147 @@ impl Label for Component{
         println!("failed for some reason");
         return None;
     }
+
+    fn build_cached(&self, file: String, config: &Config) -> Vec<u8> { // catch all these errors please!
+
+        let world = typst_wrapper::TypstWrapperWorld::new(config.label_location.to_owned(), file, self.get_inputs(config), config.font_location.to_owned());
+
+        let document: typst::layout::PagedDocument = typst::compile(&world)
+            .output
+            .expect("ahahha!");
+
+        let pdf = typst_pdf::pdf(&document, &PdfOptions::default()).expect("ERROR EXPORTING");
+
+        return pdf;
+
+
+    }
+
+
     
 
     fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> {
+
+
+        let mut handles = Vec::new();
+
+        let c_arc = Arc::new(config.clone());
+
+        let template_cache_arc: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
+
+        
+        
+
+        let mut i = 0;
+        
+        for label in labels {
+
+            i+=1;
+
+            if let Some(label_name) = label.label.clone() {
+                let c = Arc::clone(&c_arc);
+
+                let template_cache_mutex = Arc::clone(&template_cache_arc);
+
+                handles.push(thread::spawn(move || {
+                    let name: String;
+                    
+                    if let Some(id) = label.id {
+                        name = format!("{}-{}.pdf", label.name, id);
+                    } else {
+
+                        println!("ERROR COULDNT FIND ID");
+                        return None;
+
+                    }
+
+                    
+
+                    let mut template_cache = template_cache_mutex.lock().unwrap();
+
+                    let template_data: String;
+
+                    
+
+                    if !template_cache.contains_key(&label_name) {
+                        let location: &str = &c.label_location;
+                        let fonts: &str = &c.font_location;
+                        let path = PathBuf::new().join(location).join(label_name.to_owned()+".typ"); // VERY SLOW OPPERATION
+                        
+                        if path.exists(){// VERY SLOW OPPERATION
+
+                            template_data = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
+                            template_cache.insert(label_name, template_data.clone());
+                        } else {
+                            return None;
+                        }
+                    } else {
+
+                        println!("found a cached version");
+                        template_data = template_cache.get(&label_name).expect("fauked").to_owned();
+                    }
+
+                    drop(template_cache);
+                    
+                    println!("building {}!", i);
+
+                    let pdf_bytes = label.build_cached(template_data, &c);
+
+                    println!("finished building {}!", i);
+
+                    return Some((name, pdf_bytes));
+
+
+
+                }));
+            }
+            
+        }
 
         let mut bytes: Vec<u8> = Vec::new();
 
         let mut zip = zip::ZipWriter::new(Cursor::new(&mut bytes));
 
         let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
-        
-        for label in labels {
 
-            let name: String;
+        println!("compressing!");
 
-            if let Some(id) = label.id {
-                name = format!("{}-{}.pdf", label.name, id);
-            } else {
+        for handle in handles{
 
-                println!("ERROR COULDNT FIND ID");
-                continue;
+            if let Some(data) = handle.join().expect("nah") {
+                let r1 = zip.start_file(data.0, options);
 
-            }
+                if r1.is_err() {
+                    println!("failed to add label to zip!");
+                    zip.abort_file();
+                    continue;
+                }
 
-            
-
-            let r1 = zip.start_file(name, options);
-
-            if r1.is_err() {
-                println!("failed to add label to zip!");
-                zip.abort_file();
-                continue;
-            }
-
-            println!("building!");
-
-            let option_pdf_bytes = label.build(&config);
-
-            println!("finished building!");
-
-            if let Some(pdf_bytes) = option_pdf_bytes {
-
-                let r2 = zip.write(&pdf_bytes);
+                let r2 = zip.write(&data.1);
 
                 if r2.is_err(){
                     println!("failed to write label to zip!");
                     zip.abort_file();
-                continue;
+                    continue;
                 }
-                
-            } else {
-                zip.abort_file();
-                continue;
-            }
 
-            
+            }
         }
 
-        println!("compressing!");
+        println!("finished compressing!");
+        
 
         let result = zip.finish();
 
-        println!("finished compressing!");
+        println!("finished");
 
+        
         if result.is_err() {
             return None;
         }
+
+        typst::comemo::evict(0); // clear all typst cache
+        
 
         return Some(bytes);
         
@@ -140,7 +218,7 @@ impl Label for Component{
 
 
     fn get_inputs(&self, config: &Config) -> Library {
-
+        
         let mut dict: Dict = Dict::new();
 
         dict.insert("name".into(), Value::Str(self.name.to_owned().into()));
@@ -155,9 +233,10 @@ impl Label for Component{
 
         dict.insert("url".into(), Value::Str((config.host_address.to_owned() + "/component/" + &self.id.clone().get_or_insert_default().to_string()).into()));
         //insert_optional(&mut dict, "url", &self.url);
-        
 
-        Library::builder().with_inputs(dict).build()
+        let temp = Library::builder().with_inputs(dict).build();
+
+        return temp;
     }
     
     

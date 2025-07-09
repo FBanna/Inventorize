@@ -15,7 +15,7 @@ const DEFAULT_LABEL_LOCATION: &str = "labels";
 const DEFAULT_FONT_LOCATION: &str = "fonts";
 const DEFAULT_ASSET_LOCATION: &str = "data";
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub struct Config{
     pub port: u16,
     pub user: String,

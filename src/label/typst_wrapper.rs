@@ -6,6 +6,7 @@ use std::io::Read;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
+use axum::extract::Path;
 use typst::diag::{eco_format, FileError, FileResult, PackageError, PackageResult};
 use typst::ecow::EcoString;
 use typst::foundations::{Bytes, Datetime, Dict, Str, ToStr, Value};
@@ -50,23 +51,19 @@ impl TypstWrapperWorld {
     pub fn new(root: String, source: String, inputs: Library, fonts: String) -> Self {
 
         let root = PathBuf::from(root);
-        let fonts = FontSearcher::new().include_system_fonts(true).search();
-
-
-
-
-        //let inputs: Dict = Dict::new()
+        let fonts = FontSearcher::new().include_system_fonts(true).search_with([root.join(fonts)]);
 
         Self {
-            library: LazyHash::new(Library::default()),
+            library: LazyHash::new(inputs),
             book: LazyHash::new(fonts.book),
             root,
             fonts: fonts.fonts,
             source: Source::detached(source),
             time: time::OffsetDateTime::now_utc(),
-            cache_directory: std::env::var_os("CACHE_DIRECTORY")
-                .map(|os_path| os_path.into())
-                .unwrap_or(std::env::temp_dir()),
+            cache_directory: //std::env::var_os("CACHE_DIRECTORY")
+                PathBuf::from("./"),
+                //.map(|os_path| os_path.into())
+                //.unwrap_or(std::env::temp_dir()),
             http: ureq::Agent::new_with_defaults(),
             files: Arc::new(Mutex::new(HashMap::new())),
         }

@@ -298,6 +298,8 @@ impl ComponentServices for DB{
 
         let mut result: Vec<Component> = Vec::new();
 
+        println!("pulling from db");
+
         for i in list {
 
             let component_result = sqlx::query_as("SELECT * FROM components WHERE id = (?)")
@@ -310,6 +312,8 @@ impl ComponentServices for DB{
                 result.push(compnent);
             }           
         }
+
+        println!("finished pulling");
 
         return result;
 
