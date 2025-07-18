@@ -1,7 +1,8 @@
 use std::{collections::HashMap, fs, io::{Cursor, Write}, path::{Path, PathBuf}, sync::{Arc, Mutex}, thread};
 
 use axum::extract::State;
-use typst::{foundations::{Dict, Value}, html::tag::template, pdf, Library};
+use typst::{foundations::{Dict, Value}, html::tag::template, pdf, Feature, Features, Library};
+use typst_kit::fonts::{FontSearcher, Fonts};
 use typst_pdf::PdfOptions;
 use zip::write::SimpleFileOptions;
 
@@ -15,7 +16,7 @@ pub trait Label {
     
     fn build(&self, config: &Config) -> Option<Vec<u8>>;
 
-    fn build_cached(&self, file: String, config: &Config) -> Vec<u8>;
+    fn build_cached(&self, file: String, config: &Config, fonts: Arc<Fonts>) -> Vec<u8>;
 
     fn get_inputs(&self, config: &Config) -> Library;
 
@@ -46,13 +47,15 @@ impl Label for Component{
         if let Some(label) = &self.label {
 
             let location: &str = &config.label_location;
-            let fonts: &str = &config.font_location;
+            let font: &str = &config.font_location;
             let path = PathBuf::new().join(location).join(label.to_owned()+".typ"); // VERY SLOW OPPERATION
             
             if path.exists(){// VERY SLOW OPPERATION
                 let data = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
 
-                let world = typst_wrapper::TypstWrapperWorld::new(location.to_owned(), data, self.get_inputs(config), fonts.to_owned());
+                let fonts = FontSearcher::new().include_system_fonts(true).search_with([PathBuf::from(location).join(font)]);
+
+                let world = typst_wrapper::TypstWrapperWorld::new(location.to_owned(), data, self.get_inputs(config), Arc::new(fonts));
 
                 let document: typst::layout::PagedDocument = typst::compile(&world)
                     .output
@@ -70,9 +73,9 @@ impl Label for Component{
         return None;
     }
 
-    fn build_cached(&self, file: String, config: &Config) -> Vec<u8> { // catch all these errors please!
+    fn build_cached(&self, file: String, config: &Config, fonts: Arc<Fonts>) -> Vec<u8> { // catch all these errors please!
 
-        let world = typst_wrapper::TypstWrapperWorld::new(config.label_location.to_owned(), file, self.get_inputs(config), config.font_location.to_owned());
+        let world = typst_wrapper::TypstWrapperWorld::new(config.label_location.to_owned(), file, self.get_inputs(config), fonts.to_owned());
 
         let document: typst::layout::PagedDocument = typst::compile(&world)
             .output
@@ -97,6 +100,17 @@ impl Label for Component{
 
         let template_cache_arc: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
 
+
+        let root = PathBuf::from(config.label_location.to_owned());
+
+        let font = config.font_location.to_owned();
+
+        println!("fonts");
+
+        let fonts = Arc::new(FontSearcher::new().include_system_fonts(true).search_with([root.join(font)]));
+
+        println!("fonts done");
+
         
         
 
@@ -110,6 +124,8 @@ impl Label for Component{
                 let c = Arc::clone(&c_arc);
 
                 let template_cache_mutex = Arc::clone(&template_cache_arc);
+
+                let fonts_arc = Arc::clone(&fonts);
 
                 handles.push(thread::spawn(move || {
                     let name: String;
@@ -153,7 +169,7 @@ impl Label for Component{
                     
                     println!("building {}!", i);
 
-                    let pdf_bytes = label.build_cached(template_data, &c);
+                    let pdf_bytes = label.build_cached(template_data, &c, fonts_arc);
 
                     println!("finished building {}!", i);
 
@@ -235,6 +251,7 @@ impl Label for Component{
         //insert_optional(&mut dict, "url", &self.url);
 
         let temp = Library::builder().with_inputs(dict).build();
+
 
         return temp;
     }

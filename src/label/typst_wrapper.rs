@@ -15,7 +15,7 @@ use typst::syntax::{FileId, Source};
 use typst::text::{Font, FontBook};
 use typst::utils::LazyHash;
 use typst::{Library, LibraryBuilder};
-use typst_kit::fonts::{FontSearcher, FontSlot};
+use typst_kit::fonts::{FontSearcher, FontSlot, Fonts};
 
 /// Main interface that determines the environment for Typst.
 pub struct TypstWrapperWorld {
@@ -32,7 +32,7 @@ pub struct TypstWrapperWorld {
     book: LazyHash<FontBook>,
 
     /// Metadata about all known fonts.
-    fonts: Vec<FontSlot>,
+    fonts: Arc<Fonts>,
 
     /// Map of all known files.
     files: Arc<Mutex<HashMap<FileId, FileEntry>>>,
@@ -48,16 +48,16 @@ pub struct TypstWrapperWorld {
 }
 
 impl TypstWrapperWorld {
-    pub fn new(root: String, source: String, inputs: Library, fonts: String) -> Self {
+    pub fn new(root: String, source: String, inputs: Library, fonts: Arc<Fonts>) -> Self {
 
         let root = PathBuf::from(root);
-        let fonts = FontSearcher::new().include_system_fonts(true).search_with([root.join(fonts)]);
+        
 
         Self {
             library: LazyHash::new(inputs),
-            book: LazyHash::new(fonts.book),
+            book: LazyHash::new(fonts.book.clone()),
             root,
-            fonts: fonts.fonts,
+            fonts: fonts,
             source: Source::detached(source),
             time: time::OffsetDateTime::now_utc(),
             cache_directory: //std::env::var_os("CACHE_DIRECTORY")
@@ -109,6 +109,7 @@ impl TypstWrapperWorld {
         }
         let path = if let Some(package) = id.package() {
             // Fetching file from package
+
             let package_dir = self.download_package(package)?;
             id.vpath().resolve(&package_dir)
         } else {
@@ -211,7 +212,9 @@ impl typst::World for TypstWrapperWorld {
 
     /// Accessing a specified font per index of font book.
     fn font(&self, id: usize) -> Option<Font> {
-        self.fonts[id].get()
+
+        self.fonts.fonts[id].get()
+        //self.fonts[id].get()
     }
 
     /// Get the current date.
