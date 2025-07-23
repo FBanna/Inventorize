@@ -17,6 +17,8 @@ use typst::utils::LazyHash;
 use typst::{Library, LibraryBuilder};
 use typst_kit::fonts::{FontSearcher, FontSlot, Fonts};
 
+use crate::label::label::FontCombined;
+
 /// Main interface that determines the environment for Typst.
 pub struct TypstWrapperWorld {
     /// Root path to which files will be resolved.
@@ -28,11 +30,13 @@ pub struct TypstWrapperWorld {
     /// The standard library.
     library: LazyHash<Library>,
 
-    /// Metadata about all known fonts.
-    book: LazyHash<FontBook>,
+    // /// Metadata about all known fonts.
+    // book: LazyHash<FontBook>,
 
-    /// Metadata about all known fonts.
-    fonts: Arc<Fonts>,
+    // /// Metadata about all known fonts.
+    // fonts: Vec<FontSlot>,
+
+    font_combined: Arc<FontCombined>,
 
     /// Map of all known files.
     files: Arc<Mutex<HashMap<FileId, FileEntry>>>,
@@ -48,16 +52,16 @@ pub struct TypstWrapperWorld {
 }
 
 impl TypstWrapperWorld {
-    pub fn new(root: String, source: String, inputs: Library, fonts: Arc<Fonts>) -> Self {
+    pub fn new(root: String, source: String, inputs: Library, fonts: Arc<FontCombined>) -> Self {
 
         let root = PathBuf::from(root);
         
 
         Self {
             library: LazyHash::new(inputs),
-            book: LazyHash::new(fonts.book.clone()),
+            // book: LazyHash::new(fonts.book),
             root,
-            fonts: fonts,
+            font_combined: fonts,
             source: Source::detached(source),
             time: time::OffsetDateTime::now_utc(),
             cache_directory: //std::env::var_os("CACHE_DIRECTORY")
@@ -188,7 +192,7 @@ impl typst::World for TypstWrapperWorld {
 
     /// Metadata about all known Books.
     fn book(&self) -> &LazyHash<FontBook> {
-        &self.book
+        &self.font_combined.book
     }
 
     /// Accessing the main source file.
@@ -213,8 +217,8 @@ impl typst::World for TypstWrapperWorld {
     /// Accessing a specified font per index of font book.
     fn font(&self, id: usize) -> Option<Font> {
 
-        self.fonts.fonts[id].get()
         //self.fonts[id].get()
+        self.font_combined.fonts[id].get()
     }
 
     /// Get the current date.
