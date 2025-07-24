@@ -1,7 +1,8 @@
 use std::{cell::OnceCell, collections::HashMap, fs, hash::Hash, io::{Cursor, Write}, ops::Deref, path::{Path, PathBuf}, sync::{Arc, Mutex, RwLock}, thread};
 
 use axum::extract::State;
-use dashmap::DashMap;
+
+use futures::{future::{join_all, BoxFuture, Shared}, lock::Mutex, FutureExt};
 use typst::{foundations::{Dict, Value}, html::tag::template, pdf, text::FontBook, utils::LazyHash, Feature, Features, Library};
 use typst_kit::fonts::{FontSearcher, FontSlot, Fonts};
 use typst_pdf::PdfOptions;
@@ -17,9 +18,8 @@ pub struct FontCombined {
     pub fonts: Vec<FontSlot>
 }
 
-pub struct TemplateMap {
-    map: HashMap<K,F>
-}
+type TemplateMap = HashMap<String, Shared<BoxFuture<'static, Option<String>>>>;
+
 
 pub trait Label {
 
@@ -33,7 +33,7 @@ pub trait Label {
 
     fn build_save(&self, config: &Config);
 
-    fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> where Self:Sized;
+    async fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> where Self:Sized;
     
 
 }
@@ -109,12 +109,14 @@ impl Label for Component{
 
 
 
-    fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> {
+    async fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> {
 
         //let template_cache_arc: Arc<RwLock<HashMap<String, OnceCell<String>>>> = Arc::new(RwLock::new(HashMap::new()));
 
+        
+
         //let test: Arc<RwLock<HashMap<>>>: DashMap<String, Arc<OnceCell<String>>
-        let template_cache_arc: Arc<DashMap<String, Arc<OnceCell<String>>>> = Arc::new(DashMap::new());
+        let template_cache_arc: Arc<futures::lock::Mutex<TemplateMap>> = Arc::new(futures::lock::Mutex::new(HashMap::new()));
 
         let package_cache_arc: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
 
@@ -132,45 +134,64 @@ impl Label for Component{
             fonts: fonts.fonts
         });
 
+        // let rt = tokio::runtime::Builder::new_current_thread()
+        //     .enable_all()
+        //     .build().expect("couldnt make runtime");
+
+        let c = config.to_owned();
+
+
+
 
         
 
+        //thread::scope(|scope| {
 
-        thread::scope(|scope| {
-            
-            let mut handles: Vec<thread::ScopedJoinHandle<'_, Option<(String, Vec<u8>)>>> = Vec::new();
-            
+        // tokio::spawn(async move {
 
         
-            for (i, label) in labels.iter().enumerate() {
+            
+            let mut handles: Vec<tokio::task::JoinHandle<Option<(String, Vec<u8>)>>> = Vec::new(); //: Vec<thread::ScopedJoinHandle<'_, Option<(String, Vec<u8>)>>>
+            
+            let test = labels.clone();
+        
+            for (i, label) in test.iter().enumerate() {
 
-                if let Some(label_name) = &label.label {
+                let t = label.clone();
+                
+
+                if let Some(label_name) = &t.label {
+
+                    let m = label_name.clone();
+
+                    
+                    let c = config.clone();
 
 
                     let template_cache = Arc::clone(&template_cache_arc);
                     let font_combined_arc = Arc::clone(&font_combined);
 
 
-                    
 
-                    handles.push(scope.spawn(move || {
+                    handles.push(tokio::spawn( async move {
 
                     
 
 
                         let name: String;
                         
-                        if let Some(id) = label.id {
-                            name = format!("{}-{}.pdf", label.name, id);
+                        if let Some(id) = t.id {
+                            name = format!("{}-{}.pdf", t.name, id);
                         } else {
 
                             println!("ERROR COULDNT FIND ID");
                             return None;
                         }
 
+                        
 
-                        let template_data = get_template(template_cache, label_name, &config);
 
+                        let template_data = get_template(template_cache, &m, &c).await;
                         
 
                         
@@ -181,11 +202,13 @@ impl Label for Component{
                         
                         println!("building {}!", i);
 
-                        let pdf_bytes = label.build_cached(template_data.expect("couldnt find it"), config, font_combined_arc);
+                        let pdf_bytes = label.build_cached(template_data.expect("couldnt find it"), &c, font_combined_arc);
 
                         println!("finished building {}!", i);
 
                         return Some((name, pdf_bytes));
+
+                        // return None;
 
                     
 
@@ -212,7 +235,8 @@ impl Label for Component{
             println!("compressing!");
 
             for handle in handles {
-                if let Some(data) = handle.join().expect("nah") {
+
+                if let Some(data) = handle.await.expect("nahh") {
 
                     let r1 = zip.start_file(data.0, options);
 
@@ -233,6 +257,7 @@ impl Label for Component{
                 }
             }
 
+
             println!("finished compressing!");
             
 
@@ -251,12 +276,12 @@ impl Label for Component{
             return Some(bytes);
 
 
-        })
+        // }).await;
 
         
 
 
-        //return None;
+        return None;
 
 
 
@@ -426,7 +451,9 @@ impl Label for Component{
     
 }
 
-fn get_template(template_cache: Arc<DashMap<String,Arc<OnceCell<String>>>>, label_name: &String, config: &Config) -> Option<String> {
+async fn get_template(template_cache: Arc<futures::lock::Mutex<TemplateMap>>, label_name: &String, config: &Config) -> Option<String> {
+
+    return None;
 
 
 
@@ -435,7 +462,8 @@ fn get_template(template_cache: Arc<DashMap<String,Arc<OnceCell<String>>>>, labe
 
             if let Some(cached) = r.get(label_name) {
                 println!("found a cached version");
-                return Some(cached.to_string())
+
+                return cached.clone().await
             }
 
         },
@@ -446,19 +474,30 @@ fn get_template(template_cache: Arc<DashMap<String,Arc<OnceCell<String>>>>, labe
         Ok(mut w) => {
 
             let location: &str = &config.label_location;
+            let path = PathBuf::new().join(location).join(label_name.to_owned()+".typ");
+
+            let future = async{
+                if path.exists() {
+                    let template_data = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
+                    //println!("reading it");
+                    //w.insert(label_name.to_string(), template_data.clone());
+
+                    return Some(template_data);
+
+                }
+
+                return None;
+                }.boxed().shared();
+
+            w.insert(
+                label_name.to_string(),
+                future.clone()
+            );
+
+            return future.await;
             
-            let path = PathBuf::new().join(location).join(label_name.to_owned()+".typ"); // VERY SLOW OPPERATION
 
-            if path.exists() {
-                let template_data = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
-                println!("reading it");
-                w.insert(label_name.to_string(), template_data.clone());
-
-                return Some(template_data);
-
-            }
-
-            return None;
+            
         },
         Err(e) => return None
     }

@@ -37,7 +37,7 @@ impl Config{
             host_address:   DEFAULT_HOST_NAME.to_owned(),
             db_location:    DEFAULT_DB_LOCATION.to_owned(),
             label_location: DEFAULT_LABEL_LOCATION.to_owned(),
-            font_location: DEFAULT_FONT_LOCATION.to_owned(),
+            font_location:  DEFAULT_FONT_LOCATION.to_owned(),
             asset_location: DEFAULT_ASSET_LOCATION.to_owned()
 
         }
