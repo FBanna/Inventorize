@@ -28,7 +28,7 @@ pub async fn post_build_label_zip(
     println!("3");
     //let option = shared_state.db.get(component.i).await.build(&shared_state.config);
 
-    if let Some(bytes) = option {
+    if let Some(bytes) = option.await {
 
         println!("4");
 

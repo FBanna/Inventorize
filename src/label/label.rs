@@ -2,7 +2,7 @@ use std::{cell::OnceCell, collections::HashMap, fs, hash::Hash, io::{Cursor, Wri
 
 use axum::extract::State;
 
-use futures::{future::{join_all, BoxFuture, Shared}, lock::Mutex, FutureExt};
+use futures::{future::{join_all, BoxFuture, Shared}, FutureExt};
 use typst::{foundations::{Dict, Value}, html::tag::template, pdf, text::FontBook, utils::LazyHash, Feature, Features, Library};
 use typst_kit::fonts::{FontSearcher, FontSlot, Fonts};
 use typst_pdf::PdfOptions;
@@ -27,7 +27,7 @@ pub trait Label {
     
     fn build(&self, config: &Config) -> Option<Vec<u8>>;
 
-    fn build_cached(&self, file: String, config: &Config, fonts: Arc<FontCombined>) -> Vec<u8>;
+    async fn build_cached(&self, file: String, config: &Config, fonts: Arc<FontCombined>) -> Vec<u8>;
 
     fn get_inputs(&self, config: &Config) -> Library;
 
@@ -90,15 +90,23 @@ impl Label for Component{
         return None;
     }
 
-    fn build_cached(&self, file: String, config: &Config, fonts: Arc<FontCombined>) -> Vec<u8> { // catch all these errors please!
+    async fn build_cached(&self, file: String, config: &Config, fonts: Arc<FontCombined>) -> Vec<u8> { // catch all these errors please!
 
         let world = typst_wrapper::TypstWrapperWorld::new(config.label_location.to_owned(), file, self.get_inputs(config), fonts);
 
         let document: typst::layout::PagedDocument = typst::compile(&world)
-            .output
-            .expect("ahahha!");
+                .output
+                .expect("ahahha!");
 
-        let pdf = typst_pdf::pdf(&document, &PdfOptions::default()).expect("ERROR EXPORTING");
+        let pdf = tokio::task::spawn_blocking(move || {
+
+            
+            
+            typst_pdf::pdf(&document, &PdfOptions::default())
+        
+        })
+            .await
+            .expect("failed to build!").expect("nah");
 
         return pdf;
 
@@ -116,7 +124,7 @@ impl Label for Component{
         
 
         //let test: Arc<RwLock<HashMap<>>>: DashMap<String, Arc<OnceCell<String>>
-        let template_cache_arc: Arc<futures::lock::Mutex<TemplateMap>> = Arc::new(futures::lock::Mutex::new(HashMap::new()));
+        let template_cache_arc: Arc<tokio::sync::RwLock<TemplateMap>> = Arc::new(tokio::sync::RwLock::new(HashMap::new()));
 
         let package_cache_arc: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
 
@@ -153,16 +161,20 @@ impl Label for Component{
             
             let mut handles: Vec<tokio::task::JoinHandle<Option<(String, Vec<u8>)>>> = Vec::new(); //: Vec<thread::ScopedJoinHandle<'_, Option<(String, Vec<u8>)>>>
             
-            let test = labels.clone();
-        
-            for (i, label) in test.iter().enumerate() {
+            //let test = labels.clone();
 
-                let t = label.clone();
+            let mut i = 0;
+        
+            for label in labels {
+
+                i += 1;
+
+                //let t = label.clone();
                 
 
-                if let Some(label_name) = &t.label {
+                if label.label.is_some() {
 
-                    let m = label_name.clone();
+                    //let m = label_name.clone();
 
                     
                     let c = config.clone();
@@ -180,8 +192,8 @@ impl Label for Component{
 
                         let name: String;
                         
-                        if let Some(id) = t.id {
-                            name = format!("{}-{}.pdf", t.name, id);
+                        if let Some(id) = label.id {
+                            name = format!("{}-{}.pdf", label.name, id);
                         } else {
 
                             println!("ERROR COULDNT FIND ID");
@@ -191,7 +203,7 @@ impl Label for Component{
                         
 
 
-                        let template_data = get_template(template_cache, &m, &c).await;
+                        let template_data = get_template(template_cache, &label.label.as_ref().unwrap(), &c).await;
                         
 
                         
@@ -202,17 +214,11 @@ impl Label for Component{
                         
                         println!("building {}!", i);
 
-                        let pdf_bytes = label.build_cached(template_data.expect("couldnt find it"), &c, font_combined_arc);
+                        let pdf_bytes = label.build_cached(template_data.expect("couldnt find it"), &c, font_combined_arc).await;
 
                         println!("finished building {}!", i);
 
                         return Some((name, pdf_bytes));
-
-                        // return None;
-
-                    
-
-                    
                     
                     }));
 
@@ -281,7 +287,7 @@ impl Label for Component{
         
 
 
-        return None;
+        //return None;
 
 
 
@@ -451,56 +457,108 @@ impl Label for Component{
     
 }
 
-async fn get_template(template_cache: Arc<futures::lock::Mutex<TemplateMap>>, label_name: &String, config: &Config) -> Option<String> {
+async fn get_template(template_cache: Arc<tokio::sync::RwLock<TemplateMap>>, label_name: &String, config: &Config) -> Option<String> {
 
-    return None;
+    // return None;
 
+    // match template_cache.try_read() {
+    //     Ok(r) => {
 
+    //         if let Some(cached) = r.get(label_name) {
+    //             println!("found a cached version");
 
-    match template_cache.try_read() {
-        Ok(r) => {
+    //             return cached.clone().await
+    //         }
 
-            if let Some(cached) = r.get(label_name) {
-                println!("found a cached version");
+    //     },
+    //     Err(e) => {
+    //         println!("ERROR @1! {}", e);
+    //         return None
+    //     },
+    // }
 
-                return cached.clone().await
-            }
+    {
+        let r =  template_cache.read().await;
 
-        },
-        Err(e) => return None,
+        if let Some(cached) = r.get(label_name) {
+            println!("found a cached version");
+
+            return cached.clone().await
+        }
     }
 
-    match template_cache.try_write() {
-        Ok(mut w) => {
+    
 
-            let location: &str = &config.label_location;
-            let path = PathBuf::new().join(location).join(label_name.to_owned()+".typ");
+    
 
-            let future = async{
-                if path.exists() {
-                    let template_data = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
-                    //println!("reading it");
-                    //w.insert(label_name.to_string(), template_data.clone());
 
-                    return Some(template_data);
+    let mut w = template_cache.write().await;
 
-                }
+    let location: &str = &config.label_location;
+    let path = PathBuf::new().join(location).join(label_name.to_owned()+".typ");
 
-                return None;
-                }.boxed().shared();
+    let future = async{
+        if path.exists() {
+            let template_data = tokio::fs::read_to_string(path).await.expect("Unable to read File!");// VERY SLOW OPPERATION
+            //println!("reading it");
+            //w.insert(label_name.to_string(), template_data.clone());
 
-            w.insert(
-                label_name.to_string(),
-                future.clone()
-            );
+            return Some(template_data);
 
-            return future.await;
+        } else {
+            println!("ERROR! Path is {}", path.display());
+        }
+
+        return None;
+    }.boxed().shared();
+
+    w.insert(
+        label_name.to_string(),
+        future.clone()
+    );
+
+    drop(w);
+
+    return future.await;
+
+
+
+    // match template_cache.try_write() {
+    //     Ok(mut w) => {
+
+    //         let location: &str = &config.label_location;
+    //         let path = PathBuf::new().join(location).join(label_name.to_owned()+".typ");
+
+    //         let future = async{
+    //             if path.exists() {
+    //                 let template_data = tokio::fs::read_to_string(path).await.expect("Unable to read File!");// VERY SLOW OPPERATION
+    //                 //println!("reading it");
+    //                 //w.insert(label_name.to_string(), template_data.clone());
+
+    //                 return Some(template_data);
+
+    //             } else {
+    //                 println!("ERROR! Path is {}", path.display());
+    //             }
+
+    //             return None;
+    //         }.boxed().shared();
+
+    //         w.insert(
+    //             label_name.to_string(),
+    //             future.clone()
+    //         );
+
+    //         return future.await;
             
 
             
-        },
-        Err(e) => return None
-    }
+    //     },
+    //     Err(e) => {
+    //         println!("ERROR @2! {}", e);
+    //         return None
+    //     }
+    // }
 
 
 
@@ -548,12 +606,17 @@ fn insert_optional(dict: &mut Dict, key: &str, value: &Option<String>) {
 
 #[cfg(test)]
 mod tests {
+    use tokio::runtime::Runtime;
+
     use crate::db;
 
     use super::*;
 
     #[test]
+
     fn test_build_zip() {
+
+        let rt  = Runtime::new().unwrap();
 
         let mut components = Vec::new();
 
@@ -594,7 +657,8 @@ mod tests {
 
         println!("building");
 
-        let result = Component::build_zip(components, &config);
+
+        let result = rt.block_on(Component::build_zip(components, &config));
 
         println!("done");
 
@@ -609,4 +673,7 @@ mod tests {
 // 0: 28.86, 32.39, 32.83                       ISSUES: fonts calculated on every label
 // 1: 22.24, 21.48, 15.36, 17.44, 17.66, 16.07  ISSUES: errors when having to download files at the same time
 // 2: 20.01, 24.01, 23.45, 23.77, 23.45, 18.04  ISSUES: no improvement, same bug as before - tried to cache fonts even more
-// 3: ISSUES: - changed to RwLock
+// 3: 15.49, 14.65, 15.05, 14.21, 14.39, 14.75  ISSUES: - changed to RwLock, tokio, futures cache. The whole 5 yards + more boiler plate in the actual test
+// 4: 16.59, 14.58, 14.38, 14.12, 13.96, 14.46  ISSUES: no error catching - changed to spawn blocking for typst build
+// 5: 15.61, 17.77, 19.07, 20.68, 20.41, 22.36  ISSUES: no catching errors - moved typst compile inside blocking *REVERT BACK TO (4)- rerun = runs much nicer in 4 no idea why?*
+
