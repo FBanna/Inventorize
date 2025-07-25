@@ -119,11 +119,6 @@ impl Label for Component{
 
     async fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> {
 
-        //let template_cache_arc: Arc<RwLock<HashMap<String, OnceCell<String>>>> = Arc::new(RwLock::new(HashMap::new()));
-
-        
-
-        //let test: Arc<RwLock<HashMap<>>>: DashMap<String, Arc<OnceCell<String>>
         let template_cache_arc: Arc<tokio::sync::RwLock<TemplateMap>> = Arc::new(tokio::sync::RwLock::new(HashMap::new()));
 
         let package_cache_arc: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
@@ -142,290 +137,121 @@ impl Label for Component{
             fonts: fonts.fonts
         });
 
-        // let rt = tokio::runtime::Builder::new_current_thread()
-        //     .enable_all()
-        //     .build().expect("couldnt make runtime");
 
-        let c = config.to_owned();
+        let mut handles: Vec<tokio::task::JoinHandle<Option<(String, Vec<u8>)>>> = Vec::new(); //: Vec<thread::ScopedJoinHandle<'_, Option<(String, Vec<u8>)>>>
+
+        let mut i = 0;
+    
+        for label in labels {
+
+            i += 1;
+
+            if label.label.is_some() {
+
+                let c = config.clone(); // get rid of this clone!
+
+
+                let template_cache = Arc::clone(&template_cache_arc);
+                let font_combined_arc = Arc::clone(&font_combined);
 
 
 
+                handles.push(tokio::spawn( async move {
 
-        
-
-        //thread::scope(|scope| {
-
-        // tokio::spawn(async move {
-
-        
-            
-            let mut handles: Vec<tokio::task::JoinHandle<Option<(String, Vec<u8>)>>> = Vec::new(); //: Vec<thread::ScopedJoinHandle<'_, Option<(String, Vec<u8>)>>>
-            
-            //let test = labels.clone();
-
-            let mut i = 0;
-        
-            for label in labels {
-
-                i += 1;
-
-                //let t = label.clone();
                 
 
-                if label.label.is_some() {
 
-                    //let m = label_name.clone();
-
+                    let name: String;
                     
-                    let c = config.clone();
+                    if let Some(id) = label.id {
+                        name = format!("{}-{}.pdf", label.name, id);
+                    } else {
 
-
-                    let template_cache = Arc::clone(&template_cache_arc);
-                    let font_combined_arc = Arc::clone(&font_combined);
-
-
-
-                    handles.push(tokio::spawn( async move {
-
-                    
-
-
-                        let name: String;
-                        
-                        if let Some(id) = label.id {
-                            name = format!("{}-{}.pdf", label.name, id);
-                        } else {
-
-                            println!("ERROR COULDNT FIND ID");
-                            return None;
-                        }
-
-                        
-
-
-                        let template_data = get_template(template_cache, &label.label.as_ref().unwrap(), &c).await;
-                        
-
-                        
-
-                        
-
-                        
-                        
-                        println!("building {}!", i);
-
-                        let pdf_bytes = label.build_cached(template_data.expect("couldnt find it"), &c, font_combined_arc).await;
-
-                        println!("finished building {}!", i);
-
-                        return Some((name, pdf_bytes));
-                    
-                    }));
-
-
-                    
-                
-
-                };
-                    
-                
-                
-            }
-
-            let mut bytes: Vec<u8> = Vec::new();
-
-            let mut zip = zip::ZipWriter::new(Cursor::new(&mut bytes));
-
-            let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
-
-            println!("compressing!");
-
-            for handle in handles {
-
-                if let Some(data) = handle.await.expect("nahh") {
-
-                    let r1 = zip.start_file(data.0, options);
-
-                    if r1.is_err() {
-                        println!("failed to add label to zip!");
-                        zip.abort_file();
-                        continue;
+                        println!("ERROR COULDNT FIND ID");
+                        return None;
                     }
 
-                    let r2 = zip.write(&data.1);
+                    
 
-                    if r2.is_err(){
-                        println!("failed to write label to zip!");
-                        zip.abort_file();
-                        continue;
-                    }
+
+                    let template_data = get_template(template_cache, &label.label.as_ref().unwrap(), &c).await;
+                    
+
+                    
+
+                    
+
+                    
+                    
+                    println!("building {}!", i);
+
+                    let pdf_bytes = label.build_cached(template_data.expect("couldnt find it"), &c, font_combined_arc).await;
+
+                    println!("finished building {}!", i);
+
+                    return Some((name, pdf_bytes));
+                
+                }));
+
+
+                
             
+
+            };
+                
+            
+            
+        }
+
+        let mut bytes: Vec<u8> = Vec::new();
+
+        let mut zip = zip::ZipWriter::new(Cursor::new(&mut bytes));
+
+        let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+
+        println!("compressing!");
+
+        for handle in handles {
+
+            if let Some(data) = handle.await.expect("nahh") {
+
+                let r1 = zip.start_file(data.0, options);
+
+                if r1.is_err() {
+                    println!("failed to add label to zip!");
+                    zip.abort_file();
+                    continue;
                 }
+
+                let r2 = zip.write(&data.1);
+
+                if r2.is_err(){
+                    println!("failed to write label to zip!");
+                    zip.abort_file();
+                    continue;
+                }
+        
             }
+        }
 
 
-            println!("finished compressing!");
-            
-
-            let result = zip.finish();
-
-            println!("finished");
-
-            
-            if result.is_err() {
-                return None;
-            }
-
-            typst::comemo::evict(0); // clear all typst cache
-            
-
-            return Some(bytes);
-
-
-        // }).await;
-
+        println!("finished compressing!");
         
 
+        let result = zip.finish();
 
-        //return None;
-
-
-
-        // let mut handles = Vec::new();
-
-        // let c_arc = Arc::new(config.clone());
-
-        // let template_cache_arc: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
-
-
-        // let root = PathBuf::from(config.label_location.to_owned());
-
-        // let font = config.font_location.to_owned();
-
-        // println!("fonts");
-
-        // let fonts = Arc::new(FontSearcher::new().include_system_fonts(true).search_with([root.join(font)]));
-
-        // println!("fonts done");
+        println!("finished");
 
         
-        
-        
+        if result.is_err() {
+            return None;
+        }
 
-        // let mut i = 0;
-        
-        // for label in labels {
-
-        //     i+=1;
-
-        //     if let Some(label_name) = label.label.clone() {
-        //         let c = Arc::clone(&c_arc);
-
-        //         let template_cache_mutex = Arc::clone(&template_cache_arc);
-
-        //         let fonts_arc = Arc::clone(&fonts);
-
-        //         handles.push(thread::spawn(move || {
-        //             let name: String;
-                    
-        //             if let Some(id) = label.id {
-        //                 name = format!("{}-{}.pdf", label.name, id);
-        //             } else {
-
-        //                 println!("ERROR COULDNT FIND ID");
-        //                 return None;
-
-        //             }
-
-                    
-
-        //             let mut template_cache = template_cache_mutex.lock().unwrap();
-
-        //             let template_data: String;
-
-                    
-
-        //             if !template_cache.contains_key(&label_name) {
-        //                 let location: &str = &c.label_location;
-        //                 let fonts: &str = &c.font_location;
-        //                 let path = PathBuf::new().join(location).join(label_name.to_owned()+".typ"); // VERY SLOW OPPERATION
-                        
-        //                 if path.exists(){// VERY SLOW OPPERATION
-
-        //                     template_data = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
-        //                     template_cache.insert(label_name, template_data.clone());
-        //                 } else {
-        //                     return None;
-        //                 }
-        //             } else {
-
-        //                 println!("found a cached version");
-        //                 template_data = template_cache.get(&label_name).expect("fauked").to_owned();
-        //             }
-
-        //             drop(template_cache);
-                    
-        //             println!("building {}!", i);
-
-        //             let pdf_bytes = label.build_cached(template_data, &c, fonts_arc);
-
-        //             println!("finished building {}!", i);
-
-        //             return Some((name, pdf_bytes));
-
-
-
-        //         }));
-        //     }
-            
-        // }
-
-        // let mut bytes: Vec<u8> = Vec::new();
-
-        // let mut zip = zip::ZipWriter::new(Cursor::new(&mut bytes));
-
-        // let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
-
-        // println!("compressing!");
-
-        // for handle in handles{
-
-        //     if let Some(data) = handle.join().expect("nah") {
-        //         let r1 = zip.start_file(data.0, options);
-
-        //         if r1.is_err() {
-        //             println!("failed to add label to zip!");
-        //             zip.abort_file();
-        //             continue;
-        //         }
-
-        //         let r2 = zip.write(&data.1);
-
-        //         if r2.is_err(){
-        //             println!("failed to write label to zip!");
-        //             zip.abort_file();
-        //             continue;
-        //         }
-
-        //     }
-        // }
-
-        // println!("finished compressing!");
+        typst::comemo::evict(0); // clear all typst cache
         
 
-        // let result = zip.finish();
+        return Some(bytes);
 
-        // println!("finished");
-
-        
-        // if result.is_err() {
-        //     return None;
-        // }
-
-        // typst::comemo::evict(0); // clear all typst cache
-        
-
-        // return Some(bytes);
         
     }
 
@@ -459,23 +285,6 @@ impl Label for Component{
 
 async fn get_template(template_cache: Arc<tokio::sync::RwLock<TemplateMap>>, label_name: &String, config: &Config) -> Option<String> {
 
-    // return None;
-
-    // match template_cache.try_read() {
-    //     Ok(r) => {
-
-    //         if let Some(cached) = r.get(label_name) {
-    //             println!("found a cached version");
-
-    //             return cached.clone().await
-    //         }
-
-    //     },
-    //     Err(e) => {
-    //         println!("ERROR @1! {}", e);
-    //         return None
-    //     },
-    // }
 
     {
         let r =  template_cache.read().await;
@@ -486,10 +295,6 @@ async fn get_template(template_cache: Arc<tokio::sync::RwLock<TemplateMap>>, lab
             return cached.clone().await
         }
     }
-
-    
-
-    
 
 
     let mut w = template_cache.write().await;
@@ -521,82 +326,6 @@ async fn get_template(template_cache: Arc<tokio::sync::RwLock<TemplateMap>>, lab
 
     return future.await;
 
-
-
-    // match template_cache.try_write() {
-    //     Ok(mut w) => {
-
-    //         let location: &str = &config.label_location;
-    //         let path = PathBuf::new().join(location).join(label_name.to_owned()+".typ");
-
-    //         let future = async{
-    //             if path.exists() {
-    //                 let template_data = tokio::fs::read_to_string(path).await.expect("Unable to read File!");// VERY SLOW OPPERATION
-    //                 //println!("reading it");
-    //                 //w.insert(label_name.to_string(), template_data.clone());
-
-    //                 return Some(template_data);
-
-    //             } else {
-    //                 println!("ERROR! Path is {}", path.display());
-    //             }
-
-    //             return None;
-    //         }.boxed().shared();
-
-    //         w.insert(
-    //             label_name.to_string(),
-    //             future.clone()
-    //         );
-
-    //         return future.await;
-            
-
-            
-    //     },
-    //     Err(e) => {
-    //         println!("ERROR @2! {}", e);
-    //         return None
-    //     }
-    // }
-
-
-
-
-    // let template_cache_result = template_cache.try_read(); //template_cache.lock().unwrap();
-
-    // if let Ok(template_cache) = template_cache_result {
-        
-
-    //     if !template_cache.contains_key(label_name) {
-
-    //         drop(template_cache);
-    //         let location: &str = &config.label_location;
-    //         //let fonts: &str = &config.font_location;
-    //         let path = PathBuf::new().join(location).join(label_name.to_owned()+".typ"); // VERY SLOW OPPERATION
-            
-    //         if path.exists(){// VERY SLOW OPPERATION
-
-    //                 template_data = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
-
-    //                 if let Ok(mut template_cache_writer) = template_cache.try_write() {
-    //                     template_cache_writer.insert(label_name.to_string(), template_data.clone());
-    //                 }
-
-                    
-    //             } else {
-    //                 return None;
-    //             }
-    //     } else {
-
-    //         println!("found a cached version");
-    //         template_data = template_cache.get(label_name).expect("fauked").to_owned();
-    //     }
-
-    //     drop(template_cache);
-
-
-    // }
 }
 
 
