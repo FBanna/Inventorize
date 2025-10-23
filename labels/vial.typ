@@ -28,7 +28,7 @@
 
 #set par(leading: 1mm)
 
-#{
+#let template(data: ()) = {
 
   rect(
     stroke: (thickness: 0.5mm, dash: "densely-dash-dotted"),
@@ -48,10 +48,10 @@
 
       #set block(above: 1mm, below: 0mm)
 
-      #inputs.at("name", default: "name")\
-      #inputs.at("size", default: "size")\
-      #inputs.at("value", default: "value")\
-      #inputs.at("info", default: "info")
+      #data.at("name")\
+      #data.at("size")\
+      #data.at("value")\
+      #data.at("info")
 
 
       #align(bottom+ right)[
@@ -84,8 +84,8 @@
           )[
 
             #text(size: 3mm)[
-              #inputs.at("name", default: "name")\
-              #inputs.at("value", default: "value")\
+              #data.at("name")\
+              #data.at("value")\
 
               //#sys.inputs.name
             ]
@@ -103,7 +103,9 @@
 
 
 }
-// #line(start: (0mm, -4mm),end: (100%,-4mm))
 
 
+#for label in sys.inputs.at("labels", default: ((name: "name", size: "size", value: "value", info: "info", url: "https://typst.app"),)){
+  template(data: label)
 
+}

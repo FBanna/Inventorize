@@ -23,12 +23,12 @@ pub async fn post_build_label_zip(
 
     println!("2");
 
-    let option = Component::build_zip(list, &shared_state.config);
+    let option = Component::build_pdf(list, &shared_state.config);
 
     println!("3");
     //let option = shared_state.db.get(component.i).await.build(&shared_state.config);
 
-    if let Some(bytes) = option.await {
+    if let Some(bytes) = option {
 
         println!("4");
 

@@ -3,21 +3,23 @@
 
 use std::collections::HashMap;
 use std::io::Read;
+use std::os::raw;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 use axum::extract::Path;
+use futures::FutureExt;
+use tokio::runtime::Handle;
 use typst::diag::{eco_format, FileError, FileResult, PackageError, PackageResult};
 use typst::ecow::EcoString;
 use typst::foundations::{Bytes, Datetime, Dict, Str, ToStr, Value};
-use typst::syntax::package::PackageSpec;
+use typst::syntax::package::{self, PackageSpec};
 use typst::syntax::{FileId, Source};
 use typst::text::{Font, FontBook};
 use typst::utils::LazyHash;
 use typst::{Library, LibraryBuilder};
 use typst_kit::fonts::{FontSearcher, FontSlot, Fonts};
 
-use crate::label::label::FontCombined;
 
 /// Main interface that determines the environment for Typst.
 pub struct TypstWrapperWorld {
@@ -30,13 +32,11 @@ pub struct TypstWrapperWorld {
     /// The standard library.
     library: LazyHash<Library>,
 
-    // /// Metadata about all known fonts.
-    // book: LazyHash<FontBook>,
+    /// Metadata about all known fonts.
+    book: LazyHash<FontBook>,
 
-    // /// Metadata about all known fonts.
-    // fonts: Vec<FontSlot>,
-
-    font_combined: Arc<FontCombined>,
+    /// Metadata about all known fonts.
+    fonts: Arc<Vec<FontSlot>>,
 
     /// Map of all known files.
     files: Arc<Mutex<HashMap<FileId, FileEntry>>>,
@@ -48,20 +48,21 @@ pub struct TypstWrapperWorld {
     http: ureq::Agent,
 
     /// Datetime.
-    time: time::OffsetDateTime,
+    time: time::OffsetDateTime
 }
 
 impl TypstWrapperWorld {
-    pub fn new(root: String, source: String, inputs: Library, fonts: Arc<FontCombined>) -> Self {
+    pub fn new(root: String, source: String, inputs: Library, fontsbook: &FontBook, fontslot: Arc<Vec<FontSlot>>) -> Self {
 
         let root = PathBuf::from(root);
+
         
 
         Self {
             library: LazyHash::new(inputs),
-            // book: LazyHash::new(fonts.book),
+            book: LazyHash::new(fontsbook.to_owned()),
             root,
-            font_combined: fonts,
+            fonts: fontslot,
             source: Source::detached(source),
             time: time::OffsetDateTime::now_utc(),
             cache_directory: //std::env::var_os("CACHE_DIRECTORY")
@@ -69,7 +70,7 @@ impl TypstWrapperWorld {
                 //.map(|os_path| os_path.into())
                 //.unwrap_or(std::env::temp_dir()),
             http: ureq::Agent::new_with_defaults(),
-            files: Arc::new(Mutex::new(HashMap::new())),
+            files: Arc::new(Mutex::new(HashMap::new()))
         }
     }
 }
@@ -102,6 +103,7 @@ impl FileEntry {
     }
 }
 
+
 impl TypstWrapperWorld {
     /// Helper to handle file requests.
     ///
@@ -113,7 +115,6 @@ impl TypstWrapperWorld {
         }
         let path = if let Some(package) = id.package() {
             // Fetching file from package
-
             let package_dir = self.download_package(package)?;
             id.vpath().resolve(&package_dir)
         } else {
@@ -131,6 +132,7 @@ impl TypstWrapperWorld {
 
     /// Downloads the package and returns the system path of the unpacked package.
     fn download_package(&self, package: &PackageSpec) -> PackageResult<PathBuf> {
+
         let package_subdir = format!("{}/{}/{}", package.namespace, package.name, package.version);
         let path = self.cache_directory.join(package_subdir);
 
@@ -192,7 +194,7 @@ impl typst::World for TypstWrapperWorld {
 
     /// Metadata about all known Books.
     fn book(&self) -> &LazyHash<FontBook> {
-        &self.font_combined.book
+        &self.book
     }
 
     /// Accessing the main source file.
@@ -218,7 +220,7 @@ impl typst::World for TypstWrapperWorld {
     fn font(&self, id: usize) -> Option<Font> {
 
         //self.fonts[id].get()
-        self.font_combined.fonts[id].get()
+        self.fonts[id].get()
     }
 
     /// Get the current date.

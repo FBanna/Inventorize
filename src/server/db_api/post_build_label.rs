@@ -17,7 +17,7 @@ pub async fn post_build_label(
     
 ) -> impl IntoResponse {
 
-    let option = shared_state.db.get(component.i).await.build(&shared_state.config);
+    let option = Component::build_pdf(vec![shared_state.db.get(component.i).await], &shared_state.config);
 
     if let Some(bytes) = option {
 

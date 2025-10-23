@@ -1,10 +1,13 @@
-use std::{cell::OnceCell, collections::HashMap, fs, hash::Hash, io::{Cursor, Write}, ops::Deref, path::{Path, PathBuf}, sync::{Arc, Mutex, RwLock}, thread};
+use std::{collections::HashMap, fs, io::{Cursor, Write}, path::{PathBuf}, sync::{Arc, RwLock}};
 
-use axum::extract::State;
 
-use futures::{future::{join_all, BoxFuture, Shared}, FutureExt};
-use typst::{foundations::{Dict, Value}, html::tag::template, pdf, text::FontBook, utils::LazyHash, Feature, Features, Library};
-use typst_kit::fonts::{FontSearcher, FontSlot, Fonts};
+
+use futures::{future::{BoxFuture, Shared}, FutureExt};
+use serde::{Deserialize, Deserializer, Serialize};
+use serde_yaml::with::singleton_map::deserialize;
+use tokio::runtime::Handle;
+use typst::{foundations::{Array, Bytes, Dict, IntoValue, Str, ToArray, Value}, layout::{Page, PagedDocument}, syntax::{ast::{Int}, package::PackageSpec}, text::FontBook, utils::{LazyHash, SliceExt}, Library};
+use typst_kit::fonts::{FontSearcher, FontSlot};
 use typst_pdf::PdfOptions;
 use zip::write::SimpleFileOptions;
 
@@ -13,268 +16,203 @@ use crate::{cli::config::Config, db::components::Component};
 use super::typst_wrapper;
 
 
-pub struct FontCombined {
-    pub book: LazyHash<FontBook>,
-    pub fonts: Vec<FontSlot>
-}
 
-type TemplateMap = HashMap<String, Shared<BoxFuture<'static, Option<String>>>>;
 
 
 pub trait Label {
 
     //fn debug_build(&self, label_path: String);
     
-    fn build(&self, config: &Config) -> Option<Vec<u8>>;
+    //fn build(&self, config: &Config) -> Option<Vec<u8>>;
 
-    async fn build_cached(&self, file: String, config: &Config, fonts: Arc<FontCombined>) -> Vec<u8>;
+    fn build_pdf(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> where Self:Sized;
 
-    fn get_inputs(&self, config: &Config) -> Library;
+    //async fn build_cached(&self, file: String, config: &Config, fonts: Arc<FontCombined>, package_cache: Arc<tokio::sync::RwLock<PackageMap>>) -> Vec<u8>;
 
-    fn build_save(&self, config: &Config);
+    fn get_inputs(labels: Vec<Self>, config: &Config) -> Library where Self:Sized;
 
-    async fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> where Self:Sized;
+    //fn build_save(&self, config: &Config);
+
+    //async fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> where Self:Sized;
+
+    //fn get_input_labels(labels: Vec<Self>, config: &Config) -> Library where Self:Sized;
     
 
 }
 
 
+
 impl Label for Component{
 
-    fn build_save(&self, config: &Config) {
 
-        let bytes = self.build(config);
+    /// Builds oen then saves it to pdf
+    // fn build_save(&self, config: &Config) {
+
+    //     let bytes = self.build(config);
 
 
-        if let Some(some) = bytes {
-            fs::write("./output.pdf",some).expect("Error Writing");
-        }
+    //     if let Some(some) = bytes {
+    //         fs::write("./output.pdf",some).expect("Error Writing");
+    //     }
+    // }
 
-        
-        
-    }
+    // /// Build individual returning pdf bytes
+    // fn build(&self, config: &Config) -> Option<Vec<u8>> {
+    //     if let Some(label) = &self.label {
 
-    fn build(&self, config: &Config) -> Option<Vec<u8>> {
-        if let Some(label) = &self.label {
-
-            let location: &str = &config.label_location;
-            let font: &str = &config.font_location;
-            let path = PathBuf::new().join(location).join(label.to_owned()+".typ"); // VERY SLOW OPPERATION
+    //         let location: &str = &config.label_location;
+    //         let font: &str = &config.font_location;
+    //         let path = PathBuf::new().join(location).join(label.to_owned()+".typ"); // VERY SLOW OPPERATION
             
-            if path.exists(){// VERY SLOW OPPERATION
-                let data = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
+    //         if path.exists(){// VERY SLOW OPPERATION
+    //             let data = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
 
-                let fonts = FontSearcher::new().include_system_fonts(true).search_with([PathBuf::from(location).join(font)]);
+    //             let fonts = FontSearcher::new().include_system_fonts(true).search_with([PathBuf::from(location).join(font)]);
 
-                let font_arc = Arc::new(FontCombined {
-                    book: LazyHash::new(fonts.book),
-                    fonts: fonts.fonts
-                });
+    //             let font_arc = Arc::new(FontCombined {
+    //                 book: LazyHash::new(fonts.book),
+    //                 fonts: fonts.fonts
+    //             });
                 
 
-                let world = typst_wrapper::TypstWrapperWorld::new(location.to_owned(), data, self.get_inputs(config), font_arc);
+    //             // let world = typst_wrapper::TypstWrapperWorld::new(location.to_owned(), data, self.get_inputs(config), font_arc);
 
-                let document: typst::layout::PagedDocument = typst::compile(&world)
-                    .output
-                    .expect("ahahha!");
+    //             // let document: typst::layout::PagedDocument = typst::compile(&world)
+    //             //     .output
+    //             //     .expect("ahahha!");
 
-                let pdf = typst_pdf::pdf(&document, &PdfOptions::default()).expect("ERROR EXPORTING");
+    //             // let pdf = typst_pdf::pdf(&document, &PdfOptions::default()).expect("ERROR EXPORTING");
 
-                return Some(pdf);
+    //             // return Some(pdf);
+                
 
                 
-            }
-        }
+    //         }
+    //     }
 
-        println!("failed for some reason");
-        return None;
-    }
-
-    async fn build_cached(&self, file: String, config: &Config, fonts: Arc<FontCombined>) -> Vec<u8> { // catch all these errors please!
-
-        let world = typst_wrapper::TypstWrapperWorld::new(config.label_location.to_owned(), file, self.get_inputs(config), fonts);
-
-        let document: typst::layout::PagedDocument = typst::compile(&world)
-                .output
-                .expect("ahahha!");
-
-        let pdf = tokio::task::spawn_blocking(move || {
-
-            
-            
-            typst_pdf::pdf(&document, &PdfOptions::default())
-        
-        })
-            .await
-            .expect("failed to build!").expect("nah");
-
-        return pdf;
+    //     println!("failed for some reason");
+    //     return None;
+    // }
 
 
-    }
+    /// takes vec of labels returns pdf bytes of all labels
+    fn build_pdf(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> {
 
-    
+        let mut label_types: HashMap<String, Vec<Self>> = HashMap::new();
 
-
-
-    async fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> {
-
-        let template_cache_arc: Arc<tokio::sync::RwLock<TemplateMap>> = Arc::new(tokio::sync::RwLock::new(HashMap::new()));
-
-        let package_cache_arc: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
-
-
-
-        let root = PathBuf::from(config.label_location.to_owned());
-
-        let font = config.font_location.to_owned();
-
-        let fonts = FontSearcher::new().include_system_fonts(true).search_with([root.join(font)]);
-
-
-        let font_combined = Arc::new(FontCombined {
-            book: LazyHash::new(fonts.book),
-            fonts: fonts.fonts
-        });
-
-
-        let mut handles: Vec<tokio::task::JoinHandle<Option<(String, Vec<u8>)>>> = Vec::new(); //: Vec<thread::ScopedJoinHandle<'_, Option<(String, Vec<u8>)>>>
-
-        let mut i = 0;
-    
         for label in labels {
-
-            i += 1;
-
-            if label.label.is_some() {
-
-                let c = config.clone(); // get rid of this clone!
-
-
-                let template_cache = Arc::clone(&template_cache_arc);
-                let font_combined_arc = Arc::clone(&font_combined);
-
-
-
-                handles.push(tokio::spawn( async move {
-
-                
-
-
-                    let name: String;
-                    
-                    if let Some(id) = label.id {
-                        name = format!("{}-{}.pdf", label.name, id);
-                    } else {
-
-                        println!("ERROR COULDNT FIND ID");
-                        return None;
-                    }
-
-                    
-
-
-                    let template_data = get_template(template_cache, &label.label.as_ref().unwrap(), &c).await;
-                    
-
-                    
-
-                    
-
-                    
-                    
-                    println!("building {}!", i);
-
-                    let pdf_bytes = label.build_cached(template_data.expect("couldnt find it"), &c, font_combined_arc).await;
-
-                    println!("finished building {}!", i);
-
-                    return Some((name, pdf_bytes));
-                
-                }));
-
-
-                
-            
-
-            };
-                
-            
-            
-        }
-
-        let mut bytes: Vec<u8> = Vec::new();
-
-        let mut zip = zip::ZipWriter::new(Cursor::new(&mut bytes));
-
-        let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
-
-        println!("compressing!");
-
-        for handle in handles {
-
-            if let Some(data) = handle.await.expect("nahh") {
-
-                let r1 = zip.start_file(data.0, options);
-
-                if r1.is_err() {
-                    println!("failed to add label to zip!");
-                    zip.abort_file();
-                    continue;
-                }
-
-                let r2 = zip.write(&data.1);
-
-                if r2.is_err(){
-                    println!("failed to write label to zip!");
-                    zip.abort_file();
-                    continue;
-                }
-        
+            if label.label.is_none() {
+                continue;
             }
+
+            label_types.entry(label.label.clone().unwrap())
+                .or_default()
+                .push(label);
         }
 
+        let location: &str = &config.label_location;
+        let font: &str = &config.font_location;
+        let fonts = FontSearcher::new().include_system_fonts(true).search_with([PathBuf::from(location).join(font)]);
+        let arc_font_slot = Arc::new(fonts.fonts);
 
-        println!("finished compressing!");
+        let mut pdfs = Vec::new();
         
 
-        let result = zip.finish();
+        for (label_type, label_group) in label_types{
 
-        println!("finished");
+            let path = PathBuf::new().join(location).join(label_type.to_owned()+".typ");
 
-        
-        if result.is_err() {
-            return None;
+            if !path.exists(){
+
+                println!("couldnt find it AHHH!"); // ERROR NEEDED
+                break;
+            }
+
+            let label_template = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
+
+            let world = typst_wrapper::TypstWrapperWorld::new(
+                config.label_location.to_owned(), 
+                label_template, 
+                Component::get_inputs(label_group, config), 
+                &fonts.book,
+                Arc::clone(&arc_font_slot)
+            );
+
+            let document: typst::layout::PagedDocument = typst::compile(&world)
+                .output
+                .expect("ERROR building!");
+
+            pdfs.push(document);
+
+
         }
 
-        typst::comemo::evict(0); // clear all typst cache
+        let flatterned: Vec<Page> = pdfs.iter().map(|x| x.pages.clone()).flatten().collect();
+
+
+        let final_document = PagedDocument{
+            pages: flatterned,
+            ..Default::default()
+        };
+
+        let final_pdf = typst_pdf::pdf(&final_document, &PdfOptions::default()).expect("OH NO!");
+        
         
 
-        return Some(bytes);
-
         
+
+        return Some(final_pdf);
     }
 
 
-
-    fn get_inputs(&self, config: &Config) -> Library {
+    /// gets inputs necessary for building labels
+    fn get_inputs(labels: Vec<Self>, config: &Config) -> Library {
         
-        let mut dict: Dict = Dict::new();
+        let mut library: Dict = Dict::new();
 
-        dict.insert("name".into(), Value::Str(self.name.to_owned().into()));
-        
-        insert_optional(&mut dict, "size", &self.size);
-        insert_optional(&mut dict, "value", &self.value);
-        insert_optional(&mut dict, "info", &self.info);
+        let label_vec: Vec<Value> = labels
+            .iter()
+            .map(|x| {
 
-        dict.insert("stock".into(), Value::Int(self.stock.into()));
 
-        insert_optional(&mut dict, "origin", &self.origin);
+                    let mut dict = Dict::new();
+                                    
+                    dict.insert(
+                        Str::from("name"), 
+                        Value::Str(Str::from(x.name.clone()))
+                    );
 
-        dict.insert("url".into(), Value::Str((config.host_address.to_owned() + "/component/" + &self.id.clone().get_or_insert_default().to_string()).into()));
-        //insert_optional(&mut dict, "url", &self.url);
+                    dict.insert(
+                        Str::from("size"), 
+                        Value::Str(Str::from(x.size.clone().unwrap_or_default()))
+                    );
 
-        let temp = Library::builder().with_inputs(dict).build();
+                    dict.insert(
+                        Str::from("value"), 
+                        Value::Str(Str::from(x.value.clone().unwrap_or_default()))
+                    );
+
+                    dict.insert(
+                        Str::from("info"), 
+                        Value::Str(Str::from(x.info.clone().unwrap_or_default()))
+                    );
+
+                    dict.insert(
+                        Str::from("url"), 
+                        Value::Str(Str::from(config.host_address.to_owned() + "/component/" + &x.id.clone().get_or_insert_default().to_string()))
+                    );
+
+                    return Value::Dict(dict);
+                }
+            ).collect::<Vec<Value>>();
+
+        library.insert(
+            Str::from("labels"),
+            Value::Array(Array::from(label_vec.as_slice()))
+        );
+
+    
+        let temp = Library::builder().with_inputs(library).build();
 
 
         return temp;
@@ -283,61 +221,9 @@ impl Label for Component{
     
 }
 
-async fn get_template(template_cache: Arc<tokio::sync::RwLock<TemplateMap>>, label_name: &String, config: &Config) -> Option<String> {
-
-
-    {
-        let r =  template_cache.read().await;
-
-        if let Some(cached) = r.get(label_name) {
-            println!("found a cached version");
-
-            return cached.clone().await
-        }
-    }
-
-
-    let mut w = template_cache.write().await;
-
-    let location: &str = &config.label_location;
-    let path = PathBuf::new().join(location).join(label_name.to_owned()+".typ");
-
-    let future = async{
-        if path.exists() {
-            let template_data = tokio::fs::read_to_string(path).await.expect("Unable to read File!");// VERY SLOW OPPERATION
-            //println!("reading it");
-            //w.insert(label_name.to_string(), template_data.clone());
-
-            return Some(template_data);
-
-        } else {
-            println!("ERROR! Path is {}", path.display());
-        }
-
-        return None;
-    }.boxed().shared();
-
-    w.insert(
-        label_name.to_string(),
-        future.clone()
-    );
-
-    drop(w);
-
-    return future.await;
-
-}
-
-
-fn insert_optional(dict: &mut Dict, key: &str, value: &Option<String>) {
-    dict.insert(key.into(), Value::Str(value.clone().unwrap_or_default().into()));
-}
 
 #[cfg(test)]
 mod tests {
-    use tokio::runtime::Runtime;
-
-    use crate::db;
 
     use super::*;
 
@@ -345,7 +231,7 @@ mod tests {
 
     fn test_build_zip() {
 
-        let rt  = Runtime::new().unwrap();
+        //let rt  = Runtime::new().unwrap();
 
         let mut components = Vec::new();
 
@@ -387,7 +273,7 @@ mod tests {
         println!("building");
 
 
-        let result = rt.block_on(Component::build_zip(components, &config));
+        let result = Component::build_pdf(components, &config);
 
         println!("done");
 
@@ -405,4 +291,4 @@ mod tests {
 // 3: 15.49, 14.65, 15.05, 14.21, 14.39, 14.75  ISSUES: - changed to RwLock, tokio, futures cache. The whole 5 yards + more boiler plate in the actual test
 // 4: 16.59, 14.58, 14.38, 14.12, 13.96, 14.46  ISSUES: no error catching - changed to spawn blocking for typst build
 // 5: 15.61, 17.77, 19.07, 20.68, 20.41, 22.36  ISSUES: no catching errors - moved typst compile inside blocking *REVERT BACK TO (4)- rerun = runs much nicer in 4 no idea why?*
-
+// 6: 14.36, 14.45, 15.78, 14.49, 14.66, 15.15  ISSUES: no error catching + downloading templates - back 10 (4) + arc for config so no more cloning!!!
