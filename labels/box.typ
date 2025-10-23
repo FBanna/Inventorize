@@ -1,33 +1,25 @@
-#let diameter = 15mm
+
 #let height = 40mm
-#let width = 30mm
-#let background = rgb("#ffffff");
+#let width = 60mm
+#let background = rgb("#c1fdff");
 
 //#import "@preview/tiaoma:0.3.0"
 #import "@preview/tiaoma:0.3.0"
 
-#let inputs = sys.inputs
-
-
-
-
-
 #set page(
   width: width,
-  height: height + diameter + 3mm,
+  height: height,
   margin: 0mm,
   fill: background,
 )
-
-
-
-
 
 #set block(above: 0mm, below: 0mm)
 
 #set text(size: 3mm, font: "Gabarito")
 
 #set par(leading: 1mm)
+
+
 
 #let template(data: ()) = {
 
@@ -58,43 +50,14 @@
       #align(bottom + right)[
         #tiaoma.qrcode(
           data.at("url"),
-          width: 1.5cm,
-          // error-correction: "L",
-          // background: background
+          width: 2cm,
         )
       ]
 
       
     ]
 
-    #line(end: (100%, 0mm))
-
-    #rect(
-      stroke: none,
-      outset: 0mm,
-      inset: 1mm,
-      width: 100%,
-
-      
-    )[
-      #align(horizon + center)[
-        #circle(
-            radius: diameter/2,
-            stroke: 0.5mm + black,
-            outset: 0mm,
-          )[
-
-            #text(size: 3mm)[
-              #data.at("name")\
-              #data.at("value")\
-
-              //#sys.inputs.name
-            ]
-            
-            
-          ]
-      ]
-    ]
+    
 
   ]
 

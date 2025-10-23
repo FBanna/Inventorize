@@ -22,6 +22,16 @@
 
   function row_click(c){
 
+    if(!selecting.value){
+      let route = router.resolve({ path: "/component/" + c.id })
+      window.open(route.href)
+    }
+
+    
+  }
+
+  function row_enter(c){
+
     if(selecting.value){
 
       let i = selected.value.indexOf(c.id)
@@ -32,12 +42,8 @@
         selected.value.splice(i , 1)
       }
 
-    } else {
-      let route = router.resolve({ path: "/component/" + c.id })
-      window.open(route.href)
     }
 
-    
   }
 
   async function remove_component() {
@@ -122,8 +128,8 @@
           let data = await response.bytes()
 
           // CHANGE FOR AN ACTUAL NAME
-          const file = new File([data], 'output.zip', {
-            type: 'application/zip',
+          const file = new File([data], 'output.pdf', {
+            type: 'application/pdf',
           })
 
           const link = document.createElement('a')
@@ -214,7 +220,7 @@
 
         <tbody v-for="c in components">
           
-          <tr @click="row_click(c)" @mouseenter="row_click(c)" v-bind:style="[selected.includes(c.id) ? {'background-color': 'rgba(0, 110, 255, 0.445)'} : {}]">
+          <tr @click="row_click(c)" @mouseenter="row_enter(c)" v-bind:style="[selected.includes(c.id) ? {'background-color': 'rgba(0, 110, 255, 0.445)'} : {}]">
 
               <!-- <td v-if="selecting"><input type="checkbox" :value="c.id" v-model="selected"></td> -->
 
