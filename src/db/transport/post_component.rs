@@ -18,17 +18,9 @@ impl PostComponent {
 
     pub fn update_component_file_bools(&mut self) {
 
-        if self.image.is_some(){
-            self.component.image = true;
-        } else {
-            self.component.image = false;
-        }
+        self.component.image = self.image.is_some();
+        self.component.datasheet = self.datasheet.is_some();
 
-        if self.datasheet.is_some(){
-            self.component.datasheet = true;
-        } else {
-            self.component.datasheet = false;
-        }
 
     }
 
