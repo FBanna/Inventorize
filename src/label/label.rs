@@ -1,17 +1,12 @@
-use std::{collections::HashMap, fs, io::{Cursor, Write}, path::{PathBuf}, sync::{Arc, RwLock}};
+use std::{collections::HashMap, fs, path::{PathBuf}, sync::{Arc}};
 
 
-
-use futures::{future::{BoxFuture, Shared}, FutureExt};
-use serde::{Deserialize, Deserializer, Serialize};
-use serde_yaml::with::singleton_map::deserialize;
-use tokio::runtime::Handle;
-use typst::{foundations::{Array, Bytes, Dict, IntoValue, Str, ToArray, Value}, layout::{Page, PagedDocument}, syntax::{ast::{Int}, package::PackageSpec}, text::FontBook, utils::{LazyHash, SliceExt}, Library};
-use typst_kit::fonts::{FontSearcher, FontSlot};
+use typst::{foundations::{Array, Dict, Str, Value}, layout::{Page, PagedDocument}, Library, LibraryExt};
+use typst_kit::fonts::{FontSearcher};
 use typst_pdf::PdfOptions;
-use zip::write::SimpleFileOptions;
 
-use crate::{cli::config::Config, db::components::Component};
+
+use crate::{cli::config::Config, db::components::Component, error::label::LabelError};
 
 use super::typst_wrapper;
 
@@ -21,22 +16,10 @@ use super::typst_wrapper;
 
 pub trait Label {
 
-    //fn debug_build(&self, label_path: String);
-    
-    //fn build(&self, config: &Config) -> Option<Vec<u8>>;
-
-    fn build_pdf(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> where Self:Sized;
-
-    //async fn build_cached(&self, file: String, config: &Config, fonts: Arc<FontCombined>, package_cache: Arc<tokio::sync::RwLock<PackageMap>>) -> Vec<u8>;
+    fn build_pdf(labels: Vec<Self>, config: &Config) -> Result<Vec<u8>, LabelError> where Self:Sized;
 
     fn get_inputs(labels: Vec<Self>, config: &Config) -> Library where Self:Sized;
 
-    //fn build_save(&self, config: &Config);
-
-    //async fn build_zip(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> where Self:Sized;
-
-    //fn get_input_labels(labels: Vec<Self>, config: &Config) -> Library where Self:Sized;
-    
 
 }
 
@@ -44,59 +27,8 @@ pub trait Label {
 
 impl Label for Component{
 
-
-    /// Builds oen then saves it to pdf
-    // fn build_save(&self, config: &Config) {
-
-    //     let bytes = self.build(config);
-
-
-    //     if let Some(some) = bytes {
-    //         fs::write("./output.pdf",some).expect("Error Writing");
-    //     }
-    // }
-
-    // /// Build individual returning pdf bytes
-    // fn build(&self, config: &Config) -> Option<Vec<u8>> {
-    //     if let Some(label) = &self.label {
-
-    //         let location: &str = &config.label_location;
-    //         let font: &str = &config.font_location;
-    //         let path = PathBuf::new().join(location).join(label.to_owned()+".typ"); // VERY SLOW OPPERATION
-            
-    //         if path.exists(){// VERY SLOW OPPERATION
-    //             let data = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
-
-    //             let fonts = FontSearcher::new().include_system_fonts(true).search_with([PathBuf::from(location).join(font)]);
-
-    //             let font_arc = Arc::new(FontCombined {
-    //                 book: LazyHash::new(fonts.book),
-    //                 fonts: fonts.fonts
-    //             });
-                
-
-    //             // let world = typst_wrapper::TypstWrapperWorld::new(location.to_owned(), data, self.get_inputs(config), font_arc);
-
-    //             // let document: typst::layout::PagedDocument = typst::compile(&world)
-    //             //     .output
-    //             //     .expect("ahahha!");
-
-    //             // let pdf = typst_pdf::pdf(&document, &PdfOptions::default()).expect("ERROR EXPORTING");
-
-    //             // return Some(pdf);
-                
-
-                
-    //         }
-    //     }
-
-    //     println!("failed for some reason");
-    //     return None;
-    // }
-
-
     /// takes vec of labels returns pdf bytes of all labels
-    fn build_pdf(labels: Vec<Self>, config: &Config) -> Option<Vec<u8>> {
+    fn build_pdf(labels: Vec<Self>, config: &Config) -> Result<Vec<u8>, LabelError> {
 
         let mut label_types: HashMap<String, Vec<Self>> = HashMap::new();
 
@@ -124,8 +56,9 @@ impl Label for Component{
 
             if !path.exists(){
 
-                println!("couldnt find it AHHH!"); // ERROR NEEDED
-                break;
+                //println!("couldnt find it AHHH!"); // ERROR NEEDED
+
+                return Err(LabelError::MissingTemplate(label_type));
             }
 
             let label_template = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
@@ -138,9 +71,11 @@ impl Label for Component{
                 Arc::clone(&arc_font_slot)
             );
 
-            let document: typst::layout::PagedDocument = typst::compile(&world)
-                .output
-                .expect("ERROR building!");
+            
+            let Ok(document): Result<PagedDocument, _> = typst::compile(&world)
+            .output else { 
+                return Err(LabelError::Compilation()) 
+            };
 
             pdfs.push(document);
 
@@ -155,13 +90,15 @@ impl Label for Component{
             ..Default::default()
         };
 
-        let final_pdf = typst_pdf::pdf(&final_document, &PdfOptions::default()).expect("OH NO!");
+        let Ok(final_pdf): Result<Vec<u8>, _> = typst_pdf::pdf(&final_document, &PdfOptions::default()) else {
+            return Err(LabelError::Export());
+        };
         
         
 
         
 
-        return Some(final_pdf);
+        return Ok(final_pdf);
     }
 
 
@@ -278,7 +215,7 @@ mod tests {
         println!("done");
 
 
-        assert!(result.is_some())
+        result.expect("failed to compile");
 
 
     }
@@ -292,3 +229,4 @@ mod tests {
 // 4: 16.59, 14.58, 14.38, 14.12, 13.96, 14.46  ISSUES: no error catching - changed to spawn blocking for typst build
 // 5: 15.61, 17.77, 19.07, 20.68, 20.41, 22.36  ISSUES: no catching errors - moved typst compile inside blocking *REVERT BACK TO (4)- rerun = runs much nicer in 4 no idea why?*
 // 6: 14.36, 14.45, 15.78, 14.49, 14.66, 15.15  ISSUES: no error catching + downloading templates - back 10 (4) + arc for config so no more cloning!!!
+// 7: 0.6,   0.53,  0.54,  0.53,  0.53,  0.54   ISSUES: no issues, all in one file & blazingly fast! Thanks Typst

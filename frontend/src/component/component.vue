@@ -42,11 +42,11 @@ async function build_label() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      i: Number(id)
+      list: [Number(id)]
     })
   };
 
-  await fetch(import.meta.env.VITE_API_URL+"api/post_build", requestOptions)
+  await fetch(import.meta.env.VITE_API_URL+"api/post_build_label", requestOptions)
     .then(async response => {
 
 

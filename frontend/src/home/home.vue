@@ -117,7 +117,7 @@
       })
     };
 
-    await fetch(import.meta.env.VITE_API_URL+"api/post_build_zip", requestOptions)
+    await fetch(import.meta.env.VITE_API_URL+"api/post_build_label", requestOptions)
       .then(async response => {
 
 

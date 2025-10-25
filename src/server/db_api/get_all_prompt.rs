@@ -5,7 +5,6 @@ use axum_extra::response::ErasedJson;
 use typst::syntax::ast::RenamedImportItem;
 use crate::{db::{components::{Component, ComponentServices}, prompt::{prompt::{Prompt, PromptEntry}, prompts::Prompts}}, server::server_state::ServerState};
 
-// THIS IS NOT NICE FIX THIS
 
 pub async fn get_all_prompt(
     State(shared_state): State<Arc<ServerState>>,

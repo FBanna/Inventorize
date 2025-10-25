@@ -6,6 +6,7 @@ mod server;
 mod cli;
 mod db;
 mod label;
+mod error;
 
 #[tokio::main]
 async fn main() {

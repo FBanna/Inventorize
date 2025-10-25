@@ -6,26 +6,39 @@ use crate::{cli::config::Config, db::{self, components::{Component, ComponentSer
 
 
 #[derive(Deserialize)]
-pub struct BuildLabel{
-    i: i32
+pub struct BuildLabelZip{
+    list: Vec<i32>
 }
 
 pub async fn post_build_label(
 
     State(shared_state): State<Arc<ServerState>>,
-    Json(component): Json<BuildLabel>
+    Json(components): Json<BuildLabelZip>
     
 ) -> impl IntoResponse {
 
-    let option = Component::build_pdf(vec![shared_state.db.get(component.i).await], &shared_state.config);
+    println!("1: starting");
 
-    if let Some(bytes) = option {
+    let list = shared_state.db.get_from_list(components.list).await;
 
-        let array = Bytes::from_owner(bytes);
+    println!("2");
 
-        return array.into_response();
-    } else {
-        return StatusCode::NOT_FOUND.into_response();
+    let result = Component::build_pdf(list, &shared_state.config);
+
+    println!("3");
+
+    match result{
+        Ok(bytes) => {
+            println!("4");
+
+            let array = Bytes::from_owner(bytes);
+
+            println!("5: finished");
+
+            return array.into_response();
+        },
+        Err(error) => return error.into_response(),
     }
+
 
 }
