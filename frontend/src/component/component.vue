@@ -1,4 +1,5 @@
 <script setup>
+import ErrorBox from '../error/ErrorBox.vue';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -17,7 +18,7 @@ let c = ref({
 
 let id = useRoute().params.id
 
-const error = ref("")
+const error_box = ref(null);
 
 
 async function setup() {
@@ -49,11 +50,7 @@ async function build_label() {
   await fetch(import.meta.env.VITE_API_URL+"api/post_build_label", requestOptions)
     .then(async response => {
 
-
-      if (response.status == 200) {
-
-        
-
+      if(response.ok) {
         let data = await response.bytes()
 
         // CHANGE FOR AN ACTUAL NAME
@@ -71,15 +68,26 @@ async function build_label() {
 
         document.body.removeChild(link)
         window.URL.revokeObjectURL(url)
-
-      } else if (response.status == 404) {
-
-        error.value = "Error making label"
-
+          return
       }
+      
+      return response.text().then(text => {
+        throw new Error(text)
+      })
+      
+
+      
 
     })
+    
+    .catch(err => {
+      console.log(err);
+      error_box.value.showError(err)
+    })
+    
 }
+
+
 
 function get_datasheet_src(c) {
   return import.meta.env.VITE_API_URL + "data/" + c.id + "/datasheet.pdf"
@@ -94,6 +102,10 @@ setup()
 </script>
 
 <template>
+
+  <ErrorBox ref="error_box"/>
+
+  
   <div class="info-box box">
 
     <div v-if="c.image" class="image-container">
@@ -158,7 +170,7 @@ setup()
 
 
     <br>
-    {{ error }}
+
   </div>
 
   

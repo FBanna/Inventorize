@@ -6,14 +6,14 @@ use crate::{cli::config::Config, db::{self, components::{Component, ComponentSer
 
 
 #[derive(Deserialize)]
-pub struct BuildLabelZip{
+pub struct BuildLabelList{
     list: Vec<i32>
 }
 
 pub async fn post_build_label(
 
     State(shared_state): State<Arc<ServerState>>,
-    Json(components): Json<BuildLabelZip>
+    Json(components): Json<BuildLabelList>
     
 ) -> impl IntoResponse {
 

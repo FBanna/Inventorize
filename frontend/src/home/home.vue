@@ -1,6 +1,8 @@
 <script setup>
-  import { ref } from 'vue';
+  import { ref, useTemplateRef } from 'vue';
   import { useRouter } from 'vue-router'
+
+  import ErrorBox from '../error/ErrorBox.vue';
 
   
   // let test = JSON.parse(
@@ -15,6 +17,14 @@
 
   const selecting = ref(false)
   const selected = ref([])
+
+  const error_box = ref(null);
+  
+  //error_box.value.showError()
+
+  
+
+  //const temp = show()
 
   //let search_fields = []
 
@@ -55,6 +65,10 @@
       })
     } 
 
+    
+
+    
+
     let response = await fetch(import.meta.env.VITE_API_URL + "api/post_id_remove_list_component", requestOptions)
 
     selected.value = []
@@ -94,7 +108,7 @@
     let response = await fetch(import.meta.env.VITE_API_URL + "api/get_all_prompt")
     let json = await response.json()
 
-    console.log(json)
+    //console.log(json)
 
     prompts.value = json
 
@@ -120,11 +134,7 @@
     await fetch(import.meta.env.VITE_API_URL+"api/post_build_label", requestOptions)
       .then(async response => {
 
-
-        if (response.status == 200) {
-
-          
-
+        if(response.ok) {
           let data = await response.bytes()
 
           // CHANGE FOR AN ACTUAL NAME
@@ -143,12 +153,21 @@
           document.body.removeChild(link)
           window.URL.revokeObjectURL(url)
 
-        } else if (response.status == 404) {
-
-          console.log("error making labels!")
-
+          return
         }
+        
+        return response.text().then(text => {
+          throw new Error(text)
+        })
+        
 
+        
+
+      })
+      
+      .catch(err => {
+        console.log(err);
+        error_box.value.showError(err)
       })
     }
 
@@ -162,14 +181,17 @@
 
 <template>
 
+  <ErrorBox ref="error_box"/>
+
   <span class="search-tools">
+
     <button class="button search-button" @click="search_components">Search</button>
 
-    <br>
-
     <button v-if="selecting" class="button search-button" @click="build_label_zip">BUILD</button>
-    <br>
+
     <button v-if="selecting" class="button search-button" @click="remove_component">DELETE</button>
+
+    
 
     <input @click="selected = []" class="selector" type="checkbox" v-model="selecting" id="select_check">
     <label for="select_check"></label>
