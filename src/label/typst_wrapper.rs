@@ -65,10 +65,10 @@ impl TypstWrapperWorld {
             fonts: fontslot,
             source: Source::detached(source),
             time: time::OffsetDateTime::now_utc(),
-            cache_directory: //std::env::var_os("CACHE_DIRECTORY")
-                PathBuf::from("./"),
-                //.map(|os_path| os_path.into())
-                //.unwrap_or(std::env::temp_dir()),
+            cache_directory: std::env::var_os("CACHE_DIRECTORY")
+                //PathBuf::from("./"),
+                .map(|os_path| os_path.into())
+                .unwrap_or(std::env::temp_dir()),
             http: ureq::Agent::new_with_defaults(),
             files: Arc::new(Mutex::new(HashMap::new()))
         }
