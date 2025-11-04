@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{extract::State, http::{Response, StatusCode}, response::{IntoResponse, Redirect}, Form, Json};
 use serde::Deserialize;
-use crate::{cli::config::Config, db::{self, components::{Component, ComponentServices}}, label::label::Label, server::server_state::ServerState};
+use crate::{config::config::Config, db::{self, components::{Component, ComponentServices}}, label::label::Label, server::server_state::ServerState};
 
 
 #[derive(Deserialize)]

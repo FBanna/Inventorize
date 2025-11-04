@@ -1,4 +1,4 @@
-use crate::{cli::config::Config, db::db::DB};
+use crate::{config::config::Config, db::db::DB};
 
 
 

@@ -4,7 +4,7 @@ use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
 use sqlx::{migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::{SqliteQueryResult, SqliteRow, SqliteValueRef}, ColumnIndex, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool};
 
-use crate::cli::config::Config;
+use crate::config::config::Config;
 
 use super::{db::DB, prompt::service::PromptServices, transport::post_component::PostComponent};
 

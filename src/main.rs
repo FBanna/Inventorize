@@ -1,9 +1,9 @@
-use crate::cli::config::Config;
+use crate::config::config::Config;
 use db::{components::ComponentServices, db::DB};
 
 
 mod server;
-mod cli;
+mod config;
 mod db;
 mod label;
 mod error;
@@ -11,7 +11,7 @@ mod error;
 #[tokio::main]
 async fn main() {
 
-    let config: Config = cli::get_config().await;
+    let config: Config = config::get_config().await;
 
 
     let component_db = DB::init(&config.db_location).await;

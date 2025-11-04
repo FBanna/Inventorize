@@ -6,7 +6,7 @@ use typst_kit::fonts::{FontSearcher};
 use typst_pdf::PdfOptions;
 
 
-use crate::{cli::config::Config, db::components::Component, error::label::LabelError};
+use crate::{config::config::Config, db::components::Component, error::label::LabelError};
 
 use super::typst_wrapper;
 
