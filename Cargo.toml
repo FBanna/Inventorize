@@ -33,6 +33,7 @@ image = "0.25.6"
 zip = { version = "4.2.0", features = ["_deflate-any"]}
 
 futures = "0.3"
+reedline = "0.43.0"
 
 [profile.release]
 opt-level = 3

@@ -7,11 +7,12 @@ mod config;
 mod db;
 mod label;
 mod error;
+mod cli;
 
 #[tokio::main]
 async fn main() {
 
-    let config: Config = config::get_config().await;
+    let config: Config = config::command::get_config().await;
 
 
     let component_db = DB::init(&config.db_location).await;

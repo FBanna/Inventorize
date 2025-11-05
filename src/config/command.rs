@@ -4,7 +4,6 @@ use crate::config::config;
 use std::{fs, path::{Path, PathBuf}, process::exit};
 use clap::{arg, command, value_parser, Command};
 use config::{Config, read_config, DEFAULT_CONFIG_FILE};
-use sqlx::{migrate::MigrateDatabase, FromRow, Row, Sqlite, SqlitePool};
 
 
 
