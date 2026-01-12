@@ -13,24 +13,24 @@ tower-http = { version = "0.6.2", features = ["cors", "fs", "redirect"] }
 clap = { version = "4.5.32", features = ["derive", "cargo"]}
 serde_yaml = "0.9.34"
 
-# log = "0.4.26"
-# env_logger = "0.11.7"
+typst-pdf = "0.14.2"
+typst = "0.14.2"
+typst-kit = "0.14.2"
+
 
 async-trait = "0.1.88"
 axum-login = "0.17.0"
 password-auth = "1.0.0"
 tower = "0.5.2"
 sqlx = { version = "0.8.3", features = ["runtime-tokio-native-tls", "sqlite"] }
-typst = "0.14.0"
-typst-kit = "0.14.0"
 ureq = "3.0.10"
 time = "0.3.41"
 zune-inflate = "0.2.54"
 tar = "0.4.44"
-typst-pdf = "0.14.0"
+
 axum-extra = { version = "0.10.1", features = ["erased-json"]}
 image = "0.25.6"
-zip = { version = "4.2.0", features = ["_deflate-any"]}
+zip = { version = "7.0.0", features = ["_deflate-any"]}
 
 futures = "0.3"
 reedline = "0.43.0"

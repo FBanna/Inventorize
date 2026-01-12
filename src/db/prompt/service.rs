@@ -1,5 +1,5 @@
 
-use std::{ops::Deref, sync::MutexGuard};
+use std::{collections::HashMap, fmt::Debug, ops::Deref, sync::MutexGuard};
 
 use crate::db::{components::Component, db::DB};
 
@@ -11,9 +11,10 @@ pub trait PromptServices {
     async fn del_prompt(&self, i: usize, index: i32);
     //async fn update_prompt(&self, prompt: String, value: String);
     async fn add_prompt(&self, i: usize, value: &str);
+    async fn update_prompt(&self, i: usize, index: i32, count: i32);
     //async fn check_option(&mut self, prompt: &mut Prompt, value: Option<&str>);
-    fn check_prompt_exists(&self, value: &str, mutex: &mut MutexGuard<'_, Vec<PromptEntry>>) -> bool;
-    fn check_prompt_last(&self, value: &str, mutex: &mut MutexGuard<'_, Vec<PromptEntry>>) -> Option<usize>;
+    //fn check_prompt_exists(&self, value: &str, mutex: &mut MutexGuard<'_, Vec<PromptEntry>>) -> bool;
+    //fn check_prompt_last(&self, value: &str, mutex: &mut MutexGuard<'_, Vec<PromptEntry>>) -> Option<usize>;
     async fn update_prompts_add(&self, c: &Component);
     async fn update_prompts_del(&self, c: &Component);
     async fn sync_prompts(&self);
@@ -32,125 +33,195 @@ impl PromptServices for DB{
     //     }
     // }
 
-    fn check_prompt_exists(&self, value: &str, mutex: &mut MutexGuard<'_, Vec<PromptEntry>>) -> bool {
+    // fn check_prompt_exists(&self, value: &str, mutex: &mut MutexGuard<'_, Vec<PromptEntry>>) -> bool {
 
-        // ADD FAST ORDERED SEARCH HERE
+    //     // ADD FAST ORDERED SEARCH HERE
 
-        for entry in mutex.iter_mut() {
+    //     for entry in mutex.iter_mut() {
 
-            if value == &entry.0 {
-                entry.1 += 1; // INCREMANTS COUNT IF FOUND
-                return true;
-            }
-        }
+    //         if value == &entry.0 {
+    //             entry.1 += 1; // INCREMANTS COUNT IF FOUND
+    //             return true;
+    //         }
+    //     }
 
-        return false;
+    //     return false;
         
+
+    // }
+
+
+    // // RETURNS -1 if not last and the index of the value if it is the last
+    // fn check_prompt_last(&self, value: &str, mutex: &mut MutexGuard<'_, Vec<PromptEntry>>) -> Option<usize> {
         
-        // let i: i32 = sqlx::query_scalar("SELECT COUNT(*) FROM (?) where entry = (?)")
-        //     .bind(prompt)
-        //     .bind(value)
-        //     .fetch_one(&self.pool)
-        //     .await
-        //     .unwrap();
+    //     for (i, entry) in mutex.iter_mut().enumerate() {
 
-        // if i > 0{
-        //     return false;
-        // } else {
-        //     return true;
-        // }
+    //         if value == &entry.0 {
 
-    }
+    //             if entry.1 == 1 {
+    //                 return Some(i);
+    //             } else if entry.1 > 1 {
+    //                 entry.1 -= 1;
+    //                 return None;
+    //             }
 
+    //         }
 
-    // RETURNS -1 if not last and the index of the value if it is the last
-    fn check_prompt_last(&self, value: &str, mutex: &mut MutexGuard<'_, Vec<PromptEntry>>) -> Option<usize> {
-        
-        for (i, entry) in mutex.iter_mut().enumerate() {
+    //     }
 
-            if value == &entry.0 {
-
-                if entry.1 == 1 {
-                    return Some(i);
-                } else if entry.1 > 1 {
-                    entry.1 -= 1;
-                    return None;
-                }
-
-            }
-
-        }
-
-        println!("Deleting a prompt that does not exist!");
-        return None;
+    //     println!("Deleting a prompt that does not exist!");
+    //     return None;
 
         
-    }
+    // }
     
     async fn update_prompts_add(&self, c: &Component) {
 
         for (i, entry) in c.to_vec().iter().enumerate(){
 
-            if let Some(some) = *entry{ // if the entyr has a value
+            if let Some(some) = *entry{ // if the entry has a value
 
                 if !some.is_empty() {
 
-                    let exists = {
-                        let mut entries = self.prompt_cache.0[i].prompts.lock().unwrap();
-                        let bool = self.check_prompt_exists(some, &mut entries);
+                    
+                    // position , number
+                    let output: Option<(i32, i32)> = {
 
-                        if !bool {
+                        let mut entries = self.prompt_cache.0[i].prompts.lock().unwrap();
+
+
+                        let mut value = None;
+
+
+                        for (i, entry) in entries.iter_mut().enumerate(){
+
+                            if some == entry.0 {
+
+                                let int: i32 = i.try_into().unwrap();
+                                value = Some((int, entry.1.clone() + 1));
+
+
+                                entry.1 += 1;
+                                //self.update_prompt(i, value)
+
+                                
+                                break;
+                            }
+
+                        }
+
+                        if value.is_none(){
                             entries.push(PromptEntry(some.to_owned(),1));
                         }
 
-                        bool
+                        value
                     };
 
-                    if !exists{
-
+                    if let Some(position_count) = output {
+                        
+                        self.update_prompt(i, position_count.0 + 1, position_count.1).await;
+                    } else {
                         self.add_prompt(i, some).await;
                     }
+
+
+                    // let exists = {
+                    //     let mut entries = self.prompt_cache.0[i].prompts.lock().unwrap();
+                    //     let bool = self.check_prompt_exists(some, &mut entries);
+
+                    //     if !bool {
+                    //         entries.push(PromptEntry(some.to_owned(),1));
+                    //     }
+
+                    //     bool
+                    // };
+
+                    // if !exists{
+
+                    //     self.add_prompt(i, some).await;
+                    // }
                     
-                        
                         
                 }
 
-                
-        
             }
         }
     }
+
+
 
     async fn update_prompts_del(&self, c: &Component) {
         for  (i, entry) in c.to_vec().iter().enumerate() {
             if let Some(some) = *entry {
                 if !some.is_empty(){
 
-                    let (bool, value): (bool, i32) = {
+                    
+                    // delete? , position , number
+                    let delete: Option<(bool, i32,i32)> = {
+
                         let mut entries = self.prompt_cache.0[i].prompts.lock().unwrap();
-                        let option = self.check_prompt_last(some, &mut entries);
+
+                        let mut value: Option<(bool, i32,i32)> = None;
+
+                        for (i, entry) in entries.iter_mut().enumerate(){
+
+                            if entry.0 == some{
+                                let int: i32 = i.try_into().unwrap();
+
+                                if entry.1 <= 1{
+                                    
+
+                                    value = Some((true, int, 0));
+                                    entries.remove(i);
+                                    break;
+                                } else {
+                                    value = Some((false, int, (entry.1.clone() - 1)));
+                                    entry.1 -= 1;
+                                    
+                                }
+
+                            }
+
+                        }
+
+                        value
+                    };
+
+                    if let Some(value) = delete {
+
+                        if !value.0 {
+                            self.update_prompt(i, value.1 + 1, value.2).await;
+                        } else {
+                            self.del_prompt(i, value.1 + 1).await;
+                        }
+                        
+                    }
+
+                    // let (bool, value): (bool, i32) = {
+                    //     let mut entries = self.prompt_cache.0[i].prompts.lock().unwrap();
+                    //     let option = self.check_prompt_last(some, &mut entries);
 
                         
 
-                        if let Some(index) = option {
-                            let int: i32 = index.try_into().unwrap();
-                            entries.remove(index);
+                    //     if let Some(index) = option {
+                    //         let int: i32 = index.try_into().unwrap();
+                    //         entries.remove(index);
 
                             
 
-                            (true, int)
+                    //         (true, int)
 
 
-                        } else {
-                            (false,0)
-                        }
+                    //     } else {
+                    //         (false,0)
+                    //     }
 
                         
-                    };
+                    // };
 
-                    if bool {
-                        self.del_prompt(i, value).await;
-                    }
+                    // if bool {
+                    //     self.del_prompt(i, value).await;
+                    // }
                 }
             }
         }
@@ -165,6 +236,8 @@ impl PromptServices for DB{
     
 
     async fn add_prompt(&self, i: usize, value: &str) {
+
+        //println!("EDIT TO DB: ADD_PROMPT - prompt cache = {}, value = {}", self.prompt_cache.0[i].name, value);
 
         
 
@@ -182,6 +255,8 @@ impl PromptServices for DB{
 
     async fn del_prompt(&self, i: usize, index: i32) {
 
+        //println!("EDIT TO DB: DEL_PROMPT - prompt cache = {}, position = {}", self.prompt_cache.0[i].name, index);
+
         let prompt = &self.prompt_cache.0[i];
 
         let string = "DELETE FROM ".to_owned() + &prompt.name + " WHERE ROWID = (?)";
@@ -191,6 +266,25 @@ impl PromptServices for DB{
             .execute(&self.pool)
             .await
             .unwrap();
+    }
+
+    async fn update_prompt(&self, i: usize, index: i32, count: i32) {
+
+        //println!("EDIT TO DB: UPDATE_PROMPT - prompt cache = {}, position = {}, count = {}", self.prompt_cache.0[i].name, index, count);
+
+        let prompt = &self.prompt_cache.0[i];
+
+        //UPDATE name SET n = 3 WHERE ROWID = 2
+
+        let string = "UPDATE ".to_owned() + &prompt.name + " SET n = (?) WHERE ROWID = (?)";
+
+        sqlx::query(&string)
+            .bind(count)
+            .bind(index)
+            .execute(&self.pool)
+            .await
+            .unwrap();
+
     }
     
     async fn sync_prompts(&self) {
@@ -203,6 +297,15 @@ impl PromptServices for DB{
             
 
             let string = "SELECT * FROM ".to_owned() + &self.prompt_cache.0[i].name;
+
+            // let temp: HashMap<String, i32> = sqlx::query_as(&string) POTENTIALLY BENEFICIAL TO REWRITE IN ANOTHER DATA FORMAT
+                
+            //     .fetch_all(&self.pool)
+            //     .await
+            //     .unwrap();
+
+
+
             
             let result: Vec<PromptEntry> = sqlx::query_as(&string)
                 
