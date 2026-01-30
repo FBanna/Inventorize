@@ -10,5 +10,10 @@ pub async fn get_component(
 
     let result = shared_state.db.get_all().await;
 
-    Json(result)
+    match result{
+        Ok(list) => Json(list),
+        Err(E) => E.into()
+    }
+
+    //Json(result)
 }

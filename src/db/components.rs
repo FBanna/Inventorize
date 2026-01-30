@@ -66,23 +66,23 @@ impl Component{
 
 
 pub trait ComponentServices {
-    async fn add_with_files(&self, c: PostComponent, config: &Config);
+    async fn add_with_files(&self, c: PostComponent, config: &Config) -> Result<(), sqlx::Error>;
 
-    async fn update_with_files(&self, id: i64, c: PostComponent, config: &Config);
+    async fn update_with_files(&self, id: i64, c: PostComponent, config: &Config) -> Result<(), sqlx::Error>;
 
-    async fn add(&self, c: &Component) -> SqliteQueryResult;
+    async fn add(&self, c: &Component) -> Result<SqliteQueryResult, sqlx::Error>;
 
-    async fn update(&self, id: i64, c: &Component);
+    async fn update(&self, id: i64, c: &Component) -> Result<SqliteQueryResult, sqlx::Error>;
 
-    async fn get_first(&self) -> Component;
+    async fn get_first(&self)  -> Result<Component, sqlx::Error>;
 
-    async fn get_all(&self) -> Vec<Component>;
+    async fn get_all(&self) -> Result<Vec<Component>, sqlx::Error>;
 
-    async fn get(&self, i: i32) -> Component;
+    async fn get(&self, i: i32) -> Result<Component, sqlx::Error>;
 
-    async fn get_from_list(&self, list: Vec<i32>) -> Vec<Component>;
+    async fn get_from_list(&self, list: Vec<i32>) -> Result<Vec<Component>, sqlx::Error>;
 
-    async fn search(&self, c: Vec<Vec<String>>) -> Vec<Component>;
+    async fn search(&self, c: Vec<Vec<String>>) -> Result<Vec<Component>, sqlx::Error>;
 
     async fn remove(&self, i: i32) -> Result<SqliteQueryResult, sqlx::Error>;   
 
@@ -95,7 +95,8 @@ impl ComponentServices for DB{
 
     async fn remove(&self, i: i32) -> Result<SqliteQueryResult, sqlx::Error>{
 
-        let c = self.get(i).await;
+        let c = self.get(i).await?;
+
 
         self.update_prompts_del(&c).await;
 
@@ -122,33 +123,37 @@ impl ComponentServices for DB{
         Ok(())
     }
 
-    async fn update_with_files(&self, id: i64, mut c: PostComponent, config: &Config){
+    async fn update_with_files(&self, id: i64, mut c: PostComponent, config: &Config) -> Result<(), sqlx::Error>{
 
         c.update_component_file_bools();
 
         c.optimise_image();
 
-        self.update(id,&c.component).await;
+        self.update(id,&c.component).await?;
 
         c.create_assets(id.into(), config);
 
+        return Ok(());
+
     }
 
-    async fn add_with_files(&self, mut c: PostComponent, config: &Config) {
+    async fn add_with_files(&self, mut c: PostComponent, config: &Config)  -> Result<(), sqlx::Error>{
 
         c.update_component_file_bools();
 
         c.optimise_image();
 
-        let result = self.add(&c.component);
+        let result = self.add(&c.component).await?;
 
-        c.create_assets(result.await.last_insert_rowid(), config);
+        c.create_assets(result.last_insert_rowid(), config);
+
+        return Ok(())
 
     }
 
-    async fn update(&self, id: i64, c: &Component) {
+    async fn update(&self, id: i64, c: &Component) -> Result<SqliteQueryResult, sqlx::Error> {
         
-        let result = sqlx::query("
+        sqlx::query("
             UPDATE components
             SET
                 name = (?),
@@ -175,13 +180,12 @@ impl ComponentServices for DB{
             .bind(id)
             .execute(&self.pool)
             .await
-            .unwrap();
 
     }
 
     
     
-    async fn add(&self, c: &Component) -> SqliteQueryResult{
+    async fn add(&self, c: &Component) -> Result<SqliteQueryResult, sqlx::Error> {
 
         let result = sqlx::query("INSERT INTO components (name,size,value,info,stock,origin,label,image,datasheet) VALUES (?,?,?,?,?,?,?,?,?)")
             //.bind(c.ID)
@@ -196,8 +200,7 @@ impl ComponentServices for DB{
             .bind(&c.image)
             .bind(&c.datasheet)
             .execute(&self.pool)
-            .await
-            .unwrap();
+            .await;
 
 
         self.update_prompts_add(&c).await;
@@ -205,31 +208,39 @@ impl ComponentServices for DB{
         return result;
     }
 
-    async fn get_first(&self) -> Component{
-        sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")
+    // async fn get_first(&self) -> Result<{
+    //     sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")
+    //         .fetch_one(&self.pool)
+    //         .await.unwrap();
+
+
+    // }
+    async fn get_first(&self) -> Result<Component, sqlx::Error>{
+        let result = sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")
             .fetch_one(&self.pool)
-            .await
-            .unwrap()
+            .await;
+
+        result
+
+
 
     }
 
-    async fn get_all(&self) -> Vec<Component>{
+    async fn get_all(&self) -> Result<Vec<Component>, sqlx::Error>{
         sqlx::query_as("SELECT * FROM components")
             .fetch_all(&self.pool)
             .await
-            .unwrap()
     }
     
 
-    async fn get(&self, i: i32) -> Component {
+    async fn get(&self, i: i32) -> Result<Component, sqlx::Error> {
         sqlx::query_as("SELECT * FROM components WHERE id = (?)")
             .bind(i)
             .fetch_one(&self.pool)
             .await
-            .unwrap()
     }
 
-    async fn get_from_list(&self, list: Vec<i32>) -> Vec<Component> {
+    async fn get_from_list(&self, list: Vec<i32>) -> Result<Vec<Component>, sqlx::Error> {
 
         let mut result: Vec<Component> = Vec::new();
 
@@ -245,17 +256,19 @@ impl ComponentServices for DB{
             if let Ok(compnent) = component_result {
 
                 result.push(compnent);
-            }           
+            } else {
+                return Err(component_result.err().unwrap())
+            }     
         }
 
         println!("finished pulling");
 
-        return result;
+        return Ok(result);
 
     }
 
 
-    async fn search(&self, c: Vec<Vec<String>>) -> Vec<Component> {
+    async fn search(&self, c: Vec<Vec<String>>) -> Result<Vec<Component>, sqlx::Error> {
 
 
         let mut emptied = Vec::new();
@@ -298,7 +311,7 @@ impl ComponentServices for DB{
             
         }
 
-        query.build_query_as::<Component>().fetch_all(&self.pool).await.unwrap()
+        query.build_query_as::<Component>().fetch_all(&self.pool).await
 
 
 
