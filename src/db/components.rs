@@ -4,7 +4,7 @@ use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
 use sqlx::{migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::{SqliteQueryResult, SqliteRow, SqliteValueRef}, ColumnIndex, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool};
 
-use crate::config::config::Config;
+use crate::{config::config::Config, error};
 
 use super::{db::DB, prompt::service::PromptServices, transport::post_component::PostComponent};
 
@@ -64,77 +64,6 @@ impl Component{
 
 }
 
-// impl Component {
-
-//     fn component(&self, config: &Config) -> Component {
-
-//         let id = unsafe { self.id.unwrap_unchecked() };
-        
-//         let mut image: Option<Vec<u8>> = None;
-//         let mut datasheet: Option<Vec<u8>> = None;
-
-//         if self.image {
-//             println!("theres an image! just having a look now");
-
-//             image = find_component_files(id, "full.png", &config.asset_location);
-//         }
-
-//         if self.datasheet {
-//             println!("theres an image! just having a look now");
-
-//             datasheet = find_component_files(id, "datasheet", &config.asset_location);
-//         }
-
-//         return Component {
-//             id: self.id.clone(),
-//             name: self.name.clone(),
-//             size: self.size.clone(),
-//             value: self.value.clone(),
-//             info: self.info.clone(),
-//             stock: self.stock.clone(),
-//             origin: self.origin.clone(),
-//             label: self.label.clone(),
-//             image,
-//             datasheet,
-//         };
-
-//     }
-
-
-
-// }
-
-// impl FromRow<'_, SqliteRow> for Component {
-//     fn from_row(row: &SqliteRow) -> sqlx::Result<Self> {
-
-//         let id: Option<i32> = row.try_get("id")?;
-
-//         let image: Option<Vec<u8>>;
-//         let datasheet: Option<Vec<u8>>;
-
-//         if row.try_get("image")? {
-//             println!("theres an image! just having a look now");
-
-//             find_component_files(id, "full.png", config)
-
-            
-
-//         }
-        
-//         return Ok( Component {
-//             id: id,
-//             name: row.try_get("name")?,
-//             size: row.try_get("size")?,
-//             value: row.try_get("value")?,
-//             info: row.try_get("info")?,
-//             stock: row.try_get("stock")?,
-//             origin: row.try_get("origin")?,
-//             label: row.try_get("label")?,
-//             image: row.try_get("value")?,
-//             datasheet: row.try_get("value")?,
-//         } );
-//     }
-// }
 
 pub trait ComponentServices {
     async fn add_with_files(&self, c: PostComponent, config: &Config);
@@ -155,36 +84,42 @@ pub trait ComponentServices {
 
     async fn search(&self, c: Vec<Vec<String>>) -> Vec<Component>;
 
-    async fn remove(&self, i: i32);   
+    async fn remove(&self, i: i32) -> Result<SqliteQueryResult, sqlx::Error>;   
 
-    async fn remove_list(&self, list: Vec<i32>);
+    async fn remove_list(&self, list: Vec<i32>) -> Result<(), sqlx::Error>;
 
 }
 
 
 impl ComponentServices for DB{
 
-    async fn remove(&self, i: i32) {
+    async fn remove(&self, i: i32) -> Result<SqliteQueryResult, sqlx::Error>{
 
         let c = self.get(i).await;
 
         self.update_prompts_del(&c).await;
 
+        // sqlx::query("
+        //     DELETE FROM components
+        //     WHERE ROWID = (?)
+        // ").bind(i)
+        // .execute(&self.pool)
+        // .await
+        // .unwrap();
+
         sqlx::query("
             DELETE FROM components
             WHERE ROWID = (?)
         ").bind(i)
-        .execute(&self.pool)
-        .await
-        .unwrap();
-
-        
+        .execute(&self.pool).await
     }
 
-    async fn remove_list(&self, list: Vec<i32>) {
+    async fn remove_list(&self, list: Vec<i32>) -> Result<(), sqlx::Error> {
         for i in list{
-            self.remove(i).await
+            self.remove(i).await?;
         }
+
+        Ok(())
     }
 
     async fn update_with_files(&self, id: i64, mut c: PostComponent, config: &Config){
