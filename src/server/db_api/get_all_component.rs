@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use axum::{extract::State, Json};
-use crate::{db::components::{Component, ComponentServices}, server::server_state::ServerState};
+use axum::{Json, extract::State, response::IntoResponse};
+use crate::{db::components::{Component, ComponentServices}, error::db::DBError, server::server_state::ServerState};
 
 
 pub async fn get_component(
@@ -12,8 +12,11 @@ pub async fn get_component(
 
     match result{
         Ok(list) => Json(list),
-        Err(E) => E.into()
+        Err(E) => {
+            DBError::from(E).into_response()
+        }
     }
 
     //Json(result)
 }
+
