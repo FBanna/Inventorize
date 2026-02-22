@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
-use axum::{debug_handler, extract::State, http::{Response, StatusCode}, response::{IntoResponse, Redirect}, Form, Json};
-use crate::{db::{self, components::{Component, ComponentServices}, transport::post_component::PostComponent}, server::server_state::ServerState};
+use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
+use crate::{db::{components::ComponentServices, transport::post_component::PostComponent}, error::error::AppError, server::server_state::ServerState};
 
 
 pub async fn post_component(
 
     State(shared_state): State<Arc<ServerState>>,
     Json(c): Json<PostComponent>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, AppError> {
 
     // println!("IM HERE!");
 
@@ -16,11 +16,11 @@ pub async fn post_component(
 
     //c.optimise_image();
 
-    shared_state.db.add_with_files(c, &shared_state.config).await;
+    shared_state.db.add_with_files(c, &shared_state.config).await?;
 
     //shared_state.db.add(c, &shared_state.config).await;
 
-    StatusCode::OK.into_response()
+    Ok(StatusCode::OK.into_response())
 
     //Redirect::to("/").into_response()
 }

@@ -20,7 +20,7 @@ use std::{net::SocketAddr, sync::Arc};
 use tower_http::{cors::{Any, CorsLayer}, services::{ServeDir, ServeFile}};
 
 
-pub async fn start_server(config: Config, db: DB) {
+pub async fn start_server(config: Config, db: DB) -> tokio::task::JoinHandle<()> {
 
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store);
@@ -96,14 +96,20 @@ pub async fn start_server(config: Config, db: DB) {
  
     println!("Server started, listening on {addr}");
 
-    let server = axum::serve(listener, app).await.unwrap();
+    let thread: tokio::task::JoinHandle<()> = tokio::spawn(async move {
+        let server = axum::serve(listener, app).await.unwrap();
+    });
+    
+
+    thread
+    
 
 }
 
 
 fn api() -> Router<Arc<ServerState>>{
     let api: Router<Arc<ServerState>> = Router::new()
-        .route("/", get(handler))
+        //.route("/", get(handler))
         .route("/post_component", post(post_component::post_component))
         .route("/post_update_component", post(post_update_component::post_update_component))
         .route("/post_build_label", post(post_build_label::post_build_label))
@@ -142,13 +148,13 @@ fn protected() -> Router<Arc<ServerState>>{
     return protected;
 }
 
-#[derive(serde::Serialize)]
-struct Message {
-    message: String,
-}
+// #[derive(serde::Serialize)]
+// struct Message {
+//     message: String,
+// }
 
-async fn handler() -> Json<Message> {
-    Json(Message {
-        message: String::from("Hello, World!"),
-    })
-}
+// async fn handler() -> Json<Message> {
+//     Json(Message {
+//         message: String::from("Hello, World!"),
+//     })
+// }

@@ -27,7 +27,7 @@ ureq = "3.0.10"
 time = "0.3.41"
 zune-inflate = "0.2.54"
 tar = "0.4.44"
-ctrlc = "3.5.2"
+signal-hook = { version = "0.4.3", features = ["extended-siginfo"]}
 
 axum-extra = { version = "0.10.1", features = ["erased-json"]}
 image = "0.25.6"

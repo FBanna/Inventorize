@@ -6,7 +6,7 @@ use typst_kit::fonts::{FontSearcher};
 use typst_pdf::PdfOptions;
 
 
-use crate::{config::config::Config, db::components::Component, error::label::LabelError};
+use crate::{config::config::Config, db::components::Component, error::{error::AppError, label::LabelError}};
 
 use super::typst_wrapper;
 
@@ -16,7 +16,7 @@ use super::typst_wrapper;
 
 pub trait Label {
 
-    fn build_pdf(labels: Vec<Self>, config: &Config) -> Result<Vec<u8>, LabelError> where Self:Sized;
+    fn build_pdf(labels: Vec<Self>, config: &Config) -> Result<Vec<u8>, AppError> where Self:Sized;
 
     fn get_inputs(labels: Vec<Self>, config: &Config) -> Library where Self:Sized;
 
@@ -28,7 +28,7 @@ pub trait Label {
 impl Label for Component{
 
     /// takes vec of labels returns pdf bytes of all labels
-    fn build_pdf(labels: Vec<Self>, config: &Config) -> Result<Vec<u8>, LabelError> {
+    fn build_pdf(labels: Vec<Self>, config: &Config) -> Result<Vec<u8>, AppError> {
 
         let mut label_types: HashMap<String, Vec<Self>> = HashMap::new();
 
@@ -56,9 +56,7 @@ impl Label for Component{
 
             if !path.exists(){
 
-                //println!("couldnt find it AHHH!"); // ERROR NEEDED
-
-                return Err(LabelError::MissingTemplate(label_type));
+                return Err(AppError::LabelError(LabelError::MissingTemplate(label_type)));
             }
 
             let label_template = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
@@ -74,7 +72,7 @@ impl Label for Component{
             
             let Ok(document): Result<PagedDocument, _> = typst::compile(&world)
             .output else { 
-                return Err(LabelError::Compilation()) 
+                return Err(AppError::LabelError(LabelError::Compilation())) 
             };
 
             pdfs.push(document);
@@ -91,7 +89,7 @@ impl Label for Component{
         };
 
         let Ok(final_pdf): Result<Vec<u8>, _> = typst_pdf::pdf(&final_document, &PdfOptions::default()) else {
-            return Err(LabelError::Export());
+            return Err(AppError::LabelError(LabelError::Export()));
         };
         
         

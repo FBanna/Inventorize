@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use axum::{debug_handler, extract::State, http::{Response, StatusCode}, response::{IntoResponse, Redirect}, Form, Json};
+use axum::{extract::State, http::{StatusCode}, response::IntoResponse, Json};
 use serde::{Deserialize, Serialize};
-use crate::{db::{self, components::{Component, ComponentServices}, transport::post_component::PostComponent}, server::server_state::ServerState};
+use crate::{db::{components::ComponentServices, transport::post_component::PostComponent}, error::error::AppError, server::server_state::ServerState};
 
 #[derive(Serialize, Deserialize)]
 pub struct PostUpdateComponent {
@@ -14,19 +14,11 @@ pub async fn post_update_component(
 
     State(shared_state): State<Arc<ServerState>>,
     Json(c): Json<PostUpdateComponent>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, AppError> {
 
-    // println!("IM HERE!");
 
-    // println!("{}", c.fmt());
+    shared_state.db.update_with_files(c.id, c.component, &shared_state.config).await?;
 
-    //c.optimise_image();
+    Ok(StatusCode::OK.into_response())
 
-    shared_state.db.update_with_files(c.id, c.component, &shared_state.config).await;
-
-    //shared_state.db.add(c, &shared_state.config).await;
-
-    StatusCode::OK.into_response()
-
-    //Redirect::to("/").into_response()
 }

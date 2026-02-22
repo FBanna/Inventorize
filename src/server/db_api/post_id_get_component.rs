@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use axum::{extract::State, http::StatusCode, response::{IntoResponse, Redirect}, Form, Json};
+use axum::{extract::State, Json};
 use serde::Deserialize;
-use crate::{config::config::Config, db::{self, components::{Component, ComponentServices}}, label::label::Label, server::server_state::ServerState};
+use crate::{db::components::{Component, ComponentServices}, error::error::AppError, server::server_state::ServerState};
 
 
 #[derive(Deserialize)]
@@ -14,11 +14,13 @@ pub async fn post_id_get_component(
 
     State(shared_state): State<Arc<ServerState>>,
     Json(component): Json<ComponentID>
-) -> Json<Component> {
+) -> Result<Json<Component>, AppError> {
 
 
     
     //shared_state.db.get_first().await.build(&shared_state.config.label_location);
 
-    return Json(shared_state.db.get(component.i).await);
+    let result = shared_state.db.get(component.i).await?;
+
+    Ok(Json(result))
 }

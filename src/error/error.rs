@@ -2,7 +2,7 @@ use std::{fmt::Display, sync::Arc};
 
 use axum::{http::{StatusCode, response}, response::{IntoResponse, Response}};
 
-use crate::error::{db::DBError, label::LabelError};
+use crate::error::label::LabelError;
 
 // helped greatly by - https://github.com/tokio-rs/axum/blob/main/examples/error-handling/src/main.rs
 

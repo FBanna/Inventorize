@@ -14,7 +14,7 @@ static MIGRATOR: Migrator = sqlx::migrate!();
 
 impl DB {
 
-    async fn new(path: &str) -> Self{
+    async fn new(path: &str) -> Self {
 
         Self::create(path).await;
 

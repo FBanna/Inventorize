@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
 use axum::{extract::State, Json};
-use crate::{db::components::{Component, ComponentServices}, server::server_state::ServerState};
+use crate::{db::components::{Component, ComponentServices}, error::error::AppError, server::server_state::ServerState};
 
 
 pub async fn get_component(
     State(shared_state): State<Arc<ServerState>>,
-) -> Json<Component>{
+) -> Result<Json<Component>,AppError>{
 
-    let result = shared_state.db.get_first().await;
+    let result = shared_state.db.get_first().await?;
 
-    Json(result)
+    Ok(Json(result))
 }
