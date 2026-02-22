@@ -6,7 +6,7 @@ use crate::{config::config::Config, db::{self, components::{Component, Component
 
 
 
-pub async fn post_search_component(
+pub async fn post_search_get_component(
 
     State(shared_state): State<Arc<ServerState>>,
     Json(c): Json<Vec<Vec<String>>>

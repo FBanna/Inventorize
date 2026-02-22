@@ -2,7 +2,7 @@ use std::{error, fmt::{format, Display}};
 
 use axum::{http::StatusCode, response::IntoResponse};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum LabelError {
 
     MissingTemplate(String),
