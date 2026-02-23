@@ -97,7 +97,8 @@ pub async fn start_server(config: Config, db: DB) -> tokio::task::JoinHandle<()>
     println!("Server started, listening on {addr}");
 
     let thread: tokio::task::JoinHandle<()> = tokio::spawn(async move {
-        let server = axum::serve(listener, app).await.unwrap();
+        let server = axum::serve(listener, app).await.unwrap(); //.with_graceful_shutdown(signal)
+
     });
     
 

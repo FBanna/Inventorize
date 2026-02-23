@@ -14,7 +14,7 @@ import { RouterLink, RouterView } from 'vue-router'
 
         <RouterLink class="logo_button" to="/"><img class="image" src="../public/logo.svg"></RouterLink>
         <RouterLink class="nav_buttons" to="/addcomponent">Add</RouterLink>
-        <RouterLink class="nav_buttons" to="/component/1">build</RouterLink>
+        <!-- <RouterLink class="nav_buttons" to="/component/1">build</RouterLink> -->
 
 
 

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use sqlx::{migrate::{MigrateDatabase, Migrator}, Pool, Sqlite, SqlitePool};
 
 use super::prompt::{prompts::Prompts, service::PromptServices};
@@ -5,7 +7,7 @@ use super::prompt::{prompts::Prompts, service::PromptServices};
 
 
 pub struct DB {
-    pub pool: Pool<Sqlite>,
+    pub pool: Arc<Pool<Sqlite>>,
     // could have a cached prompts stay open here
     pub prompt_cache: Prompts
 }
@@ -26,7 +28,7 @@ impl DB {
 
         
 
-        Self{pool, prompt_cache}
+        Self{pool: Arc::new(pool), prompt_cache}
 
     }
 

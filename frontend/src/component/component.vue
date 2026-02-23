@@ -243,13 +243,13 @@ td[data-row] {
   width: auto;
 }
 
-.box {
-  margin: 10px;
-  padding: 10px;
-  background-color: import.$secondary;
-  border-radius: 10px;
-  display: inline-block;
-}
+// .box {
+//   margin: 10px;
+//   padding: 10px;
+//   background-color: import.$secondary;
+//   border-radius: 10px;
+//   display: inline-block;
+// }
 
 .build-button {
   width: 100px;

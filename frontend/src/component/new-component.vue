@@ -145,10 +145,14 @@ async function submit() {
 
 <template>
   
-  <div class="window">
-    ADD COMPONENT
-  
-  <!-- <form :action="add_component_api" method="POST"> -->
+
+  <div class="box info-box">
+
+    <h1 class="heading">
+      Add Component
+    </h1>
+
+
     <br>
 
     <input class="input" type="text" v-model="c.name" placeholder="name" required>
@@ -180,9 +184,16 @@ async function submit() {
 
 
 
+    
+
+  </div>
+  
+
+  <div class="box" @click="build_label">
     <button class="submit" @click="submit">Submit</button>
 
   </div>
+
   
 
 
@@ -192,17 +203,31 @@ async function submit() {
 
 @use "../../public/import";
 
-.window{
-  margin: 5px;
-}
 
 .input{
   box-sizing: border-box;
-  width: 200px;
+  width: 400px;
   border-radius: 4px;
-  border-width: 1px;
-  border-style: solid;
+  //border-width: 1px;
+  border-style: hidden;
   margin-bottom: 5px;
+  height: 25px;
+  background-color: import.$white;
+
+  // background-color: black;
+}
+
+input::file-selector-button {
+
+  color: import.$text;
+  // padding: 0.5em;
+  height: 25px;
+  border-radius: 4px;
+  border: hidden;
+  background-color: import.$accent;
+  color: white !important;
+
+
 }
 
 .submit {
@@ -213,6 +238,25 @@ async function submit() {
   width: 100px;
   height: 25px;
 }
+
+
+.info-box {
+  
+  height: 500px;
+  width: 500px;
+  float: left;
+}
+
+
+.heading {
+  margin: 0px;
+  width: max-content;
+  font-size: 20px !important;
+}
+
+
+
+
 
 
 </style> 

@@ -248,7 +248,7 @@ impl PromptServices for DB{
         sqlx::query(&string)
             .bind(value)
             .bind(1)
-            .execute(&self.pool)
+            .execute(&*self.pool)
             .await
             .unwrap();
     }
@@ -263,7 +263,7 @@ impl PromptServices for DB{
 
         sqlx::query(&string)
             .bind(index)
-            .execute(&self.pool)
+            .execute(&*self.pool)
             .await
             .unwrap();
     }
@@ -281,7 +281,7 @@ impl PromptServices for DB{
         sqlx::query(&string)
             .bind(count)
             .bind(index)
-            .execute(&self.pool)
+            .execute(&*self.pool)
             .await
             .unwrap();
 
@@ -309,7 +309,7 @@ impl PromptServices for DB{
             
             let result: Vec<PromptEntry> = sqlx::query_as(&string)
                 
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool)
                 .await
                 .unwrap();
 

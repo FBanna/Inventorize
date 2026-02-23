@@ -7,7 +7,7 @@ description = "organise parts inventory using a web app and qr code stickers!"
 
 [dependencies]
 axum = { version = "0.8.1", features = ["macros"]}
-tokio = { version = "1.44.1", features = ["full"] }
+tokio = { version = "1.49.0", features = ["full"] }
 serde = { version = "1.0.164", features = ["derive"] }
 tower-http = { version = "0.6.2", features = ["cors", "fs", "redirect"] }
 clap = { version = "4.5.32", features = ["derive", "cargo"]}
@@ -27,7 +27,6 @@ ureq = "3.0.10"
 time = "0.3.41"
 zune-inflate = "0.2.54"
 tar = "0.4.44"
-signal-hook = { version = "0.4.3", features = ["extended-siginfo"]}
 
 axum-extra = { version = "0.10.1", features = ["erased-json"]}
 image = "0.25.6"

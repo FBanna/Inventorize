@@ -112,7 +112,7 @@ impl ComponentServices for DB{
             DELETE FROM components
             WHERE ROWID = (?)
         ").bind(i)
-        .execute(&self.pool).await?;
+        .execute(&*self.pool).await?;
 
         Ok(result)
     }
@@ -181,7 +181,7 @@ impl ComponentServices for DB{
             .bind(&c.image)
             .bind(&c.datasheet)
             .bind(id)
-            .execute(&self.pool)
+            .execute(&*self.pool)
             .await?;
 
         Ok(result)
@@ -204,7 +204,7 @@ impl ComponentServices for DB{
             .bind(&c.label)
             .bind(&c.image)
             .bind(&c.datasheet)
-            .execute(&self.pool)
+            .execute(&*self.pool)
             .await?;
 
 
@@ -222,7 +222,7 @@ impl ComponentServices for DB{
     // }
     async fn get_first(&self) -> Result<Component, AppError>{
         let result: Component = sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")
-            .fetch_one(&self.pool)
+            .fetch_one(&*self.pool)
             .await?;
 
         Ok(result)
@@ -235,7 +235,7 @@ impl ComponentServices for DB{
     async fn get_all(&self) -> Result<Vec<Component>, AppError>{
 
         let result: Vec<Component> = sqlx::query_as("SELECT * FROM components")
-            .fetch_all(&self.pool)
+            .fetch_all(&*self.pool)
             .await?;
 
         Ok(result)
@@ -246,7 +246,7 @@ impl ComponentServices for DB{
     async fn get(&self, i: i32) -> Result<Component, AppError> {
         let result: Component = sqlx::query_as("SELECT * FROM components WHERE id = (?)")
             .bind(i)
-            .fetch_one(&self.pool)
+            .fetch_one(&*self.pool)
             .await?;
 
         Ok(result)
@@ -262,7 +262,7 @@ impl ComponentServices for DB{
 
             let component: Component = sqlx::query_as("SELECT * FROM components WHERE id = (?)")
                 .bind(i)
-                .fetch_one(&self.pool)
+                .fetch_one(&*self.pool)
                 .await?;
 
             //if let Ok(compnent) = component_result {
@@ -323,7 +323,7 @@ impl ComponentServices for DB{
             
         }
 
-        let result: Vec<Component> = query.build_query_as::<Component>().fetch_all(&self.pool).await?;
+        let result: Vec<Component> = query.build_query_as::<Component>().fetch_all(&*self.pool).await?;
 
         Ok(result)
 
