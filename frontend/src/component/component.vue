@@ -1,7 +1,7 @@
 <script setup>
 import ErrorBox from '../error/ErrorBox.vue';
 import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 let output = ref(1)
 let c = ref({
@@ -16,6 +16,7 @@ let c = ref({
 
 })
 
+const router = useRouter()
 let id = useRoute().params.id
 
 const error_box = ref(null);
@@ -36,6 +37,35 @@ async function setup() {
   //this.postId = data.id;
 
 }
+
+
+
+
+async function edit_component() {
+  router.push({ path: "/component/" + id + "/update"})
+
+}
+
+async function remove_component() {
+  const requestOptions = {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      i: [Number(id)]
+    })
+  } 
+
+  let response = await fetch(import.meta.env.VITE_API_URL + "api/post_id_remove_list_component", requestOptions)
+
+  // window.location.href = "/";
+
+  router.push({path: "/"})
+
+
+  
+}
+
+
 
 async function build_label() {
 
@@ -165,12 +195,14 @@ setup()
 
   </div>
 
-  <div class="actions-box box" @click="build_label">
-    <button class="button build-button">Build Label</button>
-
-
+  <div class="actions-box box">
+    <button @click="build_label" class="button build-button">Build Label</button>
     <br>
 
+    <button @click="edit_component" class="button build-button">Edit</button>
+    <br>
+
+    <button @click="remove_component" class="button build-button">Remove</button>
   </div>
 
   
@@ -241,6 +273,9 @@ td[data-row] {
 .actions-box {
   
   width: auto;
+  padding: 6px;
+
+
 }
 
 // .box {
@@ -254,6 +289,8 @@ td[data-row] {
 .build-button {
   width: 100px;
   height: 30px;
+  // margin-bottom: 3px;
+  margin: 3px;
 }
 
 

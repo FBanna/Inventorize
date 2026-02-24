@@ -143,8 +143,12 @@ async function submit() {
 
 </script>
 
+
+
 <template>
+
   
+
 
   <div class="box info-box">
 
@@ -176,11 +180,24 @@ async function submit() {
     <input class="input" type="text" v-model="c.label" placeholder="label">
     <br>
 
-    <input class="input" type="file" @change="updateImage"  placeholder="image">
-    <br>
 
-    <input class="input" type="file" @change="updateDatasheet"  placeholder="datasheet">
-    <br>
+    <span>
+
+      <button class="button upload-button" onclick="imageupload.click()"> <img src="../../public/upload.svg" class="favicon-upload-button"></img> Image</button>
+
+      <input id="imageupload" type="file" class="input" style="width: 291px;" @change="updateImage"  placeholder="image"/>
+
+    </span>
+    
+
+
+    <span>
+      <button class="button upload-button" onclick="datasheetupload.click()"><img src="../../public/upload.svg" class="favicon-upload-button"></img> Datasheet</button>
+
+      <input id="datasheetupload" type="file" class="input" style="width: 291px;" @change="updateDatasheet" placeholder="datasheet">
+
+    </span>
+
 
 
 
@@ -189,8 +206,8 @@ async function submit() {
   </div>
   
 
-  <div class="box" @click="build_label">
-    <button class="submit" @click="submit">Submit</button>
+  <div class="box">
+    <button class="submit button" @click="submit">Submit</button>
 
   </div>
 
@@ -213,28 +230,23 @@ async function submit() {
   margin-bottom: 5px;
   height: 25px;
   background-color: import.$white;
+  align-content: center;
+  padding-left: 4px;
+  color: import.$grey !important;
 
   // background-color: black;
 }
 
-input::file-selector-button {
-
-  color: import.$text;
-  // padding: 0.5em;
-  height: 25px;
-  border-radius: 4px;
-  border: hidden;
-  background-color: import.$accent;
-  color: white !important;
+input:focus{
+  outline: 2px solid import.$primary;
+}
 
 
+input[type=file]::file-selector-button {
+  display: none;
 }
 
 .submit {
-  background-color: import.$accent;
-  color: white !important;
-  border-style: hidden;
-  border-radius: 1px;
   width: 100px;
   height: 25px;
 }
@@ -254,6 +266,27 @@ input::file-selector-button {
   font-size: 20px !important;
 }
 
+.upload-button {
+  float: left;
+  margin-right: 4px;
+  height: 25px;
+  width: 105px;
+  border-radius: 4px;
+  padding-left: 2px;
+  display: flex;
+  
+
+}
+
+.favicon-upload-button {
+  height: 13px;
+  align-self: center;
+  float: left;
+  margin-right: 4px;
+  margin-left: 3px;
+  box-sizing: border-box;
+  position: relative;
+}
 
 
 

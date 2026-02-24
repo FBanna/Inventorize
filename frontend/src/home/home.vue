@@ -33,8 +33,10 @@
   function row_click(c){
 
     if(!selecting.value){
-      let route = router.resolve({ path: "/component/" + c.id })
-      window.open(route.href)
+      // let route = router.resolve({ path: "/component/" + c.id })
+      // window.location.href = route;
+
+      router.push({ path: "/component/" + c.id })
     }
 
     
