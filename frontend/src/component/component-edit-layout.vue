@@ -1,7 +1,15 @@
-<!-- <script setup>
-import { onMounted, useTemplateRef, ref } from 'vue';
+<script setup>
 
-// const add_component_api = ref(import.meta.env.VITE_API_URL + "api/post_component")
+import { onMounted, useTemplateRef, ref, defineProps } from 'vue';
+import { useRoute } from 'vue-router';
+
+
+const props = defineProps({
+    title: String,
+    is_new: Boolean
+})
+
+
 
 
 let c = ref({
@@ -13,16 +21,17 @@ let c = ref({
   stock: null,
   origin: "",
   label: "",
-  image: null,
-  datasheet: null
 })
+
+let image = null
+let datasheet = null
 
 
 
 function updateImage($event) {
     const target = $event.target;
     if (!target || !target.files || target.files.length == 0) {
-      c.value.image = null
+      image = null
       return
     }
 
@@ -38,7 +47,7 @@ function updateImage($event) {
         fileByteArray.push(a);
       }
       console.log(fileByteArray)
-      c.value.image = fileByteArray
+      image = fileByteArray
     }
   }
 }
@@ -48,7 +57,7 @@ function updateDatasheet($event) {
 
   const target = $event.target;
     if (!target || !target.files || target.files.length == 0) {
-      c.value.datasheet = null
+      datasheet = null
       return
     }
 
@@ -64,13 +73,76 @@ function updateDatasheet($event) {
         fileByteArray.push(a);
       }
       console.log(fileByteArray)
-      c.value.datasheet = fileByteArray
+      datasheet = fileByteArray
     }
   }
 
 }
 
-async function submit() {
+async function submit(){
+    if(props.is_new){
+        await submit_new()
+    } else {
+        await submit_update()
+    }
+}
+
+async function submit_update() {
+
+  if (c.value.name == "" || c.value.stock == null) {
+    console.log("I AM MAD!")
+    return
+  }
+
+  console.log(c.value.image)
+
+
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+
+
+      id: c.value.id,
+      component: {
+        component: {
+          name: c.value.name,
+          size: c.value.size,
+          value: c.value.value,
+          info: c.value.info,
+          stock: c.value.stock,
+          origin: c.value.origin,
+          label: c.value.label,
+          image: false,
+          datasheet: false
+        },
+        image: image,
+        datasheet: datasheet
+      }
+
+      
+      
+    })
+  };
+
+  fetch(import.meta.env.VITE_API_URL + "api/post_update_component", requestOptions)
+    .then(response => {
+
+
+      if(response.status == 200) {
+        window.location.href = "/";
+
+      } else {
+        console.log("ERROR")
+    }
+
+
+  })
+}
+
+
+
+async function submit_new() {
 
   if (c.value.name == "" || c.value.stock == null) {
     console.log("I AM MAD!")
@@ -109,30 +181,45 @@ async function submit() {
       if(response.status == 200) {
         window.location.href = "/";
 
-        //error.value = "You should be redirected now"
-
-
       } else {
         console.log("ERROR")
       }
-      //  else if (response.status == 401) {
 
-      //   error.value = "incorrect login!"
-      // } else if (response.status == 500) {
-      //   error.value = "internal server error!"
-      // }
 
     })
+}
+
+
+async function setup() {
+
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      i: Number(useRoute().params.id)
+    })
+  };
+  const response = await fetch(import.meta.env.VITE_API_URL+"api/post_id_get_component", requestOptions)
+
+  c.value = await response.json();
+
+
+  console.log(c.value);
+
+
+}
 
 
 
-    // }).catch(error => {
-    //   console.log("what" + error)
-    // }) 
-      
-    
+if (!props.is_new) {
 
-  }
+    setup();
+
+
+
+
+}
+
 
 
 </script>
@@ -141,17 +228,55 @@ async function submit() {
 
 <template>
 
-  
-
 
   <div class="box info-box">
 
     <h1 class="heading">
-      Add Component
+      {{ title }}
     </h1>
+
+
+
+    <br>
+
+    <input class="input" type="text" v-model="c.name" placeholder="name" required>
+    <br>
     
+    <input class="input" type="text" v-model="c.size" placeholder="size">
+    <br>
+    
+    <input class="input" type="text" v-model="c.value" placeholder="value">
+    <br>
+
+    <input class="input" type="text" v-model="c.info" placeholder="info">
+    <br>
+
+    <input class="input" type="number" v-model="c.stock" placeholder="stock" required>
+    <br>
+
+    <input class="input" type="text" v-model="c.origin" placeholder="origin">
+    <br>
+
+    <input class="input" type="text" v-model="c.label" placeholder="label">
+    <br>
+
+
+    <span>
+
+      <button class="button upload-button" onclick="imageupload.click()"> <img src="../../public/upload.svg" class="favicon-upload-button"></img> Image</button>
+
+      <input id="imageupload" type="file" class="input" style="width: 291px;" @change="updateImage"  placeholder="image"/>
+
+    </span>
     
 
+
+    <span>
+      <button class="button upload-button" onclick="datasheetupload.click()"><img src="../../public/upload.svg" class="favicon-upload-button"></img> Datasheet</button>
+
+      <input id="datasheetupload" type="file" class="input" style="width: 291px;" @change="updateDatasheet" placeholder="datasheet">
+
+    </span>
 
   </div>
   
@@ -242,24 +367,4 @@ input[type=file]::file-selector-button {
 
 
 
-</style>  -->
-
-
-
-
-<script setup>
-  import {ref } from 'vue';
-
-  let bool = ref(true)
-  
-  import ComponentEditLayout from './component-edit-layout.vue';
-
-  
- 
-</script>
-
-<template>
-
-<ComponentEditLayout title="New Component" is_new />
-
-</template>
+</style> 

@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import { onMounted, useTemplateRef, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -141,31 +141,12 @@ async function submit() {
       if(response.status == 200) {
         window.location.href = "/";
 
-        //error.value = "You should be redirected now"
-
-
       } else {
         console.log("ERROR")
       }
-      //  else if (response.status == 401) {
 
-      //   error.value = "incorrect login!"
-      // } else if (response.status == 500) {
-      //   error.value = "internal server error!"
-      // }
 
     })
-
-
-
-    // }).catch(error => {
-    //   console.log("what" + error)
-    // }) 
-
-    
-      
-    
-
   }
 
   setup()
@@ -320,4 +301,19 @@ input[type=file]::file-selector-button {
 
 
 
-</style> 
+</style>  -->
+
+
+
+
+<script setup>
+
+  import ComponentEditLayout from './component-edit-layout.vue';
+
+</script>
+
+<template>
+
+<ComponentEditLayout title="Update Component" />
+
+</template>

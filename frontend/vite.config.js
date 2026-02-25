@@ -36,3 +36,13 @@ export default defineConfig({
   //   // }
   // },
 })
+
+
+
+// {
+//       template: {
+//         compilerOptions: {
+//           isCustomElement: (tag) => ['ComponentEditLayout'].includes(tag),
+//         }
+//       }
+//     }
