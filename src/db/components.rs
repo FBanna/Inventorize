@@ -128,7 +128,7 @@ impl ComponentServices for DB{
 
     async fn update_with_files(&self, id: i64, mut c: PostComponent, config: &Config) -> Result<(), AppError>{
 
-        c.update_component_file_bools();
+        //c.update_component_file_bools();
 
         c.optimise_image();
 
@@ -358,23 +358,34 @@ pub fn get_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>>
 
 
 
-pub fn write_component_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>) {
+pub fn write_component_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>, is_present: bool) {
 
+    if is_present {
+        if let Some(data) = option {
+            //let binding = config.to_owned() + "\\" + &id.to_string();
 
-    if let Some(data) = option {
-        //let binding = config.to_owned() + "\\" + &id.to_string();
+            
+            let path: PathBuf = Path::new(config).join(id.to_string());
 
-        
-        let path: PathBuf = Path::new(config).join(id.to_string());
+            //println!("trying to access path at {}", path.as_os_str().to_str().get_or_insert_default());
 
-        //println!("trying to access path at {}", path.as_os_str().to_str().get_or_insert_default());
+            if !path.exists() {
+                fs::create_dir_all(&path).expect("could not create asset dir for component!");
+            }
 
-        if !path.exists() {
-            fs::create_dir_all(&path).expect("could not create asset dir for component!");
+            fs::write(path.join(name.to_owned()), data).expect("Could not write asset file");
+
         }
 
-        fs::write(path.join(name.to_owned()), data).expect("Could not write asset file");
+    } else {
 
+        // THIS RUNS EVERY TIME YOU UPDATE A COMPONENT, LOTS OF SYS CALLS. COULD ADD
+        // ANOTHER PARAMETER TO REMOVE CERTAIN DATA FILES
+        let path: PathBuf = Path::new(config).join(id.to_string()).join(name.to_owned());
+
+        if path.exists(){
+            fs::remove_file(path).expect("could not remove file");
+        }
     }
 
 }

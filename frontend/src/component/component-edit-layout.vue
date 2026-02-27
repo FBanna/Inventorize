@@ -9,8 +9,10 @@ const props = defineProps({
     is_new: Boolean
 })
 
+let c_id = Number(useRoute().params.id)
 
 
+let temp = ref(null)
 
 let c = ref({
   id: 0,
@@ -21,61 +23,132 @@ let c = ref({
   stock: null,
   origin: "",
   label: "",
+  image: false,
+  datasheet: false
 })
 
-let image = null
-let datasheet = null
+// BOOLEANS
+let change_image = ref(false)
+let change_datasheet = ref(false)
+let remove_image = ref(false)
+let remove_datasheet = ref(false)
+
+// DATA
+let image_data = ref(null)
+let datasheet_data = ref(null)
+
+// PREVIEWS
+let image_preview = ref(null)
+let datasheet_preview = ref(null)
 
 
 
-function updateImage($event) {
-    const target = $event.target;
-    if (!target || !target.files || target.files.length == 0) {
-      image = null
-      return
-    }
-
-    var reader = new FileReader();
-    var fileByteArray = [];
-    reader.readAsArrayBuffer(target.files[0]);
-
-    reader.onloadend = (evt) => {
-    if (evt.target.readyState === FileReader.DONE) {
-      const arrayBuffer = evt.target.result,
-        array = new Uint8Array(arrayBuffer);
-      for (const a of array) {
-        fileByteArray.push(a);
-      }
-      console.log(fileByteArray)
-      image = fileByteArray
-    }
+async function updateImage($event) {
+  const target = $event.target;
+  if (!target || !target.files || target.files.length == 0) {
+    image_data.value = null
+    return
   }
+
+
+
+    const arrayBuffer = await target.files[0].arrayBuffer()
+
+    const byteArray = new Uint8Array(arrayBuffer)
+
+    image_data.value = Array.from(byteArray)
+
+    image_preview.value = URL.createObjectURL(target.files[0])
+
+
+
+    change_image.value = true
+    remove_image.value = false
+    //console.log(image_data.value)
+
+
 }
 
 
-function updateDatasheet($event) {
+async function updateDatasheet($event) {
 
   const target = $event.target;
-    if (!target || !target.files || target.files.length == 0) {
-      datasheet = null
-      return
-    }
-
-    var reader = new FileReader();
-    var fileByteArray = [];
-    reader.readAsArrayBuffer(target.files[0]);
-
-    reader.onloadend = (evt) => {
-    if (evt.target.readyState === FileReader.DONE) {
-      const arrayBuffer = evt.target.result,
-        array = new Uint8Array(arrayBuffer);
-      for (const a of array) {
-        fileByteArray.push(a);
-      }
-      console.log(fileByteArray)
-      datasheet = fileByteArray
-    }
+  if (!target || !target.files || target.files.length == 0) {
+    datasheet_value.value = null
+    return
   }
+
+  const arrayBuffer = await target.files[0].arrayBuffer()
+
+  const byteArray = new Uint8Array(arrayBuffer)
+
+  datasheet_data.value = Array.from(byteArray)
+
+  datasheet_preview.value = URL.createObjectURL(target.files[0])
+
+
+
+  change_datasheet.value = true
+  remove_datasheet.value = false
+
+  
+
+
+
+  // change_image.value = true
+  // console.log(image_data.value)
+
+  //   var reader = new FileReader();
+  //   var fileByteArray = [];
+  //   reader.readAsArrayBuffer(target.files[0]);
+
+  //   reader.onloadend = (evt) => {
+  //   if (evt.target.readyState === FileReader.DONE) {
+  //     const arrayBuffer = evt.target.result,
+  //       array = new Uint8Array(arrayBuffer);
+  //     for (const a of array) {
+  //       fileByteArray.push(a);
+  //     }
+
+
+
+  //     change_datasheet.value = true
+  //     datasheet_value.value = fileByteArray
+
+
+  //   }
+  // }
+
+}
+
+function keep_image(){
+
+
+  if(remove_image.value){
+    return false
+  }
+
+  if(!change_image.value && !c.value.image){
+    return false
+  }
+
+  console.log("KEEPING")
+
+  return true
+
+}
+
+function keep_datasheet(){
+
+  if(remove_datasheet.value){
+    return false
+  }
+
+  if(!change_datasheet.value && !c.value.datasheet){
+    return false
+  }
+
+  return true
 
 }
 
@@ -94,7 +167,7 @@ async function submit_update() {
     return
   }
 
-  console.log(c.value.image)
+  console.log(keep_image(), keep_datasheet())
 
 
   const requestOptions = {
@@ -113,11 +186,11 @@ async function submit_update() {
           stock: c.value.stock,
           origin: c.value.origin,
           label: c.value.label,
-          image: false,
-          datasheet: false
+          image: keep_image(),
+          datasheet: keep_datasheet()
         },
-        image: image,
-        datasheet: datasheet
+        image: image_data.value,
+        datasheet: datasheet_data.value
       }
 
       
@@ -149,7 +222,7 @@ async function submit_new() {
     return
   }
 
-  console.log(c.value.image)
+  //console.log(c.value.image)
 
 
   const requestOptions = {
@@ -165,11 +238,11 @@ async function submit_new() {
         stock: c.value.stock,
         origin: c.value.origin,
         label: c.value.label,
-        image: false,
-        datasheet: false
+        image: keep_image(),
+        datasheet: keep_datasheet()
       },
-      image: c.value.image,
-      datasheet: c.value.datasheet
+      image: image_data.value,
+      datasheet: datasheet_data.value
       
     })
   };
@@ -196,7 +269,7 @@ async function setup() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      i: Number(useRoute().params.id)
+      i: c_id
     })
   };
   const response = await fetch(import.meta.env.VITE_API_URL+"api/post_id_get_component", requestOptions)
@@ -215,15 +288,21 @@ if (!props.is_new) {
 
     setup();
 
-
-
-
 }
 
 
 
-</script>
 
+function get_datasheet_src() {
+  return import.meta.env.VITE_API_URL + "data/" + c_id + "/datasheet.pdf"
+}
+
+function get_image_src() {
+  return import.meta.env.VITE_API_URL + "data/" + c_id + "/full.png"
+}
+
+
+</script>
 
 
 <template>
@@ -261,7 +340,7 @@ if (!props.is_new) {
     <br>
 
 
-    <span>
+    <!-- <span>
 
       <button class="button upload-button" onclick="imageupload.click()"> <img src="../../public/upload.svg" class="favicon-upload-button"></img> Image</button>
 
@@ -272,11 +351,69 @@ if (!props.is_new) {
 
 
     <span>
+
       <button class="button upload-button" onclick="datasheetupload.click()"><img src="../../public/upload.svg" class="favicon-upload-button"></img> Datasheet</button>
 
       <input id="datasheetupload" type="file" class="input" style="width: 291px;" @change="updateDatasheet" placeholder="datasheet">
 
-    </span>
+    </span> -->
+
+    <div class="file-upload-section">
+
+
+
+      <div class="file-upload-box">
+
+        <button class="button upload-button" onclick="imageupload.click()"> <img src="../../public/upload.svg" class="favicon-upload-button"></img> Image</button>
+
+        <button class="button remove-button" @click="remove_image = true; change_image = false">X</button>
+
+
+        <input id="imageupload" type="file" class="file-upload-input" @change="updateImage"  placeholder="image"/>
+
+
+       <img v-if="!change_image && c.image && !remove_image" class="image" :src=get_image_src()>
+
+       <img v-if="change_image && !remove_image" class="image" :src="image_preview">
+
+       <div v-if="(!c.image && !change_image) || remove_image" class="image">NO IMAGE</div>
+
+
+      </div>
+
+
+
+
+      <div class="file-upload-box">
+
+        <button class="button upload-button" onclick="datasheetupload.click()"><img src="../../public/upload.svg" class="favicon-upload-button"></img> Datasheet</button>
+
+        <button class="button remove-button" @click="remove_datasheet = true; change_datasheet = false">X</button>
+
+        <input id="datasheetupload" type="file" class="file-upload-input" @change="updateDatasheet" placeholder="datasheet">
+        
+        <iframe v-if="!change_datasheet && c.datasheet && !remove_datasheet" :src="get_datasheet_src()" width="100%" height="300px"></iframe>
+
+        <iframe v-if="change_datasheet && !remove_datasheet" :src="datasheet_preview" width="100%" height="300px"></iframe>
+
+        <div v-if="(!c.datasheet && !change_datasheet) || remove_datasheet"></div>
+      </div>
+
+
+
+
+    </div>
+<!-- 
+    <span>
+
+      <button class="button upload-button" onclick="imageupload.click()"> <img src="../../public/upload.svg" class="favicon-upload-button"></img> Image</button>
+
+      <input id="imageupload" type="file" class="input" style="width: 291px;" @change="updateImage"  placeholder="image"/>
+
+    </span> -->
+
+
+    
 
   </div>
   
@@ -296,9 +433,42 @@ if (!props.is_new) {
 @use "../../public/import";
 
 
+.remove_button{
+  width: 10px;
+}
+
+.image {
+
+  width: 80%;
+
+  align-self: center;
+  
+}
+
+
+.file-upload-box{
+  
+  float: left;
+  width: calc(50% - 10px);
+  margin: 5px;
+  height: 100pt;
+  //border: solid 1px red;
+}
+
+.file-upload-section{
+
+}
+
+.file-upload-input{
+
+  visibility: hidden;
+
+}
+
+
 .input{
   box-sizing: border-box;
-  width: 400px;
+  width: 80%;
   border-radius: 4px;
   //border-width: 1px;
   border-style: hidden;
@@ -349,6 +519,7 @@ input[type=file]::file-selector-button {
   border-radius: 4px;
   padding-left: 2px;
   display: flex;
+
   
 
 }
