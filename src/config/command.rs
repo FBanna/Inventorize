@@ -64,9 +64,7 @@ pub async fn get_config() -> Config{
 
         Config::write(&Config::new());
 
-        DB::init(&config.db_location).await;
-
-
+        DB::create(&config.db_location).await;
 
         let label = Path::new(&config.label_location);
 

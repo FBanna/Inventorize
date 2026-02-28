@@ -42,7 +42,7 @@ impl DB {
     
     }
 
-    async fn create(path: &str){
+    pub async fn create(path: &str){
         if !Sqlite::database_exists(path).await.unwrap_or(false) {
             //println!("Creating database {}", path);
             match Sqlite::create_database(path).await {
