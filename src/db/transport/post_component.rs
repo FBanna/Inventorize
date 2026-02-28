@@ -63,7 +63,7 @@ impl PostComponent {
         // self.component.image = false;
     }
 
-    pub fn create_assets(&self, id: i64, config: &Config) {
+    pub fn create_assets(&self, id: i32, config: &Config) {
         write_component_files(id, "full.png", &config.asset_location, &self.image, self.component.image);
         write_component_files(id, "datasheet.pdf", &config.asset_location, &self.datasheet, self.component.datasheet);
     }

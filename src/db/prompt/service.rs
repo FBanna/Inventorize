@@ -123,23 +123,6 @@ impl PromptServices for DB{
                     } else {
                         self.add_prompt(i, some).await;
                     }
-
-
-                    // let exists = {
-                    //     let mut entries = self.prompt_cache.0[i].prompts.lock().unwrap();
-                    //     let bool = self.check_prompt_exists(some, &mut entries);
-
-                    //     if !bool {
-                    //         entries.push(PromptEntry(some.to_owned(),1));
-                    //     }
-
-                    //     bool
-                    // };
-
-                    // if !exists{
-
-                    //     self.add_prompt(i, some).await;
-                    // }
                     
                         
                 }
@@ -197,41 +180,11 @@ impl PromptServices for DB{
                         
                     }
 
-                    // let (bool, value): (bool, i32) = {
-                    //     let mut entries = self.prompt_cache.0[i].prompts.lock().unwrap();
-                    //     let option = self.check_prompt_last(some, &mut entries);
-
-                        
-
-                    //     if let Some(index) = option {
-                    //         let int: i32 = index.try_into().unwrap();
-                    //         entries.remove(index);
-
-                            
-
-                    //         (true, int)
-
-
-                    //     } else {
-                    //         (false,0)
-                    //     }
-
-                        
-                    // };
-
-                    // if bool {
-                    //     self.del_prompt(i, value).await;
-                    // }
                 }
             }
         }
     }
 
-    // async fn update_prompt(&self, prompt: String, value: String){
-    //     if !self.check_prompt_exists(prompt.clone(), value.clone()).await {
-    //         self.add_prompt(prompt, value).await
-    //     }
-    // }
 
     
 

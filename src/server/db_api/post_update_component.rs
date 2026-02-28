@@ -6,7 +6,7 @@ use crate::{db::{components::ComponentServices, transport::post_component::PostC
 
 #[derive(Serialize, Deserialize)]
 pub struct PostUpdateComponent {
-    pub id: i64,
+    pub id: i32,
     pub component: PostComponent,
 }
 

@@ -68,11 +68,11 @@ impl Component{
 pub trait ComponentServices {
     async fn add_with_files(&self, c: PostComponent, config: &Config) -> Result<(), AppError>;
 
-    async fn update_with_files(&self, id: i64, c: PostComponent, config: &Config) -> Result<(), AppError>;
+    async fn update_with_files(&self, id: i32, c: PostComponent, config: &Config) -> Result<(), AppError>;
 
     async fn add(&self, c: &Component) -> Result<SqliteQueryResult, AppError>;
 
-    async fn update(&self, id: i64, c: &Component) -> Result<SqliteQueryResult, AppError>;
+    async fn update(&self, id: i32, c: &Component) -> Result<SqliteQueryResult, AppError>;
 
     async fn get_first(&self)  -> Result<Component, AppError>;
 
@@ -84,16 +84,16 @@ pub trait ComponentServices {
 
     async fn search(&self, c: Vec<Vec<String>>) -> Result<Vec<Component>, AppError>;
 
-    async fn remove(&self, i: i32) -> Result<SqliteQueryResult, AppError>;   
+    async fn remove(&self, i: i32, config: &Config) -> Result<SqliteQueryResult, AppError>;   
 
-    async fn remove_list(&self, list: Vec<i32>) -> Result<(), AppError>;
+    async fn remove_list(&self, list: Vec<i32>, config: &Config) -> Result<(), AppError>;
 
 }
 
 
 impl ComponentServices for DB{
 
-    async fn remove(&self, i: i32) -> Result<SqliteQueryResult, AppError>{
+    async fn remove(&self, i: i32, config: &Config) -> Result<SqliteQueryResult, AppError>{
 
         let c = self.get(i).await?;
 
@@ -114,19 +114,21 @@ impl ComponentServices for DB{
         ").bind(i)
         .execute(&*self.pool).await?;
 
+        remove_component_files(i, &config.asset_location);
+
         Ok(result)
     }
 
-    async fn remove_list(&self, list: Vec<i32>) -> Result<(), AppError> {
+    async fn remove_list(&self, list: Vec<i32>, config: &Config) -> Result<(), AppError> {
 
         for i in list{
-            self.remove(i).await?;
+            self.remove(i, config).await?;
         }
 
         Ok(())
     }
 
-    async fn update_with_files(&self, id: i64, mut c: PostComponent, config: &Config) -> Result<(), AppError>{
+    async fn update_with_files(&self, id: i32, mut c: PostComponent, config: &Config) -> Result<(), AppError>{
 
         //c.update_component_file_bools();
 
@@ -142,19 +144,24 @@ impl ComponentServices for DB{
 
     async fn add_with_files(&self, mut c: PostComponent, config: &Config)  -> Result<(), AppError>{
 
-        c.update_component_file_bools();
+        //c.update_component_file_bools();
 
         c.optimise_image();
 
         let result: SqliteQueryResult = self.add(&c.component).await?;
 
-        c.create_assets(result.last_insert_rowid(), config);
+        c.create_assets(result.last_insert_rowid().try_into().unwrap(), config);
 
         return Ok(())
 
     }
 
-    async fn update(&self, id: i64, c: &Component) -> Result<SqliteQueryResult, AppError> {
+    async fn update(&self, id: i32, c: &Component) -> Result<SqliteQueryResult, AppError> {
+
+
+        let old = self.get(id).await?;
+
+        
         
         let result: SqliteQueryResult = sqlx::query("
             UPDATE components
@@ -183,6 +190,10 @@ impl ComponentServices for DB{
             .bind(id)
             .execute(&*self.pool)
             .await?;
+
+        self.update_prompts_del(&old).await;
+        self.update_prompts_add(&c).await;
+        
 
         Ok(result)
 
@@ -357,8 +368,18 @@ pub fn get_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>>
 }
 
 
+pub fn remove_component_files(id: i32, config: &str) {
 
-pub fn write_component_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>, is_present: bool) {
+    let path: PathBuf = Path::new(config).join(id.to_string());
+
+    if path.exists() {
+        fs::remove_dir(path).expect("could not delete folder");
+    }
+
+}
+
+
+pub fn write_component_files(id: i32, name: &str, config: &str, option: &Option<Vec<u8>>, is_present: bool) {
 
     if is_present {
         if let Some(data) = option {

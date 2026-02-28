@@ -364,19 +364,29 @@ function get_image_src() {
 
       <div class="file-upload-box">
 
-        <button class="button upload-button" onclick="imageupload.click()"> <img src="../../public/upload.svg" class="favicon-upload-button"></img> Image</button>
+        <div class="buttons">
 
-        <button class="button remove-button" @click="remove_image = true; change_image = false">X</button>
+          <button class="button upload-button" onclick="imageupload.click()"> <img src="../../public/upload.svg" class="favicon-upload-button"></img> Image</button>
 
+          <button class="button remove-button" @click="remove_image = true; change_image = false" v-show="!((!c.image && !change_image) || remove_image)">X</button>
+
+        </div>
 
         <input id="imageupload" type="file" class="file-upload-input" @change="updateImage"  placeholder="image"/>
 
+      
+        <div class="file-container">
+          <img v-if="!change_image && c.image && !remove_image" class="image" :src=get_image_src()>
 
-       <img v-if="!change_image && c.image && !remove_image" class="image" :src=get_image_src()>
+          <img v-if="change_image && !remove_image" class="image" :src="image_preview">
 
-       <img v-if="change_image && !remove_image" class="image" :src="image_preview">
+          <div v-if="(!c.image && !change_image) || remove_image" class="image">NO IMAGE</div>
 
-       <div v-if="(!c.image && !change_image) || remove_image" class="image">NO IMAGE</div>
+          
+        </div>
+
+        
+        
 
 
       </div>
@@ -386,17 +396,24 @@ function get_image_src() {
 
       <div class="file-upload-box">
 
-        <button class="button upload-button" onclick="datasheetupload.click()"><img src="../../public/upload.svg" class="favicon-upload-button"></img> Datasheet</button>
+        <div class="buttons">
 
-        <button class="button remove-button" @click="remove_datasheet = true; change_datasheet = false">X</button>
+          <button class="button upload-button" onclick="datasheetupload.click()"><img src="../../public/upload.svg" class="favicon-upload-button"></img> Datasheet</button>
+
+          <button class="button remove-button" @click="remove_datasheet = true; change_datasheet = false" v-show="!((!c.datasheet && !change_datasheet) || remove_datasheet)">X</button>
+          
+        </div>
 
         <input id="datasheetupload" type="file" class="file-upload-input" @change="updateDatasheet" placeholder="datasheet">
-        
-        <iframe v-if="!change_datasheet && c.datasheet && !remove_datasheet" :src="get_datasheet_src()" width="100%" height="300px"></iframe>
 
-        <iframe v-if="change_datasheet && !remove_datasheet" :src="datasheet_preview" width="100%" height="300px"></iframe>
+        <div class="file-container">
+          
+          <iframe v-if="!change_datasheet && c.datasheet && !remove_datasheet" :src="get_datasheet_src()" class="datasheet"></iframe>
 
-        <div v-if="(!c.datasheet && !change_datasheet) || remove_datasheet"></div>
+          <iframe v-if="change_datasheet && !remove_datasheet" :src="datasheet_preview"class="datasheet"></iframe>
+
+          <div v-if="(!c.datasheet && !change_datasheet) || remove_datasheet">NO DATASHEET</div>
+        </div>
       </div>
 
 
@@ -433,17 +450,49 @@ function get_image_src() {
 @use "../../public/import";
 
 
-.remove_button{
-  width: 10px;
+
+.buttons{
+  display: inline-block;
+  width: fit-content;
+}
+.remove-button{
+
+  height: 25px;
+  width: 25px;
+
+  border-radius: 4px;
+
 }
 
+.file-container{
+  
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
 .image {
 
-  width: 80%;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 
-  align-self: center;
-  
 }
+
+.datasheet{
+
+  object-fit: contain;
+  
+  width: 90%;
+  height: 100%;
+
+  border: none;
+
+}
+
 
 
 .file-upload-box{
@@ -451,13 +500,25 @@ function get_image_src() {
   float: left;
   width: calc(50% - 10px);
   margin: 5px;
-  height: 100pt;
-  //border: solid 1px red;
+  height: 240px;
+
+
+  display: flex;
+
+  flex-direction: column;
+  align-items: center;
+  // display: flex;
+  
+  // border: solid 1px red;
 }
 
 .file-upload-section{
 
+  // display: flex;
+
 }
+
+
 
 .file-upload-input{
 
