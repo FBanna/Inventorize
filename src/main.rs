@@ -25,6 +25,31 @@ async fn main() -> Result<(), Error> {
     let component_db = DB::init(&config.db_location).await;
 
     let pool_clone = Arc::clone(&component_db.pool);
+
+
+    // let component = db::components::Component{
+    //     //ID:5000,
+    //     id: None,
+    //     name:("Resistor".to_string()),
+    //     size:Some("0402".to_string()),
+    //     value:Some("60 OHM".to_string()),
+    //     info:None,
+    //     stock:5000,
+    //     origin:None, 
+    //     //url: None,
+    //     label: Some("vial".to_string()),
+    //     image: false,
+    //     datasheet: false
+    // };
+
+    // println!("start");
+
+    // for i in 1..100 {
+    //     component_db.add(&component).await;
+        
+    // }
+
+    // println!("stop");
    
 
     server::entry::start_server(config, component_db).await;

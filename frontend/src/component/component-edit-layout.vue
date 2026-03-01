@@ -198,8 +198,8 @@ async function submit_update() {
     })
   };
 
-  fetch(import.meta.env.VITE_API_URL + "api/post_update_component", requestOptions)
-    .then(response => {
+  await fetch(import.meta.env.VITE_API_URL + "api/post_update_component", requestOptions)
+    .then(async response => {
 
 
       if(response.status == 200) {
@@ -247,8 +247,8 @@ async function submit_new() {
     })
   };
 
-  fetch(import.meta.env.VITE_API_URL + "api/post_component", requestOptions)
-    .then(response => {
+  await fetch(import.meta.env.VITE_API_URL + "api/post_component", requestOptions)
+    .then(async response => {
 
 
       if(response.status == 200) {
