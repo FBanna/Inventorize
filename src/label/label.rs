@@ -1,7 +1,7 @@
-use std::{collections::HashMap, fs, path::{PathBuf}, sync::{Arc}};
+use std::{collections::HashMap, fmt::Debug, fs, path::PathBuf, sync::Arc};
 
 
-use typst::{foundations::{Array, Dict, Str, Value}, layout::{Page, PagedDocument}, Library, LibraryExt};
+use typst::{Library, LibraryExt, diag::{SourceDiagnostic, SourceResult}, foundations::{Array, Dict, Str, Value}, layout::{Page, PagedDocument}};
 use typst_kit::fonts::{FontSearcher};
 use typst_pdf::PdfOptions;
 
@@ -33,6 +33,7 @@ impl Label for Component{
         let mut label_types: HashMap<String, Vec<Self>> = HashMap::new();
 
         for label in labels {
+
             if label.label.is_none() {
                 continue;
             }
@@ -69,13 +70,22 @@ impl Label for Component{
                 Arc::clone(&arc_font_slot)
             );
 
-            
-            let Ok(document): Result<PagedDocument, _> = typst::compile(&world)
-            .output else { 
-                return Err(AppError::LabelError(LabelError::Compilation())) 
-            };
+            let result: Result<PagedDocument,_> = typst::compile(&world).output;
 
-            pdfs.push(document);
+            match result{
+                Ok(document) => pdfs.push(document),
+                Err(e) => {
+
+
+                    for i in e {
+
+                        println!("ERROR: {}", i.message);
+                    }
+
+                    return Err(AppError::LabelError(LabelError::Compilation())) 
+                }
+            }
+
 
 
         }
