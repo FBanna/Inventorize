@@ -40,24 +40,37 @@ pub const ELEMENTS: [&str;6] = ["name","size","value","info","origin","label"];
 //     pub datasheet: bool
 // }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Component{
     pub id: Option<i32>,
     pub name: String,
     pub stock: i32,
-    pub price: i32,
+    pub price: Option<i32>,
     pub origin: Option<String>,
-    pub label: bool,
+    pub label: Option<String>,
+    pub image: bool,
     pub datasheet: bool,
     pub attribute_id: i32,
-    pub attributes: Json<T>
+    pub attributes: serde_json::Value
 }
 
 
 
 impl Component{
 
-    pub fn fmt(&self) -> String{
-        return self.name.clone() + &self.size.clone().unwrap_or_else(|| {"none".to_string()}).clone();
+    pub fn fmt(&self) -> String {
+
+        format!(
+            "id: {}\n name: {}\n stock: {}\n image: {}\n datasheet: {}\n attributes: {}",
+            self.id.unwrap_or_else(|| 0),
+            self.name.clone(),
+            self.stock,
+            self.image,
+            self.datasheet,
+            self.attributes
+        )
+
+        //return self.name.clone() + &self.size.clone().unwrap_or_else(|| {"none".to_string()}).clone();
     }
 
     pub fn to_vec(&self) -> Vec<Option<&str>> {
@@ -163,6 +176,7 @@ impl ComponentServices for DB{
 
         c.create_assets(result.last_insert_rowid().try_into().unwrap(), config);
 
+
         return Ok(())
 
     }
@@ -178,26 +192,26 @@ impl ComponentServices for DB{
             UPDATE components
             SET
                 name = (?),
-                size = (?),
-                value = (?),
-                info = (?),
                 stock = (?),
+                price = (?),
                 origin = (?),
                 label = (?),
                 image = (?),
-                datasheet = (?)
+                datasheet = (?),
+                attribute_id = (?),
+                attributes = (?)
             WHERE
                 ROWID = (?)
             ")
             .bind(&c.name)
-            .bind(&c.size)
-            .bind(&c.value) 
-            .bind(&c.info)
             .bind(&c.stock)
+            .bind(&c.price)
             .bind(&c.origin)
             .bind(&c.label)
             .bind(&c.image)
             .bind(&c.datasheet)
+            .bind(&c.attribute_id)
+            .bind(&c.attributes)
             .bind(id)
             .execute(&*self.pool)
             .await?;
@@ -214,20 +228,37 @@ impl ComponentServices for DB{
     
     async fn add(&self, c: &Component) -> Result<SqliteQueryResult, AppError> {
 
-        let result: SqliteQueryResult = sqlx::query("INSERT INTO components (name,size,value,info,stock,origin,label,image,datasheet) VALUES (?,?,?,?,?,?,?,?,?)")
-            //.bind(c.ID)
+
+        let result: SqliteQueryResult = sqlx::query("INSERT INTO components (name,stock,price,origin,label,image,datasheet,attribute_id,attributes) VALUES (?,?,?,?,?,?,?,?,?)")
             .bind(&c.name)
-            .bind(&c.size)
-            .bind(&c.value) 
-            .bind(&c.info)
             .bind(&c.stock)
+            .bind(&c.price)
             .bind(&c.origin)
-            //.bind(c.url)
             .bind(&c.label)
             .bind(&c.image)
             .bind(&c.datasheet)
+            .bind(&c.attribute_id)
+            .bind(&c.attributes)
             .execute(&*self.pool)
             .await?;
+
+
+
+
+        // let result: SqliteQueryResult = sqlx::query("INSERT INTO components (name,size,value,info,stock,origin,label,image,datasheet) VALUES (?,?,?,?,?,?,?,?,?)")
+        //     //.bind(c.ID)
+        //     .bind(&c.name)
+        //     .bind(&c.size)
+        //     .bind(&c.value) 
+        //     .bind(&c.info)
+        //     .bind(&c.stock)
+        //     .bind(&c.origin)
+        //     //.bind(c.url)
+        //     .bind(&c.label)
+        //     .bind(&c.image)
+        //     .bind(&c.datasheet)
+        //     .execute(&*self.pool)
+        //     .await?;
 
 
         self.update_prompts_add(&c).await;
@@ -243,6 +274,7 @@ impl ComponentServices for DB{
 
     // }
     async fn get_first(&self) -> Result<Component, AppError>{
+        
         let result: Component = sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")
             .fetch_one(&*self.pool)
             .await?;
@@ -266,6 +298,10 @@ impl ComponentServices for DB{
     
 
     async fn get(&self, i: i32) -> Result<Component, AppError> {
+
+        // let result = sqlx::query_as("SELECT * FROM components WEHERE")
+
+
         let result: Component = sqlx::query_as("SELECT * FROM components WHERE id = (?)")
             .bind(i)
             .fetch_one(&*self.pool)
