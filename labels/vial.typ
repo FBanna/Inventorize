@@ -50,9 +50,8 @@
       #set block(above: 1mm, below: 0mm)
 
       #data.at("name")\
-      #data.at("size")\
-      #data.at("value")\
-      #data.at("info")
+      #data.at("attributes").at("value")\
+
 
 
       #align(bottom + right)[
@@ -86,7 +85,7 @@
 
             #text(size: 3mm)[
               #data.at("name")\
-              #data.at("value")\
+              #data.at("attributes").at("value")\
 
               //#sys.inputs.name
             ]
@@ -106,7 +105,7 @@
 }
 
 
-#for label in sys.inputs.at("labels", default: ((name: "name", size: "size", value: "value", info: "info", url: "https://typst.app"),)){
+#for label in sys.inputs.at("labels", default: ((name: "name", url: "https://typst.app", attributes: ("value": 0)),)){
   template(data: label)
 
 }

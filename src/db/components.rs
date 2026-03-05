@@ -40,7 +40,7 @@ pub const ELEMENTS: [&str;6] = ["name","size","value","info","origin","label"];
 //     pub datasheet: bool
 // }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
 pub struct Component{
     pub id: Option<i32>,
     pub name: String,
@@ -61,7 +61,7 @@ impl Component{
     pub fn fmt(&self) -> String {
 
         format!(
-            "id: {}\n name: {}\n stock: {}\n image: {}\n datasheet: {}\n attributes: {}",
+            "id: {}\n name: {}\n stock: {}\n image: {}\n datasheet: {}\n attributes: {:#}",
             self.id.unwrap_or_else(|| 0),
             self.name.clone(),
             self.stock,
@@ -77,9 +77,9 @@ impl Component{
 
         vec![
             Some(self.name.as_str()),
-            self.size.as_deref(),
-            self.value.as_deref(),
-            self.info.as_deref(),
+            // self.size.as_deref(),
+            // self.value.as_deref(),
+            // self.info.as_deref(),
             self.origin.as_deref(),
             self.label.as_deref(),
         ]
@@ -100,7 +100,7 @@ pub trait ComponentServices {
 
     async fn get_first(&self)  -> Result<Component, AppError>;
 
-    async fn get_all(&self) -> Result<Vec<Component>, AppError>;
+    async fn get_all(&self) -> Result<Vec<Component>, AppError>; // UPDATE
 
     async fn get(&self, i: i32) -> Result<Component, AppError>;
 

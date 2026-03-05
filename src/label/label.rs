@@ -1,7 +1,6 @@
 use std::{collections::HashMap, fmt::Debug, fs, path::PathBuf, sync::Arc};
 
-
-use typst::{Library, LibraryExt, diag::{SourceDiagnostic, SourceResult}, foundations::{Array, Dict, Str, Value}, layout::{Page, PagedDocument}};
+use typst::{Library, LibraryExt, diag::{SourceDiagnostic, SourceResult}, ecow::EcoVec, foundations::{Array, Dict, Str, Value}, layout::{Page, PagedDocument}};
 use typst_kit::fonts::{FontSearcher};
 use typst_pdf::PdfOptions;
 
@@ -9,6 +8,8 @@ use typst_pdf::PdfOptions;
 use crate::{config::config::Config, db::components::Component, error::{error::AppError, label::LabelError}};
 
 use super::typst_wrapper;
+
+use serde_json::Value as JsonValue;
 
 
 
@@ -61,6 +62,9 @@ impl Label for Component{
             }
 
             let label_template = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
+
+
+            //println!("TEMPLATE: {}", label_template);
 
             let world = typst_wrapper::TypstWrapperWorld::new(
                 config.label_location.to_owned(), 
@@ -127,19 +131,32 @@ impl Label for Component{
                         Value::Str(Str::from(x.name.clone()))
                     );
 
-                    dict.insert(
-                        Str::from("size"), 
-                        Value::Str(Str::from(x.size.clone().unwrap_or_default()))
-                    );
+                    // dict.insert(
+                    //     Str::from("size"), 
+                    //     Value::Str(Str::from(x.size.clone().unwrap_or_default()))
+                    // );
+
+                    // dict.insert(
+                    //     Str::from("value"), 
+                    //     Value::Str(Str::from(x.value.clone().unwrap_or_default()))
+                    // );
+
+                    // dict.insert(
+                    //     Str::from("info"), 
+                    //     Value::Str(Str::from(x.info.clone().unwrap_or_default()))
+                    // );
+
+                    let mut attributes = Dict::new();
+
+                    // for map in x.attributes.as_object(){
+
+
+
+                    // }
 
                     dict.insert(
-                        Str::from("value"), 
-                        Value::Str(Str::from(x.value.clone().unwrap_or_default()))
-                    );
-
-                    dict.insert(
-                        Str::from("info"), 
-                        Value::Str(Str::from(x.info.clone().unwrap_or_default()))
+                        Str::from("attributes"), 
+                        json_to_typst(&x.attributes)
                     );
 
                     dict.insert(
@@ -161,10 +178,48 @@ impl Label for Component{
 
 
         return temp;
-    }
-    
+    }    
     
 }
+
+
+fn json_to_typst(value: &JsonValue) -> Value {
+    match value {
+        JsonValue::Null => Value::None,
+
+        JsonValue::Bool(v) => Value::Bool(v.to_owned()),
+
+        JsonValue::Number(v) => {
+            if v.is_i64(){
+                Value::Int(v.as_i64().unwrap())
+            } else if v.is_f64() {
+                Value::Float(v.as_f64().unwrap())
+            } else {
+                Value::None
+            }
+        },
+
+        JsonValue::String(v) => Value::Str(Str::from(v.to_owned())),
+
+        JsonValue::Array(v) => {
+            let converted: Vec<Value> = v.iter().map(json_to_typst).collect();
+            Value::Array(Array::from(EcoVec::from(converted)))
+        },
+
+        JsonValue::Object(map) => {
+            let mut dict = Dict::new();
+
+            for (k,v) in map {
+                dict.insert(Str::from(k.to_owned()), json_to_typst(v));
+
+            };
+
+            Value::Dict(dict)
+        },
+
+    }
+}
+
 
 
 #[cfg(test)]
@@ -180,25 +235,30 @@ mod tests {
 
         let mut components = Vec::new();
 
-        println!("100");
+
+        let component =
+            Component {
+                id: Some(0),
+                name: ("Resistor".to_string()),
+                stock: 5000,
+                price: Some(100),
+                origin: None, 
+                label: Some("vial".to_string()),
+                image: false,
+                datasheet: false,
+                attribute_id: 10,
+                attributes: serde_json::json!({"value": {"test1": "ok!", "test2": 1000, "hiisd": ["help", "please", "SOS", 1000]}})
+            };
+        
+
+        println!("component: {}",component.fmt());
+
+
+    
+
 
         for i in 1..100 {
-            components.push(
-                Component {
-                    //ID:5000,
-                    id: Some(i),
-                    name:("Resistor".to_string()),
-                    size:Some("0402".to_string()),
-                    value:Some("60 OHM".to_string()),
-                    info:None,
-                    stock:5000,
-                    origin:None, 
-                    //url: None,
-                    label: Some("vial".to_string()),
-                    image: false,
-                    datasheet: false
-                }
-            );
+            components.push(component.to_owned());
         };
 
         println!("config");
@@ -220,10 +280,18 @@ mod tests {
 
         let result = Component::build_pdf(components, &config);
 
+
+        let data = result.expect("failed to compile");
+
         println!("done");
 
 
-        result.expect("failed to compile");
+        fs::write("out.pdf", data).expect("failed to save");
+
+
+
+
+
 
 
     }
