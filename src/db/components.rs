@@ -2,7 +2,7 @@ use std::{fs, io::Cursor, path::{Path, PathBuf}};
 
 use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
-use sqlx::{migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::{SqliteQueryResult, SqliteRow, SqliteValueRef}, ColumnIndex, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool};
+use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::{SqliteQueryResult, SqliteRow, SqliteValueRef}, types::{Json, JsonRawValue}};
 
 use crate::{config::config::Config, error::{self, error::AppError}};
 
@@ -26,20 +26,31 @@ pub const ELEMENTS: [&str;6] = ["name","size","value","info","origin","label"];
 //     pub datasheet: Option<Vec<u8>>
 // }
 
-#[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
+// #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
+// pub struct Component{
+//     pub id: Option<i32>,
+//     pub name: String,
+//     pub size: Option<String>,
+//     pub value: Option<String>,
+//     pub info: Option<String>,
+//     pub stock: i32,
+//     pub origin: Option<String>,
+//     pub label: Option<String>,
+//     pub image: bool,
+//     pub datasheet: bool
+// }
+
 pub struct Component{
     pub id: Option<i32>,
     pub name: String,
-    pub size: Option<String>,
-    pub value: Option<String>,
-    pub info: Option<String>,
     pub stock: i32,
+    pub price: i32,
     pub origin: Option<String>,
-    pub label: Option<String>,
-    pub image: bool,
-    pub datasheet: bool
+    pub label: bool,
+    pub datasheet: bool,
+    pub attribute_id: i32,
+    pub attributes: Json<T>
 }
-
 
 
 
