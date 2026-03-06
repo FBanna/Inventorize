@@ -2,7 +2,7 @@ use std::{fmt::Display, sync::Arc};
 
 use axum::{http::{StatusCode, response}, response::{IntoResponse, Response}};
 
-use crate::error::label::LabelError;
+use crate::error::{json::JsonError, label::LabelError};
 
 // helped greatly by - https://github.com/tokio-rs/axum/blob/main/examples/error-handling/src/main.rs
 
@@ -11,7 +11,9 @@ pub enum AppError{
 
     DBError(sqlx::Error),
 
-    LabelError(LabelError)
+    LabelError(LabelError),
+
+    JsonError(JsonError)
 
 }
 
@@ -35,6 +37,9 @@ impl IntoResponse for AppError {
             AppError::LabelError(err) => {
                 (err.clone().into_response(), Some(self))
             },
+            AppError::JsonError(err) => {
+                (err.clone().into_response(), Some(self))
+            },
             AppError::DBError(err) => {
 
                 (((StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response()), Some(self))
@@ -54,11 +59,24 @@ impl IntoResponse for AppError {
 }
 
 
-// impl From<time_library::Error> for AppError {
-//     fn from(error: time_library::Error) -> Self {
-//         Self::TimeError(error)
-//     }
-// }
+
+// INTERNAL
+
+
+impl From<LabelError> for AppError {
+    fn from(value: LabelError) -> Self {
+        Self::LabelError(value)
+    }
+}
+
+impl From<JsonError> for AppError {
+    fn from(value: JsonError) -> Self {
+        Self::JsonError(value)
+    }
+}
+
+
+// EXTERNAL
 
 impl From<sqlx::Error> for AppError {
     fn from(value: sqlx::Error) -> Self {
@@ -66,8 +84,3 @@ impl From<sqlx::Error> for AppError {
     }
 }
 
-impl From<LabelError> for AppError {
-    fn from(value: LabelError) -> Self {
-        Self::LabelError(value)
-    }
-}

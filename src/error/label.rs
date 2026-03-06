@@ -6,8 +6,8 @@ use axum::{http::StatusCode, response::IntoResponse};
 pub enum LabelError {
 
     MissingTemplate(String),
-    Compilation(),
-    Export()
+    Compilation,
+    Export
 
 }
 
@@ -20,8 +20,8 @@ impl Display for LabelError{
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             LabelError::MissingTemplate(template) => write!(f, "[ERROR] LabelCreation - Missing Template - Could not find {}.typ", template),
-            LabelError::Compilation() => write!(f, "[ERROR] LabelCreation - Compilation - Failed to compile labels"),
-            LabelError::Export() =>  write!(f, "[ERROR] LabelCreation - Export - Failed to export labels")
+            LabelError::Compilation => write!(f, "[ERROR] LabelCreation - Compilation - Failed to compile labels"),
+            LabelError::Export =>  write!(f, "[ERROR] LabelCreation - Export - Failed to export labels")
         }
     }
 }

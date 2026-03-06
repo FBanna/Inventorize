@@ -86,7 +86,7 @@ impl Label for Component{
                         println!("ERROR: {}", i.message);
                     }
 
-                    return Err(AppError::LabelError(LabelError::Compilation())) 
+                    return Err(LabelError::Compilation.into()) 
                 }
             }
 
@@ -103,7 +103,7 @@ impl Label for Component{
         };
 
         let Ok(final_pdf): Result<Vec<u8>, _> = typst_pdf::pdf(&final_document, &PdfOptions::default()) else {
-            return Err(AppError::LabelError(LabelError::Export()));
+            return Err(LabelError::Export.into());
         };
         
         

@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS types
 (
     id INTEGER PRIMARY KEY,
     name        TEXT            NOT NULL,
+    attributes  TEXT            NOT NULL,
     schema      TEXT            NOT NULL,
     prompts     TEXT            NOT NULL,
 );

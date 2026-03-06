@@ -1,0 +1,12 @@
+{
+    "type": "object",
+    "properties": {
+        "attributes": {
+            "type": "array",
+            "name": { "type": "string" },
+            "type": { "type": "string" },
+            "unit": { "type": "string" }
+        }
+    },
+    "required": [ "name", "unit" ]
+}
