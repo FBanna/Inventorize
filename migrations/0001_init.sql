@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS components
     id INTEGER PRIMARY KEY,
     name        TEXT            NOT NULL,
     stock       INTEGER         NOT NULL,
-    price       INTEGER,
+    price       FLOAT,
     origin      TEXT,
     label       TEXT,
     image       BOOLEAN         NOT NULL,

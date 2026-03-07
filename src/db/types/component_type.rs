@@ -3,6 +3,8 @@ use serde::{Serialize, Serializer, ser::SerializeStruct};
 use serde_json::Value as JsonValue;
 use sqlx::prelude::FromRow;
 
+use crate::error::{error::AppError, json::JsonError};
+
 
 
 #[derive(FromRow, Debug)]
@@ -30,6 +32,43 @@ impl Serialize for ComponentType {
         state.serialize_field("prompts", &self.prompts)?;
         
         state.end()
+    }
+
+}
+
+impl ComponentType {
+
+    pub fn veryify_attributes(&self, json: &JsonValue) -> Result<(), AppError> {
+
+        let validator = jsonschema::validator_for(&self.schema).expect("ERROR: Could not make json validator");
+
+        let evaluation = validator.evaluate(json);
+
+        match evaluation.flag().valid {
+            true => {
+                println!("COMPONENT PASSED: {:#}", json);
+                return Ok(())
+            },
+            false => {
+
+                
+                let errors = evaluation.iter_errors().map(|err| -> String {
+
+                    err.error.to_string()
+
+                }).fold("".to_string(), |acc, x| {
+                    format!("{}\n{}", acc, x)
+                });
+
+
+                Err(JsonError::ComponentAttributesMalformed(errors).into())
+
+
+
+
+            }
+        }
+
     }
 
 }

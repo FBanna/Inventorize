@@ -4,7 +4,7 @@ use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
 use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::{SqliteQueryResult, SqliteRow, SqliteValueRef}, types::{Json, JsonRawValue}};
 
-use crate::{config::config::Config, error::{self, error::AppError}};
+use crate::{config::config::Config, db::types::service::ComponentTypeService, error::{self, error::AppError}};
 
 use super::{db::DB, prompt::service::PromptServices, transport::post_component::PostComponent};
 
@@ -45,7 +45,7 @@ pub struct Component{
     pub id: Option<i32>,
     pub name: String,
     pub stock: i32,
-    pub price: Option<i32>,
+    pub price: Option<f32>,
     pub origin: Option<String>,
     pub label: Option<String>,
     pub image: bool,
@@ -228,6 +228,9 @@ impl ComponentServices for DB{
     
     async fn add(&self, c: &Component) -> Result<SqliteQueryResult, AppError> {
 
+        let component_type = self.get_type(c.attribute_id).await?;
+
+        component_type.veryify_attributes(&c.attributes)?;
 
         let result: SqliteQueryResult = sqlx::query("INSERT INTO components (name,stock,price,origin,label,image,datasheet,attribute_id,attributes) VALUES (?,?,?,?,?,?,?,?,?)")
             .bind(&c.name)
@@ -261,7 +264,7 @@ impl ComponentServices for DB{
         //     .await?;
 
 
-        self.update_prompts_add(&c).await;
+        //self.update_prompts_add(&c).await;
 
         Ok(result)
     }

@@ -1,10 +1,11 @@
 
 use std::{io::Error, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::types::{service::ComponentTypeService, transport_type::TransportComponentType}};
+use crate::{config::config::Config, db::{components::Component, types::{service::ComponentTypeService, transport_type::TransportComponentType}}};
 use db::{components::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
+
 // use tokio::signal;
 
 
@@ -28,7 +29,7 @@ async fn main() -> Result<(), Error> {
     let pool_clone = Arc::clone(&component_db.pool);
 
 
-    let help = TransportComponentType{
+    let test_type = TransportComponentType{
         name: "resistor".to_owned(),
         attributes: json!({
 
@@ -50,7 +51,27 @@ async fn main() -> Result<(), Error> {
     };
 
 
-    component_db.add_type(&help).await.unwrap();
+    let result = component_db.add_type(&test_type).await.unwrap();
+
+    let test_component = Component { 
+        id: None, 
+        name: "Boring Old Resistor".to_owned(), 
+        stock: 1000, 
+        price: Some(14.0), 
+        origin: Some("lcsc".to_owned()), 
+        label: Some("vial".to_owned()), 
+        image: false, 
+        datasheet: false, 
+        attribute_id: result.last_insert_rowid() as i32, 
+        attributes: json!({
+
+            "resistance": 60,
+            "package": "0402"
+
+        })
+    };
+
+    component_db.add(&test_component).await.unwrap();
 
 
     // let component = db::components::Component{

@@ -241,7 +241,7 @@ mod tests {
                 id: Some(0),
                 name: ("Resistor".to_string()),
                 stock: 5000,
-                price: Some(100),
+                price: Some(100.0),
                 origin: None, 
                 label: Some("vial".to_string()),
                 image: false,

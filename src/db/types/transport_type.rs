@@ -28,8 +28,8 @@ impl TransportComponentType {
         let schema: JsonValue = serde_json::from_str(attribute_schema_str).unwrap();
 
 
-        println!("schema: {:#}\n\n", schema);
-        println!("{:#}", self.attributes);
+        //println!("schema: {:#}\n\n", schema);
+        //println!("{:#}", self.attributes);
 
         let validator = jsonschema::validator_for(&schema).expect("ERROR: Could not make json validator");
 
@@ -48,7 +48,7 @@ impl TransportComponentType {
                 });
 
 
-                Err(JsonError::TypeAttributeEvaluation(errors).into())
+                Err(JsonError::ComponentTypeAttributesMalformed(errors).into())
 
 
             },
@@ -59,10 +59,11 @@ impl TransportComponentType {
     }
 
     /// Generates schema from verified attributes returning it
-    /// as a JsonValue
+    /// as a JsonValue eg.:
     /// 
-    /// {
-    ///     "type": "object":
+    /// ```json
+    ///     {
+    ///     "type": "object",
     ///     "properties": {
     ///         
     ///         "resistance": { "type": "integer" },
@@ -70,30 +71,47 @@ impl TransportComponentType {
     /// 
     ///     }
     /// }
-    pub fn gen_schema(&self) -> Result<JsonValue, AppError> {
+    /// ```
+    pub fn gen_schema_and_prompts(&self) -> Result<(JsonValue, JsonValue), AppError> {
 
         self.verify_attributes()?;
 
-        let mut map: serde_json::Map<String,JsonValue> = serde_json::Map::new();
+        let mut map_schema: serde_json::Map<String,JsonValue> = serde_json::Map::new();
+
+        let mut map_prompts: serde_json::Map<String,JsonValue> = serde_json::Map::new();
+
+
 
         let mut properties: serde_json::Map<String,JsonValue> = serde_json::Map::new();
 
-        map.insert("type".to_owned(), JsonValue::String("object".to_owned()));
+        let mut prompt_list: serde_json::Map<String,JsonValue> = serde_json::Map::new();
+
+        map_schema.insert("type".to_owned(), JsonValue::String("object".to_owned()));
 
         let array = self.attributes["attributes"].as_array().ok_or(JsonError::GenSchema)?;
 
         // let required: Vec<String> = Vec::new();
 
-        for attribute in array{
-            properties.insert(
+        
 
-                attribute.get("name")
+        for attribute in array{
+
+            let name = attribute.get("name")
                     .ok_or(JsonError::GenSchema)?
                     .as_str()
                     .ok_or(JsonError::GenSchema)?
-                    .to_owned(), 
+                    .to_owned();
+
+            prompt_list.insert(
+                name.clone(),
+                JsonValue::Array(Vec::new())
+            
+            );
 
 
+            properties.insert(
+
+                name, 
                 JsonValue::Object({
 
                     let mut type_map = Map::new();
@@ -113,13 +131,19 @@ impl TransportComponentType {
             );
         }
 
-        map.insert("properties".to_owned(), JsonValue::Object(properties));
+        map_schema.insert("properties".to_owned(), JsonValue::Object(properties));
 
-        let value = JsonValue::Object(map);
+        let schema = JsonValue::Object(map_schema);
 
-        println!("schema: {:#}", value);
+        map_prompts.insert("prompts".to_owned(), JsonValue::Object(prompt_list));
 
-        Ok(value)
+        let prompts = JsonValue::Object(map_prompts);
+
+
+
+        println!("schema: {:#}\nprompts: {:#}", schema, prompts);
+
+        Ok((schema, prompts))
 
 
 
