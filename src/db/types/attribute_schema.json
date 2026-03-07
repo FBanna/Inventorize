@@ -1,12 +1,22 @@
 {
     "type": "object",
     "properties": {
+        
         "attributes": {
             "type": "array",
-            "name": { "type": "string" },
-            "type": { "type": "string" },
-            "unit": { "type": "string" }
+            "items": {
+                "type": "object",
+                "required": [ "name", "object_type", "unit" ],
+                "properties": {
+
+                    "name": { "type": "string" },
+                    "object_type": { "type": "string" },
+                    "unit": { "type": "string" }
+
+                }
+                
+            }
+            
         }
-    },
-    "required": [ "name", "unit" ]
+    }
 }

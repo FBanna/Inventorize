@@ -1,8 +1,9 @@
 
 use std::{io::Error, sync::{Arc, atomic::AtomicBool}};
 
-use crate::config::config::Config;
+use crate::{config::config::Config, db::types::{service::ComponentTypeService, transport_type::TransportComponentType}};
 use db::{components::ComponentServices, db::DB};
+use serde_json::json;
 use tokio::{signal, sync::broadcast};
 // use tokio::signal;
 
@@ -25,6 +26,31 @@ async fn main() -> Result<(), Error> {
     let component_db = DB::init(&config.db_location).await;
 
     let pool_clone = Arc::clone(&component_db.pool);
+
+
+    let help = TransportComponentType{
+        name: "resistor".to_owned(),
+        attributes: json!({
+
+            "attributes": [
+                {
+                    "name": "resistance",
+                    "object_type": "integer",
+                    "unit": "R"
+                },
+                {
+                    "name": "package",
+                    "object_type": "string",
+                    "unit": ""
+                }
+
+            ]
+            
+        })
+    };
+
+
+    component_db.add_type(&help).await.unwrap();
 
 
     // let component = db::components::Component{

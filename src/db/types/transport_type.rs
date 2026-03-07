@@ -1,5 +1,5 @@
 
-use serde_json::{Value as JsonValue, json};
+use serde_json::{Map, Value as JsonValue, json};
 
 use crate::error::{error::AppError, json::JsonError};
 
@@ -12,7 +12,7 @@ impl TransportComponentType {
 
 
     /// Takes in rough attributes from frontend and validates it
-    /// before returning new JsonValue
+    /// 
     /// 
     /// eg. {
     ///     "resistance": { "type": "integer", "unit": "ohms" },
@@ -28,7 +28,7 @@ impl TransportComponentType {
         let schema: JsonValue = serde_json::from_str(attribute_schema_str).unwrap();
 
 
-
+        println!("schema: {:#}\n\n", schema);
         println!("{:#}", self.attributes);
 
         let validator = jsonschema::validator_for(&schema).expect("ERROR: Could not make json validator");
@@ -60,29 +60,66 @@ impl TransportComponentType {
 
     /// Generates schema from verified attributes returning it
     /// as a JsonValue
+    /// 
+    /// {
+    ///     "type": "object":
+    ///     "properties": {
+    ///         
+    ///         "resistance": { "type": "integer" },
+    ///         "package": { "type": "string" }
+    /// 
+    ///     }
+    /// }
     pub fn gen_schema(&self) -> Result<JsonValue, AppError> {
 
         self.verify_attributes()?;
 
         let mut map: serde_json::Map<String,JsonValue> = serde_json::Map::new();
 
+        let mut properties: serde_json::Map<String,JsonValue> = serde_json::Map::new();
+
         map.insert("type".to_owned(), JsonValue::String("object".to_owned()));
 
         let array = self.attributes["attributes"].as_array().ok_or(JsonError::GenSchema)?;
 
-        let required: Vec<String> = Vec::new();
+        // let required: Vec<String> = Vec::new();
 
-        for name in array{
-            map.insert(
-                name.as_str().ok_or(JsonError::GenSchema)?.to_owned(), 
-                JsonValue::Object(serde_json::Map())
+        for attribute in array{
+            properties.insert(
+
+                attribute.get("name")
+                    .ok_or(JsonError::GenSchema)?
+                    .as_str()
+                    .ok_or(JsonError::GenSchema)?
+                    .to_owned(), 
+
+
+                JsonValue::Object({
+
+                    let mut type_map = Map::new();
+
+                    type_map.insert(
+                        "type".to_owned(),
+
+                        attribute.get("object_type")
+                            .ok_or(JsonError::GenSchema)?.to_owned()
+
+                    );
+
+                    type_map
+
+
+                })
             );
         }
 
+        map.insert("properties".to_owned(), JsonValue::Object(properties));
 
-        todo!()
+        let value = JsonValue::Object(map);
 
+        println!("schema: {:#}", value);
 
+        Ok(value)
 
 
 

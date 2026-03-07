@@ -22,7 +22,12 @@ impl DB {
 
         let pool = SqlitePool::connect(path).await.unwrap();
 
-        let _ = MIGRATOR.run(&pool).await;
+        let result = MIGRATOR.run(&pool).await.expect("MIGRATION ERROR");
+
+        // if result.is_err(){
+        //     println!("MIGRATION ERROR: {}", result.err().unwrap().to_string())
+
+        // }
 
         let prompt_cache = Prompts::new();
 
@@ -36,7 +41,7 @@ impl DB {
 
         let mut db = Self::new(path).await;
 
-        db.sync_prompts().await;
+        //db.sync_prompts().await;
 
         return db;
     
