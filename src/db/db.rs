@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use sqlx::{migrate::{MigrateDatabase, Migrator}, Pool, Sqlite, SqlitePool};
 
-use super::prompt::{prompts::Prompts, service::PromptServices};
+use super::prompt::{prompts::Prompts};
 
 
 
@@ -12,7 +12,7 @@ pub struct DB {
     pub prompt_cache: Prompts
 }
 
-static MIGRATOR: Migrator = sqlx::migrate!();
+static MIGRATOR: Migrator = sqlx::migrate!("db/migrations");
 
 impl DB {
 
@@ -22,7 +22,7 @@ impl DB {
 
         let pool = SqlitePool::connect(path).await.unwrap();
 
-        let result = MIGRATOR.run(&pool).await.expect("MIGRATION ERROR");
+        MIGRATOR.run(&pool).await.expect("MIGRATION ERROR");
 
         // if result.is_err(){
         //     println!("MIGRATION ERROR: {}", result.err().unwrap().to_string())
