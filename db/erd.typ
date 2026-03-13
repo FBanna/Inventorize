@@ -126,7 +126,7 @@
   edge(<component>, <origin>, "-n!"),
   // edge(<component>, (1.5,0.75),(1.5,0), <smd>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,1), <resistor>, "-1?"),
-  edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-1?"),
+  edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-n?"),
   edge(<type>, <type_attributes>, "-1?"),
   edge(<component>,<component_type>, "-n!")
 
