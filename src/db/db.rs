@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use sqlx::{migrate::{MigrateDatabase, Migrator}, Pool, Sqlite, SqlitePool};
+use sqlx::{ConnectOptions, Pool, Sqlite, SqlitePool, migrate::{MigrateDatabase, Migrator}, sqlite::SqliteConnectOptions};
 
 use super::prompt::{prompts::Prompts};
 
@@ -21,7 +21,7 @@ impl DB {
         Self::create(path).await;
 
         let pool = SqlitePool::connect(path).await.unwrap();
-
+        
         MIGRATOR.run(&pool).await.expect("MIGRATION ERROR");
 
         // if result.is_err(){

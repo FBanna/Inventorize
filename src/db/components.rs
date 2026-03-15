@@ -247,35 +247,10 @@ impl ComponentServices for DB{
 
 
 
-
-        // let result: SqliteQueryResult = sqlx::query("INSERT INTO components (name,size,value,info,stock,origin,label,image,datasheet) VALUES (?,?,?,?,?,?,?,?,?)")
-        //     //.bind(c.ID)
-        //     .bind(&c.name)
-        //     .bind(&c.size)
-        //     .bind(&c.value) 
-        //     .bind(&c.info)
-        //     .bind(&c.stock)
-        //     .bind(&c.origin)
-        //     //.bind(c.url)
-        //     .bind(&c.label)
-        //     .bind(&c.image)
-        //     .bind(&c.datasheet)
-        //     .execute(&*self.pool)
-        //     .await?;
-
-
-        //self.update_prompts_add(&c).await;
-
         Ok(result)
     }
 
-    // async fn get_first(&self) -> Result<{
-    //     sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")
-    //         .fetch_one(&self.pool)
-    //         .await.unwrap();
 
-
-    // }
     async fn get_first(&self) -> Result<Component, AppError>{
         
         let result: Component = sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")

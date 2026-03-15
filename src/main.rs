@@ -31,23 +31,24 @@ async fn main() -> Result<(), Error> {
 
     let test_type = TransportComponentType{
         name: "resistor".to_owned(),
-        attributes: json!({
+        inherits: 1,
+        attributes: Some(json!({
 
             "attributes": [
                 {
                     "name": "resistance",
-                    "object_type": "integer",
+                    "object_type": "INTEGER",
                     "unit": "R"
                 },
                 {
                     "name": "package",
-                    "object_type": "string",
+                    "object_type": "TEXT",
                     "unit": ""
                 }
 
             ]
             
-        })
+        }))
     };
 
 
@@ -97,7 +98,6 @@ async fn main() -> Result<(), Error> {
     // }
 
     // println!("stop");
-   
 
     server::entry::start_server(config, component_db).await;
 

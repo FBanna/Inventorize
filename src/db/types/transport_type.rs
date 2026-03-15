@@ -5,7 +5,8 @@ use crate::error::{error::AppError, json::JsonError};
 
 pub struct TransportComponentType {
     pub name: String,
-    pub attributes: JsonValue
+    pub inherits: i32,
+    pub attributes: Option<JsonValue>
 }
 
 impl TransportComponentType {
@@ -21,7 +22,8 @@ impl TransportComponentType {
     /// }
     /// 
     /// 
-    fn verify_attributes(&self) -> Result<(), AppError> {
+    fn verify_attributes(&self, attributes: &JsonValue) -> Result<(), AppError> {
+
 
         let attribute_schema_str = include_str!("attribute_schema.json");
 
@@ -33,7 +35,7 @@ impl TransportComponentType {
 
         let validator = jsonschema::validator_for(&schema).expect("ERROR: Could not make json validator");
 
-        let evaluation = validator.evaluate(&self.attributes);
+        let evaluation = validator.evaluate(attributes);
 
         match evaluation.flag().valid{
             true => return Ok(()),
@@ -72,9 +74,15 @@ impl TransportComponentType {
     ///     }
     /// }
     /// ```
-    pub fn gen_schema_and_prompts(&self) -> Result<(JsonValue, JsonValue), AppError> {
+    pub fn gen_schema_and_prompts_and_attributes(&self) -> Result<Option<(JsonValue, JsonValue, JsonValue)>, AppError> {
 
-        self.verify_attributes()?;
+        if self.attributes.is_none(){
+            return Ok(None);
+        }
+
+        let attributes = self.attributes.clone().unwrap();
+
+        self.verify_attributes(&attributes)?;
 
         let mut map_schema: serde_json::Map<String,JsonValue> = serde_json::Map::new();
 
@@ -88,7 +96,7 @@ impl TransportComponentType {
 
         map_schema.insert("type".to_owned(), JsonValue::String("object".to_owned()));
 
-        let array = self.attributes["attributes"].as_array().ok_or(JsonError::GenSchema)?;
+        let array = attributes["attributes"].as_array().ok_or(JsonError::GenSchema)?;
 
         // let required: Vec<String> = Vec::new();
 
@@ -143,7 +151,7 @@ impl TransportComponentType {
 
         println!("schema: {:#}\nprompts: {:#}", schema, prompts);
 
-        Ok((schema, prompts))
+        Ok(Some((schema, prompts, attributes)))
 
 
 
