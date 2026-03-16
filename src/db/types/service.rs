@@ -17,6 +17,8 @@ pub trait ComponentTypeService {
 
 
 impl ComponentTypeService for DB {
+
+    /// DEPRECATED AND UNSAFE
     async fn add_type(&self, tc: &TransportComponentType) -> Result<SqliteQueryResult, AppError> {
 
         let option = tc.gen_schema_and_prompts_and_attributes()?;
@@ -51,7 +53,6 @@ impl ComponentTypeService for DB {
             let finished = columns + ",FOREIGN KEY(component_id) REFERENCES component(id)" + ")";
             println!("columns: {}", &finished);
 
-
             // SANITISE THIS STUFF
 
             let query = format!(
@@ -72,6 +73,8 @@ impl ComponentTypeService for DB {
         Ok(result)
     }
     
+
+    /// DEPRECATED
     async fn remove_type(&self, id: i32) -> Result<SqliteQueryResult, AppError> {
 
         let result: SqliteQueryResult = sqlx::query("DELETE FROM types WHERE ROWID = (?)")
@@ -87,7 +90,13 @@ impl ComponentTypeService for DB {
 
     async fn get_type(&self, id: i32) -> Result<ComponentType, AppError> {
         
-        let result: ComponentType = sqlx::query_as("SELECT * FROM types WHERE ROWID = (?)")
+        let result: ComponentType = sqlx::query_as("
+        SELECT * 
+        FROM types
+        INNER JOIN type_attribute
+        on types.id = type_attribute.type_id
+        WHERE types.id = (?)
+        ")
             .bind(id)
             .fetch_one(&*self.pool)
             .await?;
@@ -98,7 +107,14 @@ impl ComponentTypeService for DB {
     
     async fn list_types(&self) -> Result<Vec<ComponentType>, AppError> {
         
-        let result: Vec<ComponentType> = sqlx::query_as("SELECT * FROM types")
+        let result: Vec<ComponentType> = sqlx::query_as("
+        
+        SELECT * 
+        FROM types
+        INNER JOIN type_attribute
+        on types.id = type_attribute.type_id
+        
+        ")
             .fetch_all(&*self.pool)
             .await?;
 

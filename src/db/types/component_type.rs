@@ -11,6 +11,7 @@ use crate::error::{error::AppError, json::JsonError};
 pub struct ComponentType {
     pub id: i32,
     pub name: String,
+    pub inherits: i32,
     pub attributes: JsonValue,
     pub schema: JsonValue,
     pub prompts: JsonValue
