@@ -1,10 +1,11 @@
 
+use std::fmt::Display;
+
 use serde::{Serialize, Serializer, ser::SerializeStruct};
 use serde_json::Value as JsonValue;
 use sqlx::prelude::FromRow;
 
 use crate::error::{error::AppError, json::JsonError};
-
 
 
 #[derive(FromRow, Debug)]
@@ -17,29 +18,39 @@ pub struct ComponentType {
     pub prompts: JsonValue
 }
 
-impl Serialize for ComponentType {
 
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer {
-        
-
-        let mut state: <S as Serializer>::SerializeStruct = serializer.serialize_struct("ComponentType",4)?;
-        
-        state.serialize_field("id", &self.id)?;
-        state.serialize_field("name", &self.name)?;
-        state.serialize_field("attributes", &self.attributes)?;
-        state.serialize_field("schema", &self.schema)?;
-        state.serialize_field("prompts", &self.prompts)?;
-        
-        state.end()
+impl Display for ComponentType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} - {}:\nattributes: {:#}\n\nschema: {:#}\n\nprompts: {:#}", self.id, self.name, self.attributes, self.schema, self.prompts)
     }
-
 }
+
+// impl Serialize for ComponentType {
+
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: serde::Serializer {
+        
+
+//         let mut state: <S as Serializer>::SerializeStruct = serializer.serialize_struct("ComponentType",4)?;
+        
+//         state.serialize_field("id", &self.id)?;
+//         state.serialize_field("name", &self.name)?;
+//         state.serialize_field("attributes", &self.attributes)?;
+//         state.serialize_field("schema", &self.schema)?;
+//         state.serialize_field("prompts", &self.prompts)?;
+        
+//         state.end()
+//     }
+
+// }
 
 impl ComponentType {
 
     pub fn veryify_attributes(&self, json: &JsonValue) -> Result<(), AppError> {
+
+
+        println!("type: {}", self);
 
         let validator = jsonschema::validator_for(&self.schema).expect("ERROR: Could not make json validator");
 
@@ -47,7 +58,7 @@ impl ComponentType {
 
         match evaluation.flag().valid {
             true => {
-                println!("COMPONENT PASSED: {:#}", json);
+                println!("COMPONENT PASSED: {:#}", json); 
                 return Ok(())
             },
             false => {

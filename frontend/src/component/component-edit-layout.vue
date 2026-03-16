@@ -21,7 +21,7 @@ let c = ref({
   value: "",
   info: "",
   stock: null,
-  origin: "",
+  manufacturer: "",
   label: "",
   image: false,
   datasheet: false
@@ -184,7 +184,7 @@ async function submit_update() {
           value: c.value.value,
           info: c.value.info,
           stock: c.value.stock,
-          origin: c.value.origin,
+          manufacturer: c.value.manufacturer,
           label: c.value.label,
           image: keep_image(),
           datasheet: keep_datasheet()
@@ -236,7 +236,7 @@ async function submit_new() {
         value: c.value.value,
         info: c.value.info,
         stock: c.value.stock,
-        origin: c.value.origin,
+        manufacturer: c.value.manufacturer,
         label: c.value.label,
         image: keep_image(),
         datasheet: keep_datasheet()
@@ -333,7 +333,7 @@ function get_image_src() {
     <input class="input" type="number" v-model="c.stock" placeholder="stock" required>
     <br>
 
-    <input class="input" type="text" v-model="c.origin" placeholder="origin">
+    <input class="input" type="text" v-model="c.manufacturer" placeholder="manufacturer">
     <br>
 
     <input class="input" type="text" v-model="c.label" placeholder="label">

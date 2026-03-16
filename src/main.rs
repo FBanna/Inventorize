@@ -37,12 +37,12 @@ async fn main() -> Result<(), Error> {
             "attributes": [
                 {
                     "name": "resistance",
-                    "object_type": "INTEGER",
+                    "object_type": "integer",
                     "unit": "R"
                 },
                 {
                     "name": "package",
-                    "object_type": "TEXT",
+                    "object_type": "string",
                     "unit": ""
                 }
 
@@ -59,15 +59,25 @@ async fn main() -> Result<(), Error> {
         name: "Boring Old Resistor".to_owned(), 
         stock: 1000, 
         price: Some(14.0), 
-        origin: Some("lcsc".to_owned()), 
+        manufacturer: Some("lcsc".to_owned()), 
         label: Some("vial".to_owned()), 
         image: false, 
         datasheet: false, 
-        attribute_id: result.last_insert_rowid() as i32, 
+        //attribute_id: result.last_insert_rowid() as i32, 
         attributes: json!({
 
-            "resistance": 60,
-            "package": "0402"
+            "attributes": [
+                {
+                    "id": result.last_insert_rowid() as i32,
+                    "values": {
+
+                        "resistance": 60,
+                        "package": "0402"
+
+                    }
+                },
+            ]
+            
 
         })
     };

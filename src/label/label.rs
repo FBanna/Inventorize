@@ -242,11 +242,11 @@ mod tests {
                 name: ("Resistor".to_string()),
                 stock: 5000,
                 price: Some(100.0),
-                origin: None, 
+                manufacturer: None, 
                 label: Some("vial".to_string()),
                 image: false,
                 datasheet: false,
-                attribute_id: 10,
+                //attribute_id: 10,
                 attributes: serde_json::json!({"value": {"test1": "ok!", "test2": 1000, "hiisd": ["help", "please", "SOS", 1000]}})
             };
         

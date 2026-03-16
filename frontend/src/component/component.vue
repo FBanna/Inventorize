@@ -11,7 +11,7 @@ let c = ref({
   value: "",
   info: "",
   stock: 0,
-  origin: "",
+  manufacturer: "",
   label: ""
 
 })
@@ -170,8 +170,8 @@ setup()
           </tr>
 
           <tr>
-            <td data-row class="title">origin:</td>
-            <td data-row class="info">{{ c.origin }}</td>
+            <td data-row class="title">manufacturer:</td>
+            <td data-row class="info">{{ c.manufacturer }}</td>
           </tr>
 
           <tr>

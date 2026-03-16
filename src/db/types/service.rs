@@ -3,7 +3,7 @@ use std::fmt::format;
 use serde_json::{Value as JsonValue, json};
 use sqlx::{Execute, sqlite::SqliteQueryResult, types::JsonRawValue};
 
-use crate::{db::{db::DB, types::{component_type::ComponentType, transport_type::TransportComponentType}}, error::{error::AppError, json::JsonError}};
+use crate::{db::{db::DB, types::{component_type::ComponentType, transport_type::{AttributeType, TransportComponentType}}}, error::{error::AppError, json::JsonError}};
 
 
 
@@ -137,12 +137,18 @@ fn make_columns(acc: String, attribute: &JsonValue) -> Result<String, AppError> 
         .ok_or(JsonError::GenSchema)?
         .to_owned();
 
-    let object_type: String = attribute.get("object_type")
-        .ok_or(JsonError::GenSchema)?
-        .as_str()
+    // let object_type: String = attribute.get("object_type")
+    //     .ok_or(JsonError::GenSchema)?
+    //     .as_str()
+    //     .ok_or(JsonError::GenSchema)?
+    //     .to_owned();
+
+    let object_type = attribute.get("object_type")
         .ok_or(JsonError::GenSchema)?
         .to_owned();
 
+    let sql_type: AttributeType = serde_json::from_value(object_type)?;
+
     // (resistor TEXT,
-    Ok(format!("{},{} {}", acc, name, object_type))
+    Ok(format!("{},{} {}", acc, name, sql_type.to_sql()))
 }

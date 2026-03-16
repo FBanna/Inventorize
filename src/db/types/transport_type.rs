@@ -1,4 +1,5 @@
 
+use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value as JsonValue, json};
 
 use crate::error::{error::AppError, json::JsonError};
@@ -7,6 +8,39 @@ pub struct TransportComponentType {
     pub name: String,
     pub inherits: i32,
     pub attributes: Option<JsonValue>
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AttributeType {
+    String,
+    Integer,
+    Float,
+    Boolean,
+    DateTime,
+}
+
+impl AttributeType {
+
+    pub fn to_sql(&self) -> &str {
+        match self{
+            AttributeType::String => "TEXT",
+            AttributeType::Integer => "INTEGER",
+            AttributeType::Float => "FLOAT",
+            AttributeType::Boolean => "BOOLEAN",
+            AttributeType::DateTime => "DATETIME"
+        }
+    }
+
+    pub fn to_json(&self) -> &str {
+        match self {
+            AttributeType::String => "string",
+            AttributeType::Integer => "integer",
+            AttributeType::Float => "number",
+            AttributeType::Boolean => "boolean",
+            AttributeType::DateTime => "date-time"
+        }
+    }
 }
 
 impl TransportComponentType {
@@ -127,8 +161,19 @@ impl TransportComponentType {
                     type_map.insert(
                         "type".to_owned(),
 
-                        attribute.get("object_type")
-                            .ok_or(JsonError::GenSchema)?.to_owned()
+                        {
+
+                            let object_type = attribute.get("object_type")
+                                .ok_or(JsonError::GenSchema)?
+                                .to_owned();
+
+                            let a_type: AttributeType = serde_json::from_value(object_type)?;
+
+                            JsonValue::String(a_type.to_json().to_owned())
+
+                        }
+
+                        
 
                     );
 

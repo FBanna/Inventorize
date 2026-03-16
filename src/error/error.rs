@@ -62,6 +62,15 @@ impl IntoResponse for AppError {
 
 // INTERNAL
 
+// fn from(e: std::io::Error) -> Self {
+//         MyError::Io(e)
+//     }
+
+impl From<serde_json::Error> for AppError {
+    fn from(value: serde_json::Error) -> Self {
+        Self::JsonError(JsonError::GenSchema)
+    }
+}
 
 impl From<LabelError> for AppError {
     fn from(value: LabelError) -> Self {

@@ -28,7 +28,7 @@
 
   //let search_fields = []
 
-  let search_names = ["name", "size", "value", "info", "stock", "origin", "label"]
+  let search_names = ["name", "size", "value", "info", "stock", "manufacturer", "label"]
 
   function row_click(c){
 
@@ -255,7 +255,7 @@
               <td style="width: 80px;">{{ c.value }}</td>
               <td style="width: 80px;">{{ c.info }}</td>
               <td style="width: 50px;">{{ c.stock }}</td>
-              <td style="width: 80px;">{{ c.origin }}</td>
+              <td style="width: 80px;">{{ c.manufacturer }}</td>
               <td style="width: 50px;">{{ c.label }}</td>
           </tr>
           
