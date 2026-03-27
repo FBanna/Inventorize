@@ -139,7 +139,7 @@ impl ComponentServices for DB{
         // .unwrap();
 
         let result = sqlx::query("
-            DELETE FROM components
+            DELETE FROM component
             WHERE ROWID = (?)
         ").bind(i)
         .execute(&*self.pool).await?;
@@ -195,7 +195,7 @@ impl ComponentServices for DB{
         
         
         let result: SqliteQueryResult = sqlx::query("
-            UPDATE components
+            UPDATE component
             SET
                 name = (?),
                 stock = (?),
@@ -205,7 +205,6 @@ impl ComponentServices for DB{
                 image = (?),
                 datasheet = (?),
 
-                attributes = (?)
             WHERE
                 ROWID = (?)
             ")
@@ -247,10 +246,10 @@ impl ComponentServices for DB{
 
             let component_type = self.get_type(type_id).await?;
 
-            component_type.veryify_attributes(attributes)?;
+            component_type.get_attributes()?.veryify_attributes(attributes)?;
 
 
-            let desired_attributes = component_type.attributes["attributes"]
+            let desired_attributes = component_type.get_attributes()?.attributes["attributes"]
                 .as_array()
                 .ok_or(JsonError::ComponentAttributesMalformed("failed to make attributes array".to_owned()))?;
 

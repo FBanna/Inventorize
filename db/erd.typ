@@ -65,6 +65,9 @@
       key: (
         ("component_id","integer"),
         ("type_id", "integer")
+      ),
+      rows: (
+        ("attributes", "string"),
       )
 
     )
@@ -86,7 +89,7 @@
       name: "type_attribute",
       key: (("type_id","integer"),),
       rows: (
-        ("attributes", "json"),
+        ("fields", "json"),
         ("schema", "json"),
         ("prompts", "json")
       )

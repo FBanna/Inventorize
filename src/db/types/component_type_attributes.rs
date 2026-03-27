@@ -10,9 +10,6 @@ use crate::error::{error::AppError, json::JsonError};
 
 #[derive(FromRow, Debug)]
 pub struct ComponentTypeAttributes {
-    pub id: i32,
-    pub name: String,
-    pub inherits: i32,
     pub attributes: JsonValue,
     pub schema: JsonValue,
     pub prompts: JsonValue
@@ -21,7 +18,7 @@ pub struct ComponentTypeAttributes {
 
 impl Display for ComponentTypeAttributes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} - {}:\nattributes: {:#}\n\nschema: {:#}\n\nprompts: {:#}", self.id, self.name, self.attributes, self.schema, self.prompts)
+        write!(f, "attributes: {:#}\n\nschema: {:#}\n\nprompts: {:#}", self.attributes, self.schema, self.prompts)
     }
 }
 

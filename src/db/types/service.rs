@@ -1,17 +1,26 @@
 use std::fmt::format;
 
 use serde_json::{Value as JsonValue, json};
-use sqlx::{Execute, sqlite::SqliteQueryResult, types::JsonRawValue};
+use sqlx::{Execute, prelude::FromRow, sqlite::SqliteQueryResult, types::JsonRawValue};
 
-use crate::{db::{db::DB, types::{component_type_attributes::ComponentTypeAttributes, transport_type::{AttributeType, TransportComponentType}}}, error::{error::AppError, json::JsonError}};
+use crate::{db::{db::DB, types::{component_type::ComponentType, component_type_attributes::ComponentTypeAttributes, transport_type::{AttributeType, TransportComponentType}}}, error::{error::AppError, json::JsonError}};
 
 
+#[derive(FromRow, Debug)]
+struct Flat {
+    id: i32,
+    name: String,
+    inherits: i32,
+    attributes: Option<JsonValue>,
+    schema: Option<JsonValue>,
+    prompts: Option<JsonValue>
+}
 
 pub trait ComponentTypeService {
     async fn add_type(&self, tc: &TransportComponentType) -> Result<SqliteQueryResult, AppError>;
     async fn remove_type(&self, id: i32) -> Result<SqliteQueryResult, AppError>;
-    async fn get_type(&self, id: i32) -> Result<ComponentTypeAttributes, AppError>;
-    async fn list_types(&self) -> Result<Vec<ComponentTypeAttributes>, AppError>;
+    async fn get_type(&self, id: i32) -> Result<ComponentType, AppError>;
+    async fn list_types(&self) -> Result<Vec<ComponentType>, AppError>;
     
 }
 
@@ -23,7 +32,7 @@ impl ComponentTypeService for DB {
 
         let option = tc.gen_schema_and_prompts_and_attributes()?;
 
-        let result: SqliteQueryResult = sqlx::query("INSERT INTO types (name, inherits) VALUES (?,?)")
+        let result: SqliteQueryResult = sqlx::query("INSERT INTO type (name, inherits) VALUES (?,?)")
             .bind(&tc.name)
             .bind(&tc.inherits)
             .execute(&*self.pool)
@@ -32,7 +41,7 @@ impl ComponentTypeService for DB {
 
         if let Some((schema, prompts, attributes)) = option {
 
-            let result: SqliteQueryResult = sqlx::query("INSERT INTO type_attribute (type_id, attributes, schema, prompts) VALUES (?,?,?,?)")
+            let result: SqliteQueryResult = sqlx::query("INSERT INTO type_attribute (type_id, fields, schema, prompts) VALUES (?,?,?,?)")
                 .bind(result.last_insert_rowid())
                 .bind(&attributes)
                 .bind(schema)
@@ -42,33 +51,33 @@ impl ComponentTypeService for DB {
 
 
 
-            // COLUMNS
+            // // COLUMNS
 
-            let array = attributes["attributes"].as_array().ok_or(JsonError::GenSchema)?;
+            // let array = attributes["attributes"].as_array().ok_or(JsonError::GenSchema)?;
 
-            let starter: String = "(component_id INTEGER PRIMARY KEY".to_string();
+            // let starter: String = "(component_id INTEGER PRIMARY KEY".to_string();
             
-            let columns: String = array.iter().try_fold(starter, |acc, attribute| make_columns(acc, attribute))?;
+            // let columns: String = array.iter().try_fold(starter, |acc, attribute| make_columns(acc, attribute))?;
 
-            let finished = columns + ",FOREIGN KEY(component_id) REFERENCES component(id)" + ")";
-            println!("columns: {}", &finished);
+            // let finished = columns + ",FOREIGN KEY(component_id) REFERENCES component(id)" + ")";
+            // println!("columns: {}", &finished);
 
-            // SANITISE THIS STUFF
+            // // SANITISE THIS STUFF
 
-            let query = format!(
-                "CREATE TABLE IF NOT EXISTS {}{}",
-                "usertype_".to_owned() + &tc.name,
-                finished
+            // let query = format!(
+            //     "CREATE TABLE IF NOT EXISTS {}{}",
+            //     "usertype_".to_owned() + &tc.name,
+            //     finished
 
-            );
+            // );
 
-            let result = sqlx::query(&query).execute(&*self.pool).await?;
+            // let result = sqlx::query(&query).execute(&*self.pool).await?;
 
         }
         
 
         
-        
+        // TODO
 
         Ok(result)
     }
@@ -77,7 +86,7 @@ impl ComponentTypeService for DB {
     /// DEPRECATED
     async fn remove_type(&self, id: i32) -> Result<SqliteQueryResult, AppError> {
 
-        let result: SqliteQueryResult = sqlx::query("DELETE FROM types WHERE ROWID = (?)")
+        let result: SqliteQueryResult = sqlx::query("DELETE FROM type WHERE ROWID = (?)")
             .bind(id)
             .execute(&*self.pool)
             .await?;
@@ -88,38 +97,82 @@ impl ComponentTypeService for DB {
 
     }
 
-    async fn get_type(&self, id: i32) -> Result<ComponentTypeAttributes, AppError> {
+    async fn get_type(&self, id: i32) -> Result<ComponentType, AppError> {
         
-        let result: ComponentTypeAttributes = sqlx::query_as("
-        SELECT * 
-        FROM types
-        INNER JOIN type_attribute
-        on types.id = type_attribute.type_id
-        WHERE types.id = (?)
+        let r: Flat = sqlx::query_as("
+        SELECT 
+            t.type_id as id,
+            t.name,
+            t.inherits,
+            ta.attributes,
+            ta.schema,
+            ta.prompts
+        FROM type t
+        LEFT JOIN type_attribute ta ON ta.type_id = t.type_id
+        WHERE t.type_id = (?)
         ")
             .bind(id)
             .fetch_one(&*self.pool)
             .await?;
 
-        Ok(result)
+        let output = ComponentType{
+            id: r.id,
+            name: r.name,
+            inherits: r.inherits,
+            attributes: match (r.attributes, r.schema, r.prompts) {
+                (Some(attributes), Some(schema), Some(prompts)) => {
+                    Some(ComponentTypeAttributes {
+                        attributes,
+                        schema,
+                        prompts,
+                    })
+                }
+                _ => None,
+            },
+        };
+
+        Ok(output)
 
     }
     
-    async fn list_types(&self) -> Result<Vec<ComponentTypeAttributes>, AppError> {
+    async fn list_types(&self) -> Result<Vec<ComponentType>, AppError> {
         
-        let result: Vec<ComponentTypeAttributes> = sqlx::query_as("
+        let r: Vec<Flat> = sqlx::query_as("
         
-        SELECT * 
-        FROM types
-        INNER JOIN type_attribute
-        on types.id = type_attribute.type_id
+        SELECT 
+            t.type_id as id,
+            t.name,
+            t.inherits,
+            ta.attributes,
+            ta.schema,
+            ta.prompts
+        FROM type t
+        LEFT JOIN type_attribute ta ON ta.type_id = t.type_id
         
         ")
             .fetch_all(&*self.pool)
             .await?;
 
-        Ok(result)
+        let types: Vec<ComponentType> = r.iter().map(|t: &Flat| -> ComponentType {
+            ComponentType{
+                id: t.id,
+                name: t.name.to_owned(),
+                inherits: t.inherits,
+                attributes: match (t.attributes.to_owned(), t.schema.to_owned(), t.prompts.to_owned()) {
+                    (Some(attributes), Some(schema), Some(prompts)) => {
+                        Some(ComponentTypeAttributes {
+                            attributes,
+                            schema,
+                            prompts,
+                        })
+                    }
+                    _ => None,
+                },
+            }
+        }).collect();
 
+        Ok(types)
+        
     }
     
     

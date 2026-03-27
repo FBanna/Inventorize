@@ -2,7 +2,7 @@ use std::{fmt::Display, sync::Arc};
 
 use axum::{http::{StatusCode, response}, response::{IntoResponse, Response}};
 
-use crate::error::{json::JsonError, label::LabelError};
+use crate::error::{json::JsonError, label::LabelError, types::TypeError};
 
 // helped greatly by - https://github.com/tokio-rs/axum/blob/main/examples/error-handling/src/main.rs
 
@@ -13,7 +13,9 @@ pub enum AppError{
 
     LabelError(LabelError),
 
-    JsonError(JsonError)
+    JsonError(JsonError),
+
+    TypeError(TypeError)
 
 }
 
@@ -25,6 +27,8 @@ impl Display for AppError{
         match self {
             AppError::DBError(err) => write!(f, "[ERROR] DB Error - {}", err.to_string()),
             AppError::LabelError(err) => err.fmt(f),
+            AppError::JsonError(err) => err.fmt(f),
+            AppError::TypeError(err) => err.fmt(f),
             _ => write!(f, "[ERROR] Unknown Error")
         }
     }
@@ -45,6 +49,9 @@ impl IntoResponse for AppError {
                 (((StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response()), Some(self))
 
             },
+            AppError::TypeError(err) => {
+                (err.clone().into_response(), Some(self))
+            }
             _ => ((StatusCode::INTERNAL_SERVER_ERROR, "Unknown Inventorize error!").into_response(), None)
         };
 
@@ -81,6 +88,12 @@ impl From<LabelError> for AppError {
 impl From<JsonError> for AppError {
     fn from(value: JsonError) -> Self {
         Self::JsonError(value)
+    }
+}
+
+impl From<TypeError> for AppError {
+    fn from(value: TypeError) -> Self {
+        Self::TypeError(value)
     }
 }
 

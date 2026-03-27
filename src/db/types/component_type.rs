@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use sqlx::prelude::FromRow;
 
-use crate::db::types::component_type_attributes::ComponentTypeAttributes;
+use crate::{db::types::component_type_attributes::ComponentTypeAttributes, error::{error::AppError, types::TypeError}};
 
 
 
@@ -12,7 +12,7 @@ pub struct ComponentType {
     pub id: i32,
     pub name: String,
     pub inherits: i32,
-    pub attributes: Option<ComponentTypeAttributes>
+    attributes: Option<ComponentTypeAttributes>
 }
 
 
@@ -27,5 +27,14 @@ impl Display for ComponentType {
             "NO ATTRIBUTES"
         })
     
+    }
+}
+
+impl ComponentType {
+    pub fn get_attributes(&self) -> Result<&ComponentTypeAttributes, AppError> {
+        match &self.attributes {
+            Some(a) => Ok(a),
+            None => Err(TypeError::ExpectedAttributes.into()),
+        }
     }
 }
