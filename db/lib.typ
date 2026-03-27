@@ -5,7 +5,7 @@
 #let erd_table(
 
   name: text,
-  P_key: (),
+  key: (),
   rows: ()
   
   // (
@@ -19,6 +19,13 @@
 
 
 ) = {
+
+
+  set text(
+    size: 14pt
+  )
+
+
 
   set table(
     fill: (x,y) => {
@@ -59,7 +66,7 @@
   // 
   
 
-  let P_key_mapped = (emoji.key + "" + P_key.at(0), P_key.at(1))
+  //let key_mapped = (emoji.key + "" + key.at(0), key.at(1))
   
   // P_key.map(t => {
   //   (emoji.key + "" + t.at(0), t.at(1))
@@ -68,17 +75,24 @@
   // let F_key_mapped = F_key.map(t => {
   //   (emoji.key + "" + t.at(0), t.at(1))
   // })
+  // 
+  // 
+  
 
-  box(
-    width: 200pt,
+
+ 
+  block(
+    width: 300pt,
     stroke: 2pt+black,
     outset: 0pt,
     inset: 0pt,
+    spacing: 0pt,
 
 
 
     table(
       columns: (1fr,1fr),
+      
 
       table.header(
         table.cell(colspan: 2)[
@@ -86,14 +100,10 @@
         ],
       ),
       
-      ..P_key_mapped,
+      ..key.map(k => (emoji.key + "" + k.at(0), k.at(1))).flatten(),
       ..rows.flatten()
 
-
     )
-
-
-
   )
   
   

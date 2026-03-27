@@ -3,15 +3,15 @@ use std::fmt::format;
 use serde_json::{Value as JsonValue, json};
 use sqlx::{Execute, sqlite::SqliteQueryResult, types::JsonRawValue};
 
-use crate::{db::{db::DB, types::{component_type::ComponentType, transport_type::{AttributeType, TransportComponentType}}}, error::{error::AppError, json::JsonError}};
+use crate::{db::{db::DB, types::{component_type_attributes::ComponentTypeAttributes, transport_type::{AttributeType, TransportComponentType}}}, error::{error::AppError, json::JsonError}};
 
 
 
 pub trait ComponentTypeService {
     async fn add_type(&self, tc: &TransportComponentType) -> Result<SqliteQueryResult, AppError>;
     async fn remove_type(&self, id: i32) -> Result<SqliteQueryResult, AppError>;
-    async fn get_type(&self, id: i32) -> Result<ComponentType, AppError>;
-    async fn list_types(&self) -> Result<Vec<ComponentType>, AppError>;
+    async fn get_type(&self, id: i32) -> Result<ComponentTypeAttributes, AppError>;
+    async fn list_types(&self) -> Result<Vec<ComponentTypeAttributes>, AppError>;
     
 }
 
@@ -88,9 +88,9 @@ impl ComponentTypeService for DB {
 
     }
 
-    async fn get_type(&self, id: i32) -> Result<ComponentType, AppError> {
+    async fn get_type(&self, id: i32) -> Result<ComponentTypeAttributes, AppError> {
         
-        let result: ComponentType = sqlx::query_as("
+        let result: ComponentTypeAttributes = sqlx::query_as("
         SELECT * 
         FROM types
         INNER JOIN type_attribute
@@ -105,9 +105,9 @@ impl ComponentTypeService for DB {
 
     }
     
-    async fn list_types(&self) -> Result<Vec<ComponentType>, AppError> {
+    async fn list_types(&self) -> Result<Vec<ComponentTypeAttributes>, AppError> {
         
-        let result: Vec<ComponentType> = sqlx::query_as("
+        let result: Vec<ComponentTypeAttributes> = sqlx::query_as("
         
         SELECT * 
         FROM types

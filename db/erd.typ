@@ -1,9 +1,9 @@
 #import "lib.typ": *
 #import "@preview/fletcher:0.5.8": diagram, node, edge
 
-#set page(height: 500pt, width: 900pt)
+#set page(height: 500pt, width: 1200pt)
 
-
+#set block(spacing: 0pt)
 
 #place(center + horizon)[
 
@@ -11,49 +11,44 @@
 
 #diagram(
   debug: 0,
-  spacing: 80pt,
-  edge-stroke: 0.75pt+black,
+  spacing: 40pt,
+  edge-stroke: 1pt+black,
   node-outset: -5pt,
 
 
-  node((1,-0.5), stroke: rgb("#396bac"),
-    fill: rgb("#f6f8ff"), [*Inventorize ERD*]),
-  node((1,0.75), name: <component>, 
+  node((
+    1,0), 
+    stroke: rgb("#396bac"),
+    fill: rgb("#f6f8ff"), {
+
+      set text(
+        size: 25pt
+      )
+      [*Inventorize ERD*]
+    }
+  ),
+
+  node((2,1), name: <component>, 
     erd_table(
-      name: "Components",
-      P_key: ("ID","integer"),
+      name: "component",
+      key: (("component_id","integer"),),
       rows: (
         ("name", "string"),
-        ("price", "integer"),
         ("stock", "integer"),
+        ("price", "integer"),
+        ("manufacturer", "string"),
+        ("label", "string"),
+        ("image", "bool"),
+        ("datasheet", "bool")
+        
       )
 
     )
   ),
-  node((1,1.75), name: <component_type>, 
+  node((2,0), name: <origin>,
     erd_table(
-      name: "Component Types",
-      P_key: ("C_ID","integer"),
-      rows: (
-        ("type", "integer")
-      )
-
-    )
-  ),
-  node((0,0), name: <type>,
-    erd_table(
-      name: "Types",
-      P_key: ("ID","integer"),
-      rows: (
-        ("name", "string"),
-        ("inherits", "integer"),
-      )
-    )
-  ),
-  node((1,0), name: <origin>,
-    erd_table(
-      name: "Origin",
-      P_key: ("C_ID","integer"),
+      name: "origin",
+      key: (("component_id","integer"),),
       rows: (
         ("origin", "string"),
         ("part_number", "string"),
@@ -61,13 +56,38 @@
       )
     )
   ),
+
+
+
+  node((1,1), name: <component_type>, 
+    erd_table(
+      name: "component_type",
+      key: (
+        ("component_id","integer"),
+        ("type_id", "integer")
+      )
+
+    )
+  ), 
+
+
+  node((0,0), name: <type>,
+    erd_table(
+      name: "type",
+      key: (("type_id","integer"),),
+      rows: (
+        ("name", "string"),
+        ("inherits", "integer"),
+      )
+    )
+  ),
   node((0,1), name: <type_attributes>,
     erd_table(
-      name: "Type Attributes",
-      P_key: ("TYPE_ID","integer"),
+      name: "type_attribute",
+      key: (("type_id","integer"),),
       rows: (
         ("attributes", "json"),
-        ("component_schema", "json"),
+        ("schema", "json"),
         ("prompts", "json")
       )
     )
@@ -81,52 +101,53 @@
     // 
   
 
-  node((2,0.5), name: <smd>,
+  // node((2,0.5), name: <smd>,
 
-    erd_table(
-      name: "SMD",
-      P_key: ("C_ID", "integer"),
-      rows: (
-        ("footprint", "string"),
-      )
-    )
+  //   erd_table(
+  //     name: "SMD",
+  //     P_key: ("C_ID", "integer"),
+  //     rows: (
+  //       ("footprint", "string"),
+  //     )
+  //   )
   
-  ),
-  node((2,1), name: <resistor>,
+  // ),
+  // node((2,1), name: <resistor>,
 
-    erd_table(
-      name: "Resistors",
-      P_key: ("C_ID", "integer"),
-      rows: (
-        ("resistance", "integer"),
-        ("accuracy", "integer")
-      )
-    )
+  //   erd_table(
+  //     name: "Resistors",
+  //     P_key: ("C_ID", "integer"),
+  //     rows: (
+  //       ("resistance", "integer"),
+  //       ("accuracy", "integer")
+  //     )
+  //   )
   
-  ),
-  node((2,1.6), name: <capacitor>,
+  // ),
+  // node((2,1.6), name: <capacitor>,
 
-    erd_table(
-      name: "Capacitors",
-      P_key: ("C_ID", "integer"),
-      rows: (
-        ("capacitance", "integer"),
-        ("voltage", "integer")
-      )
-    )
-  ),
-  node((2,0.2), name: <attribute_example_label>, [*Example User Defined Attributes*]),
-  node(enclose: (<attribute_example_label>, <smd>, <resistor>, <capacitor>),
-    outset: 0pt,
-    stroke: rgb("#396bac"),
-    fill: rgb("#f6f8ff"),
-    snap: -1,
-    name: <attribute_example>,
-  ),
+  //   erd_table(
+  //     name: "Capacitors",
+  //     P_key: ("C_ID", "integer"),
+  //     rows: (
+  //       ("capacitance", "integer"),
+  //       ("voltage", "integer")
+  //     )
+  //   )
+  // ),
+  // node((2,0.2), name: <attribute_example_label>, [*Example User Defined Attributes*]),
+  // node(enclose: (<attribute_example_label>, <smd>, <resistor>, <capacitor>),
+  //   outset: 0pt,
+  //   stroke: rgb("#396bac"),
+  //   fill: rgb("#f6f8ff"),
+  //   snap: -1,
+  //   name: <attribute_example>,
+  // ),
+  edge(<type>, (0.5,0), (0.5,1), <component_type>, "-n!"),
   edge(<component>, <origin>, "-n!"),
   // edge(<component>, (1.5,0.75),(1.5,0), <smd>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,1), <resistor>, "-1?"),
-  edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-n?"),
+  //edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-n?"),
   edge(<type>, <type_attributes>, "-1?"),
   edge(<component>,<component_type>, "-n!")
 

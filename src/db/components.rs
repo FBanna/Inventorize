@@ -4,7 +4,7 @@ use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
 use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::{SqliteQueryResult, SqliteRow, SqliteValueRef}, types::{Json, JsonRawValue}};
 
-use crate::{config::config::Config, db::types::{component_type, service::ComponentTypeService}, error::{self, error::AppError, json::JsonError}};
+use crate::{config::config::Config, db::types::{component_type_attributes, service::ComponentTypeService}, error::{self, error::AppError, json::JsonError}};
 
 use super::{db::DB, prompt::service::PromptServices, transport::post_component::PostComponent};
 

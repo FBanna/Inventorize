@@ -2,7 +2,7 @@ PRAGMA foreign_keys=ON;
 
 CREATE TABLE IF NOT EXISTS component
 (
-    id INTEGER PRIMARY KEY,
+    component_id INTEGER PRIMARY KEY,
     name            TEXT            NOT NULL,
     stock           INTEGER         NOT NULL,
     price           FLOAT,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS origin
     origin          TEXT            NOT NULL,
     part_number     TEXT,
     component_id    INTEGER         NOT NULL,
-    FOREIGN KEY(component_id)       REFERENCES component(id)
+    FOREIGN KEY(component_id)       REFERENCES component(component_id)
 );
 
 CREATE TABLE IF NOT EXISTS component_type
@@ -30,14 +30,14 @@ CREATE TABLE IF NOT EXISTS component_type
 
     PRIMARY KEY(component_id, type_id),
     
-    FOREIGN KEY(component_id)   REFERENCES component(id),
-    FOREIGN KEY(type_id)        REFERENCES types(id)
+    FOREIGN KEY(component_id)   REFERENCES component(component_id),
+    FOREIGN KEY(type_id)        REFERENCES types(type_id)
 );
 
 
-CREATE TABLE IF NOT EXISTS types
+CREATE TABLE IF NOT EXISTS type
 (
-    id INTEGER PRIMARY KEY,
+    type_id INTEGER PRIMARY KEY,
     name        TEXT            NOT NULL,
     inherits    INTEGER         NOT NULL
 );
@@ -53,18 +53,5 @@ CREATE TABLE IF NOT EXISTS type_attribute
     prompts     TEXT            NOT NULL,
 
     PRIMARY KEY(type_id),
-    FOREIGN KEY(type_id)        REFERENCES types(id)
+    FOREIGN KEY(type_id)        REFERENCES type(type_id)
 );
-
-
-
-
-
--- Example
-
--- CREATE TABLE IF NOT EXISTS resistor
--- (
---     FOREIGN KEY(component_id)   REFERENCES component(id),
---     resistance  INTEGER,
---     accuracy    INTEGER
--- )
