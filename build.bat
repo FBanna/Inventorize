@@ -4,3 +4,4 @@ cd frontend
 call yarn build
 cd ..
 call cargo build --release
+PAUSE

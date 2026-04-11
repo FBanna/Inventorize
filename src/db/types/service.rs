@@ -1,7 +1,7 @@
 use std::fmt::format;
 
 use serde_json::{Value as JsonValue, json};
-use sqlx::{Execute, prelude::FromRow, sqlite::SqliteQueryResult, types::JsonRawValue};
+use sqlx::{Execute, any::AnyQueryResult, postgres::PgQueryResult, prelude::FromRow, types::JsonRawValue};
 
 use crate::{db::{db::DB, types::{component_type::ComponentType, component_type_attributes::ComponentTypeAttributes, transport_type::{AttributeType, TransportComponentType}}}, error::{error::AppError, json::JsonError}};
 
@@ -17,8 +17,8 @@ struct Flat {
 }
 
 pub trait ComponentTypeService {
-    async fn add_type(&self, tc: &TransportComponentType) -> Result<SqliteQueryResult, AppError>;
-    async fn remove_type(&self, id: i32) -> Result<SqliteQueryResult, AppError>;
+    async fn add_type(&self, tc: &TransportComponentType) -> Result<(), AppError>;
+    async fn remove_type(&self, id: i32) -> Result<PgQueryResult, AppError>;
     async fn get_type(&self, id: i32) -> Result<ComponentType, AppError>;
     async fn list_types(&self) -> Result<Vec<ComponentType>, AppError>;
     
@@ -28,21 +28,28 @@ pub trait ComponentTypeService {
 impl ComponentTypeService for DB {
 
     /// takes a type and adds it along with any attributes it may have
-    async fn add_type(&self, tc: &TransportComponentType) -> Result<SqliteQueryResult, AppError> {
+    async fn add_type(&self, tc: &TransportComponentType) -> Result<(), AppError> {
+
+
+        println!("i am running this");
 
         let option = tc.gen_schema_and_prompts_and_attributes()?;
 
-        let result: SqliteQueryResult = sqlx::query("INSERT INTO type (name, inherits) VALUES (?,?)")
+        println!("now I'm here");
+
+        let result: PgQueryResult = sqlx::query("INSERT INTO type (name, inherits) VALUES ($1,$2)")
             .bind(&tc.name)
             .bind(&tc.inherits)
             .execute(&*self.pool)
             .await?;
 
+        println!("affected: {}", result.rows_affected());
+
 
         if let Some((schema, prompts, attributes)) = option {
 
-            let result: SqliteQueryResult = sqlx::query("INSERT INTO type_attribute (type_id, fields, schema, prompts) VALUES (?,?,?,?)")
-                .bind(result.last_insert_rowid())
+            let result: PgQueryResult = sqlx::query("INSERT INTO type_attribute (type_id, fields, schema, prompts) VALUES ($1,$2,$3,$4)")
+                .bind(AnyQueryResult::from(result).last_insert_id().unwrap() as i64)
                 .bind(&attributes)
                 .bind(schema)
                 .bind(prompts)
@@ -79,14 +86,14 @@ impl ComponentTypeService for DB {
         
         // TODO
 
-        Ok(result)
+        Ok(())
     }
     
 
     /// takes a type id and deletes it from types, type_attributes and component_type
-    async fn remove_type(&self, id: i32) -> Result<SqliteQueryResult, AppError> {
+    async fn remove_type(&self, id: i32) -> Result<PgQueryResult, AppError> {
 
-        let result: SqliteQueryResult = sqlx::query("DELETE FROM type WHERE ROWID = (?)")
+        let result: PgQueryResult = sqlx::query("DELETE FROM type WHERE type_id = ($1)")
             .bind(id)
             .execute(&*self.pool)
             .await?;
@@ -109,9 +116,9 @@ impl ComponentTypeService for DB {
             ta.prompts
         FROM type t
         LEFT JOIN type_attribute ta ON ta.type_id = t.type_id
-        WHERE t.type_id = (?)
+        WHERE t.type_id = ($1)
         ")
-            .bind(id)
+            .bind(id as i64)
             .fetch_one(&*self.pool)
             .await?;
 

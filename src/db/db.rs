@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
-use sqlx::{ConnectOptions, Pool, Sqlite, SqlitePool, migrate::{MigrateDatabase, Migrator}, sqlite::SqliteConnectOptions};
+use sqlx::{ConnectOptions, PgPool, Pool, Postgres, migrate::{MigrateDatabase, Migrator}};
 
 use super::prompt::{prompts::Prompts};
 
 
 
 pub struct DB {
-    pub pool: Arc<Pool<Sqlite>>,
+    pub pool: Arc<Pool<Postgres>>,
     // could have a cached prompts stay open here
     pub prompt_cache: Prompts
 }
@@ -20,7 +20,7 @@ impl DB {
 
         Self::create(path).await;
 
-        let pool = SqlitePool::connect(path).await.unwrap();
+        let pool = PgPool::connect(path).await.unwrap();
         
         MIGRATOR.run(&pool).await.expect("MIGRATION ERROR");
 
@@ -48,9 +48,9 @@ impl DB {
     }
 
     pub async fn create(path: &str){
-        if !Sqlite::database_exists(path).await.unwrap_or(false) {
+        if !Postgres::database_exists(path).await.unwrap_or(false) {
             //println!("Creating database {}", path);
-            match Sqlite::create_database(path).await {
+            match Postgres::create_database(path).await {
                 Ok(_) => println!("Create db success"),
                 Err(error) => panic!("error: {}", error),
             }

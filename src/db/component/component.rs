@@ -2,7 +2,7 @@ use std::{fs, io::Cursor, path::{Path, PathBuf}};
 
 use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
-use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::{SqliteQueryResult, SqliteRow, SqliteValueRef}, types::{Json, JsonRawValue}};
+use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, postgres::{PgQueryResult, PgRow, PgValueRef}, types::{Json, JsonRawValue}};
 
 use crate::{config::config::Config, db::{db::DB, prompt::service::PromptServices, transport::post_component::PostComponent, types::{component_type_attributes, component_type_value::ComponentTypeValue, service::ComponentTypeService}}, error::{self, error::AppError, json::JsonError}};
 

@@ -1,8 +1,6 @@
-PRAGMA foreign_keys=ON;
-
 CREATE TABLE IF NOT EXISTS component
 (
-    component_id INTEGER PRIMARY KEY,
+    component_id BIGSERIAL PRIMARY KEY,
     name            TEXT            NOT NULL,
     stock           INTEGER         NOT NULL,
     price           FLOAT,
@@ -10,6 +8,13 @@ CREATE TABLE IF NOT EXISTS component
     label           TEXT,
     image           BOOLEAN         NOT NULL,
     datasheet       BOOLEAN         NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS type
+(
+    type_id BIGSERIAL PRIMARY KEY ,
+    name        TEXT            NOT NULL,
+    inherits    INTEGER         NOT NULL
 );
 
 
@@ -37,12 +42,7 @@ CREATE TABLE IF NOT EXISTS component_type
 );
 
 
-CREATE TABLE IF NOT EXISTS type
-(
-    type_id INTEGER PRIMARY KEY,
-    name        TEXT            NOT NULL,
-    inherits    INTEGER         NOT NULL
-);
+
 
 CREATE TABLE IF NOT EXISTS type_attribute
 (

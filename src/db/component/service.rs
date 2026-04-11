@@ -2,7 +2,7 @@ use std::{fs, io::Cursor, path::{Path, PathBuf}};
 
 use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
-use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::{SqliteQueryResult, SqliteRow, SqliteValueRef}, types::{Json, JsonRawValue}};
+use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, postgres::{PgQueryResult, PgRow, PgValueRef}, types::{Json, JsonRawValue}};
 
 use crate::{config::config::Config, db::{component::component::{Component, ELEMENTS}, db::DB, prompt::service::PromptServices, transport::post_component::PostComponent, types::{component_type_attributes, component_type_value::ComponentTypeValue, service::ComponentTypeService}}, error::{self, error::AppError, json::JsonError}};
 
@@ -14,9 +14,9 @@ pub trait ComponentServices {
 
     async fn update_with_files(&self, id: i32, c: PostComponent, config: &Config) -> Result<(), AppError>;
 
-    async fn add(&self, c: &Component) -> Result<SqliteQueryResult, AppError>;
+    async fn add(&self, c: &Component) -> Result<PgQueryResult, AppError>;
 
-    async fn update(&self, id: i32, c: &Component) -> Result<SqliteQueryResult, AppError>;
+    async fn update(&self, id: i32, c: &Component) -> Result<PgQueryResult, AppError>;
 
     async fn get_first(&self)  -> Result<Component, AppError>;
     async fn get_all(&self) -> Result<Vec<Component>, AppError>; // UPDATE
@@ -27,7 +27,7 @@ pub trait ComponentServices {
 
     async fn search(&self, c: Vec<Vec<String>>) -> Result<Vec<Component>, AppError>;
 
-    async fn remove(&self, i: i32, config: &Config) -> Result<SqliteQueryResult, AppError>;   
+    async fn remove(&self, i: i32, config: &Config) -> Result<PgQueryResult, AppError>;   
 
     async fn remove_list(&self, list: Vec<i32>, config: &Config) -> Result<(), AppError>;
 
@@ -35,7 +35,7 @@ pub trait ComponentServices {
 
     //async fn add_component_types(&self, c: &Component) -> Result<(), AppError>;
 
-    async fn add_component_type_value(&self, tc: ComponentTypeValue) -> Result<SqliteQueryResult, AppError>;
+    async fn add_component_type_value(&self, tc: ComponentTypeValue) -> Result<PgQueryResult, AppError>;
     async fn add_component_type_values(&self, tcs: Vec<ComponentTypeValue>) -> Result<(), AppError>;
 
     async fn get_component_type_value(&self, c_id: i32, t_id: i32) -> Result<ComponentTypeValue, AppError>;
@@ -48,7 +48,7 @@ pub trait ComponentServices {
 
 impl ComponentServices for DB{
 
-    async fn remove(&self, i: i32, config: &Config) -> Result<SqliteQueryResult, AppError>{
+    async fn remove(&self, i: i32, config: &Config) -> Result<PgQueryResult, AppError>{
 
         let c = self.get(i).await?;
 
@@ -65,7 +65,7 @@ impl ComponentServices for DB{
 
         let result = sqlx::query("
             DELETE FROM component
-            WHERE ROWID = (?)
+            WHERE component_id = ($1)
         ").bind(i)
         .execute(&*self.pool).await?;
 
@@ -103,35 +103,37 @@ impl ComponentServices for DB{
 
         c.optimise_image();
 
-        let result: SqliteQueryResult = self.add(&c.component).await?;
+        let result: PgQueryResult = self.add(&c.component).await?;
 
-        c.create_assets(result.last_insert_rowid().try_into().unwrap(), config);
+        c.create_assets(result.rows_affected().try_into().unwrap(), config);
+
+        // c.create_assets(result.last_insert_rowid().try_into().unwrap(), config);
 
 
         return Ok(())
 
     }
 
-    async fn update(&self, id: i32, c: &Component) -> Result<SqliteQueryResult, AppError> {
+    async fn update(&self, id: i32, c: &Component) -> Result<PgQueryResult, AppError> {
 
 
         let old = self.get(id).await?;
 
         
         
-        let result: SqliteQueryResult = sqlx::query("
+        let result: PgQueryResult = sqlx::query("
             UPDATE component
             SET
-                name = (?),
-                stock = (?),
-                price = (?),
-                manufacturer = (?),
-                label = (?),
-                image = (?),
-                datasheet = (?),
+                name = ($1),
+                stock = ($2),
+                price = ($3),
+                manufacturer = ($4),
+                label = ($5),
+                image = ($6),
+                datasheet = ($7),
 
             WHERE
-                ROWID = (?)
+                component_id = ($8)
             ")
             .bind(&c.name)
             .bind(&c.stock)
@@ -154,7 +156,7 @@ impl ComponentServices for DB{
 
     }
 
-    async fn add_component_type_value(&self, tc: ComponentTypeValue) -> Result<SqliteQueryResult, AppError> {
+    async fn add_component_type_value(&self, tc: ComponentTypeValue) -> Result<PgQueryResult, AppError> {
         
         let component_type = self.get_type(tc.type_id).await?;
 
@@ -162,7 +164,7 @@ impl ComponentServices for DB{
 
         println!("got here!");
 
-        let result: SqliteQueryResult = sqlx::query("INSERT INTO component_type (component_id, type_id, attributes) VALUES (?,?,?)")
+        let result: PgQueryResult = sqlx::query("INSERT INTO component_type (component_id, type_id, attributes) VALUES ($1,$2,$3)")
             .bind(&tc.component_id)
             .bind(&tc.type_id)
             .bind(&tc.attributes)
@@ -185,8 +187,8 @@ impl ComponentServices for DB{
     async fn get_component_type_value(&self, c_id: i32, t_id: i32) -> Result<ComponentTypeValue, AppError> {
         let result: ComponentTypeValue = sqlx::query_as("
             SELECT * FROM component_type
-            WHERE type_id = (?)
-            AND component_id = (?)
+            WHERE type_id = ($1)
+            AND component_id = ($2)
         ")
         .bind(t_id)
         .bind(c_id)
@@ -200,7 +202,7 @@ impl ComponentServices for DB{
         
         let result: Vec<ComponentTypeValue> = sqlx::query_as("
             SELECT * FROM component_type
-            WHERE component_id = (?)
+            WHERE component_id = ($1)
         ")
         .bind(c_id)
         .fetch_all(&*self.pool)
@@ -212,7 +214,7 @@ impl ComponentServices for DB{
     async fn get_component_type_values_t_id(&self, t_id: i32) -> Result<Vec<ComponentTypeValue>, AppError> {
         let result: Vec<ComponentTypeValue> = sqlx::query_as("
             SELECT * FROM component_type
-            WHERE type_id = (?)
+            WHERE type_id = ($1)
         ")
         .bind(t_id)
         .fetch_all(&*self.pool)
@@ -309,7 +311,7 @@ impl ComponentServices for DB{
     // }
     
     
-    async fn add(&self, c: &Component) -> Result<SqliteQueryResult, AppError> {
+    async fn add(&self, c: &Component) -> Result<PgQueryResult, AppError> {
 
 
 
@@ -317,7 +319,7 @@ impl ComponentServices for DB{
 
         // component_type.veryify_attributes(&c.attributes)?;
 
-        let result: SqliteQueryResult = sqlx::query("INSERT INTO component (name,stock,price,manufacturer,label,image,datasheet) VALUES (?,?,?,?,?,?,?)")
+        let result: PgQueryResult = sqlx::query("INSERT INTO component (name,stock,price,manufacturer,label,image,datasheet) VALUES ($1,$2,$3,$4,$5,$6,$7)")
             .bind(&c.name)
             .bind(&c.stock)
             .bind(&c.price)
@@ -337,7 +339,7 @@ impl ComponentServices for DB{
 
     async fn get_first(&self) -> Result<Component, AppError>{
         
-        let result: Component = sqlx::query_as("SELECT * FROM component ORDER BY ROWID ASC LIMIT 1")
+        let result: Component = sqlx::query_as("SELECT * FROM component ORDER BY component_id ASC LIMIT 1")
             .fetch_one(&*self.pool)
             .await?;
 
@@ -364,7 +366,7 @@ impl ComponentServices for DB{
         // let result = sqlx::query_as("SELECT * FROM components WEHERE")
 
 
-        let result: Component = sqlx::query_as("SELECT * FROM component WHERE id = (?)")
+        let result: Component = sqlx::query_as("SELECT * FROM component WHERE component_id = ($1)")
             .bind(i)
             .fetch_one(&*self.pool)
             .await?;
@@ -380,7 +382,7 @@ impl ComponentServices for DB{
 
         for i in list {
 
-            let component: Component = sqlx::query_as("SELECT * FROM component WHERE id = (?)")
+            let component: Component = sqlx::query_as("SELECT * FROM component WHERE component_id = ($1)")
                 .bind(i)
                 .fetch_one(&*self.pool)
                 .await?;
@@ -422,7 +424,7 @@ impl ComponentServices for DB{
 
         // BUILD QUERY
 
-        let mut query: QueryBuilder<Sqlite> = QueryBuilder::new("SELECT * FROM component WHERE ");
+        let mut query: QueryBuilder<Postgres> = QueryBuilder::new("SELECT * FROM component WHERE ");
 
         for (index, list) in emptied.into_iter().enumerate() {
 

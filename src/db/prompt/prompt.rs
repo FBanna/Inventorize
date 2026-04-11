@@ -2,7 +2,7 @@ use std::{path::Components, sync::Mutex};
 
 use clap::builder::Str;
 use serde::{ser::SerializeStruct, Serialize};
-use sqlx::{prelude::FromRow, Pool, Sqlite};
+use sqlx::{prelude::FromRow, Pool, Postgres};
 
 
 
