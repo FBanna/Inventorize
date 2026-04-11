@@ -4,8 +4,7 @@ use typst::{Library, LibraryExt, diag::{SourceDiagnostic, SourceResult}, ecow::E
 use typst_kit::fonts::{FontSearcher};
 use typst_pdf::PdfOptions;
 
-
-use crate::{config::config::Config, db::components::Component, error::{error::AppError, label::LabelError}};
+use crate::{config::config::Config, db::component::component::Component, error::{error::AppError, label::LabelError}};
 
 use super::typst_wrapper;
 
@@ -154,10 +153,10 @@ impl Label for Component{
 
                     // }
 
-                    dict.insert(
-                        Str::from("attributes"), 
-                        json_to_typst(&x.attributes)
-                    );
+                    // dict.insert(
+                    //     Str::from("attributes"), 
+                    //     json_to_typst(&x.attributes)
+                    // );
 
                     dict.insert(
                         Str::from("url"), 
@@ -247,7 +246,7 @@ mod tests {
                 image: false,
                 datasheet: false,
                 //attribute_id: 10,
-                attributes: serde_json::json!({"value": {"test1": "ok!", "test2": 1000, "hiisd": ["help", "please", "SOS", 1000]}})
+                // attributes: serde_json::json!({"value": {"test1": "ok!", "test2": 1000, "hiisd": ["help", "please", "SOS", 1000]}})
             };
         
 

@@ -1,6 +1,7 @@
 use serde::Serialize;
 
-use crate::db::components::ELEMENTS;
+
+use crate::db::component::component::ELEMENTS;
 
 use super::prompt::Prompt;
 
@@ -27,7 +28,7 @@ impl Prompts{
         
     //     for prompt in &self.0{
     //         prompt.sync();
-    //     }
+    //     }S
 
     // }
 }

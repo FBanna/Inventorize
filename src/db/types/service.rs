@@ -8,12 +8,12 @@ use crate::{db::{db::DB, types::{component_type::ComponentType, component_type_a
 
 #[derive(FromRow, Debug)]
 struct Flat {
-    id: i32,
-    name: String,
-    inherits: i32,
-    attributes: Option<JsonValue>,
-    schema: Option<JsonValue>,
-    prompts: Option<JsonValue>
+    pub id: i32,
+    pub name: String,
+    pub inherits: i32,
+    pub fields: Option<JsonValue>,
+    pub schema: Option<JsonValue>,
+    pub prompts: Option<JsonValue>
 }
 
 pub trait ComponentTypeService {
@@ -27,7 +27,7 @@ pub trait ComponentTypeService {
 
 impl ComponentTypeService for DB {
 
-    /// DEPRECATED AND UNSAFE
+    /// takes a type and adds it along with any attributes it may have
     async fn add_type(&self, tc: &TransportComponentType) -> Result<SqliteQueryResult, AppError> {
 
         let option = tc.gen_schema_and_prompts_and_attributes()?;
@@ -83,7 +83,7 @@ impl ComponentTypeService for DB {
     }
     
 
-    /// DEPRECATED
+    /// takes a type id and deletes it from types, type_attributes and component_type
     async fn remove_type(&self, id: i32) -> Result<SqliteQueryResult, AppError> {
 
         let result: SqliteQueryResult = sqlx::query("DELETE FROM type WHERE ROWID = (?)")
@@ -104,7 +104,7 @@ impl ComponentTypeService for DB {
             t.type_id as id,
             t.name,
             t.inherits,
-            ta.attributes,
+            ta.fields,
             ta.schema,
             ta.prompts
         FROM type t
@@ -119,7 +119,7 @@ impl ComponentTypeService for DB {
             id: r.id,
             name: r.name,
             inherits: r.inherits,
-            attributes: match (r.attributes, r.schema, r.prompts) {
+            attributes: match (r.fields, r.schema, r.prompts) {
                 (Some(attributes), Some(schema), Some(prompts)) => {
                     Some(ComponentTypeAttributes {
                         attributes,
@@ -158,7 +158,7 @@ impl ComponentTypeService for DB {
                 id: t.id,
                 name: t.name.to_owned(),
                 inherits: t.inherits,
-                attributes: match (t.attributes.to_owned(), t.schema.to_owned(), t.prompts.to_owned()) {
+                attributes: match (t.fields.to_owned(), t.schema.to_owned(), t.prompts.to_owned()) {
                     (Some(attributes), Some(schema), Some(prompts)) => {
                         Some(ComponentTypeAttributes {
                             attributes,
@@ -181,27 +181,27 @@ impl ComponentTypeService for DB {
 }
 
 
-fn make_columns(acc: String, attribute: &JsonValue) -> Result<String, AppError> {
+// fn make_columns(acc: String, attribute: &JsonValue) -> Result<String, AppError> {
 
 
-    let name: String = attribute.get("name")
-        .ok_or(JsonError::GenSchema)?
-        .as_str()
-        .ok_or(JsonError::GenSchema)?
-        .to_owned();
+//     let name: String = attribute.get("name")
+//         .ok_or(JsonError::GenSchema)?
+//         .as_str()
+//         .ok_or(JsonError::GenSchema)?
+//         .to_owned();
 
-    // let object_type: String = attribute.get("object_type")
-    //     .ok_or(JsonError::GenSchema)?
-    //     .as_str()
-    //     .ok_or(JsonError::GenSchema)?
-    //     .to_owned();
+//     // let object_type: String = attribute.get("object_type")
+//     //     .ok_or(JsonError::GenSchema)?
+//     //     .as_str()
+//     //     .ok_or(JsonError::GenSchema)?
+//     //     .to_owned();
 
-    let object_type = attribute.get("object_type")
-        .ok_or(JsonError::GenSchema)?
-        .to_owned();
+//     let object_type = attribute.get("object_type")
+//         .ok_or(JsonError::GenSchema)?
+//         .to_owned();
 
-    let sql_type: AttributeType = serde_json::from_value(object_type)?;
+//     let sql_type: AttributeType = serde_json::from_value(object_type)?;
 
-    // (resistor TEXT,
-    Ok(format!("{},{} {}", acc, name, sql_type.to_sql()))
-}
+//     // (resistor TEXT,
+//     Ok(format!("{},{} {}", acc, name, sql_type.to_sql()))
+// }

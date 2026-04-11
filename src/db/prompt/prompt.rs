@@ -4,7 +4,6 @@ use clap::builder::Str;
 use serde::{ser::SerializeStruct, Serialize};
 use sqlx::{prelude::FromRow, Pool, Sqlite};
 
-use super::super::{components::Component, db::DB};
 
 
 #[derive(FromRow,Debug,Serialize)]

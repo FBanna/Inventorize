@@ -1,11 +1,11 @@
-use crate::{db::{components::Component, db::DB}, Config};
+use crate::{Config, db::{component::component::Component, db::DB}, server::label_api::post_build_label};
 
 // mod login_api;
 // pub mod login_api;
 // pub mod db_api;
 // pub mod server_state;
 
-use super::db_api::{get_all_component, get_all_prompt, get_first_component, post_build_label, post_component, post_id_get_component, post_id_remove_component, post_id_remove_list_component::post_id_remove_list_component, post_search_get_component::post_search_get_component, post_update_component};
+use super::db_api::{get_all_component, get_all_prompt, get_first_component, post_component, post_id_get_component, post_id_remove_component, post_id_remove_list_component::post_id_remove_list_component, post_search_get_component::post_search_get_component, post_update_component};
 
 use axum::{
     extract::{DefaultBodyLimit, Query}, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}, Form, Json, Router

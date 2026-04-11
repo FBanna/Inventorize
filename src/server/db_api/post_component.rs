@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
-use crate::{db::{components::ComponentServices, transport::post_component::PostComponent}, error::error::AppError, server::server_state::ServerState};
+use crate::{db::{component::{service::ComponentServices}, transport::post_component::PostComponent}, error::error::AppError, server::server_state::ServerState};
 
 
 pub async fn post_component(

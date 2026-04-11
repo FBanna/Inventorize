@@ -12,7 +12,7 @@ pub struct ComponentType {
     pub id: i32,
     pub name: String,
     pub inherits: i32,
-    attributes: Option<ComponentTypeAttributes>
+    pub attributes: Option<ComponentTypeAttributes>
 }
 
 

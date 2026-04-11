@@ -1,6 +1,6 @@
 pub mod db;
 
-pub mod components;
+pub mod component;
 
 pub mod prompt;
 pub mod types;

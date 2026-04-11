@@ -1,8 +1,8 @@
 
 use std::{io::Error, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{components::Component, types::{service::ComponentTypeService, transport_type::TransportComponentType}}};
-use db::{components::ComponentServices, db::DB};
+use crate::{config::config::Config, db::{component::component::Component, types::{component_type_value::ComponentTypeValue, service::ComponentTypeService, transport_type::TransportComponentType}}};
+use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
 
@@ -64,25 +64,38 @@ async fn main() -> Result<(), Error> {
         image: false, 
         datasheet: false, 
         //attribute_id: result.last_insert_rowid() as i32, 
-        attributes: json!({
+        // attributes: json!({
 
-            "attributes": [
-                {
-                    "id": result.last_insert_rowid() as i32,
-                    "values": {
+        //     "attributes": [
+        //         {
+        //             "id": result.last_insert_rowid() as i32,
+        //             "values": {
 
-                        "resistance": 60,
-                        "package": "0402"
+        //                 "resistance": 60,
+        //                 "package": "0402"
 
-                    }
-                },
-            ]
+        //             }
+        //         },
+        //     ]
             
 
-        })
+        // })
     };
 
-    component_db.add(&test_component).await.unwrap();
+    let result1 = component_db.add(&test_component).await.unwrap();
+
+    let test_component_type = ComponentTypeValue {
+        component_id: result1.last_insert_rowid() as i32,
+        type_id: result.last_insert_rowid() as i32,
+        attributes: json!({
+            "resistor": 20,
+            "package": "0402"
+        })
+
+
+    };
+
+    let result2 = component_db.add_component_type_value(test_component_type).await.unwrap();
 
 
     // let component = db::components::Component{

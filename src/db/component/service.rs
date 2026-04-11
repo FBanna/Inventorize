@@ -4,93 +4,12 @@ use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
 use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Sqlite, SqlitePool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, sqlite::{SqliteQueryResult, SqliteRow, SqliteValueRef}, types::{Json, JsonRawValue}};
 
-use crate::{config::config::Config, db::types::{component_type_attributes, service::ComponentTypeService}, error::{self, error::AppError, json::JsonError}};
-
-use super::{db::DB, prompt::service::PromptServices, transport::post_component::PostComponent};
-
-
-pub const ELEMENTS: [&str;6] = ["name","size","value","info","manufacturer","label"];
-
-
-// #[derive(Serialize, Deserialize, Clone, Debug)]
-// pub struct Component{
-//     pub id: Option<i32>,
-//     pub name: String,
-//     pub size: Option<String>,
-//     pub value: Option<String>,
-//     pub info: Option<String>,
-//     pub stock: i32,
-//     pub origin: Option<String>,
-//     pub label: Option<String>,
-//     pub image: Option<Vec<u8>>,
-//     pub datasheet: Option<Vec<u8>>
-// }
-
-// #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
-// pub struct Component{
-//     pub id: Option<i32>,
-//     pub name: String,
-//     pub size: Option<String>,
-//     pub value: Option<String>,
-//     pub info: Option<String>,
-//     pub stock: i32,
-//     pub origin: Option<String>,
-//     pub label: Option<String>,
-//     pub image: bool,
-//     pub datasheet: bool
-// }
-
-#[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
-pub struct Component{
-    pub id: Option<i32>,
-    pub name: String,
-    pub stock: i32,
-    pub price: Option<f32>,
-    pub manufacturer: Option<String>,
-    pub label: Option<String>,
-    pub image: bool,
-    pub datasheet: bool,
-    //pub attribute_id: i32,
-    pub attributes: serde_json::Value
-}
-
-
-
-impl Component{
-
-    pub fn fmt(&self) -> String {
-
-        format!(
-            "id: {}\n name: {}\n stock: {}\n image: {}\n datasheet: {}\n attributes: {:#}",
-            self.id.unwrap_or_else(|| 0),
-            self.name.clone(),
-            self.stock,
-            self.image,
-            self.datasheet,
-            self.attributes
-        )
-
-        //return self.name.clone() + &self.size.clone().unwrap_or_else(|| {"none".to_string()}).clone();
-    }
-
-    pub fn to_vec(&self) -> Vec<Option<&str>> {
-
-        vec![
-            Some(self.name.as_str()),
-            // self.size.as_deref(),
-            // self.value.as_deref(),
-            // self.info.as_deref(),
-            self.manufacturer.as_deref(),
-            self.label.as_deref(),
-        ]
-
-    }
-
-
-}
+use crate::{config::config::Config, db::{component::component::{Component, ELEMENTS}, db::DB, prompt::service::PromptServices, transport::post_component::PostComponent, types::{component_type_attributes, component_type_value::ComponentTypeValue, service::ComponentTypeService}}, error::{self, error::AppError, json::JsonError}};
 
 
 pub trait ComponentServices {
+
+
     async fn add_with_files(&self, c: PostComponent, config: &Config) -> Result<(), AppError>;
 
     async fn update_with_files(&self, id: i32, c: PostComponent, config: &Config) -> Result<(), AppError>;
@@ -100,7 +19,6 @@ pub trait ComponentServices {
     async fn update(&self, id: i32, c: &Component) -> Result<SqliteQueryResult, AppError>;
 
     async fn get_first(&self)  -> Result<Component, AppError>;
-
     async fn get_all(&self) -> Result<Vec<Component>, AppError>; // UPDATE
 
     async fn get(&self, i: i32) -> Result<Component, AppError>;
@@ -115,7 +33,14 @@ pub trait ComponentServices {
 
 
 
-    async fn add_component_types(&self, c: &Component) -> Result<(), AppError>;
+    //async fn add_component_types(&self, c: &Component) -> Result<(), AppError>;
+
+    async fn add_component_type_value(&self, tc: ComponentTypeValue) -> Result<SqliteQueryResult, AppError>;
+    async fn add_component_type_values(&self, tcs: Vec<ComponentTypeValue>) -> Result<(), AppError>;
+
+    async fn get_component_type_value(&self, c_id: i32, t_id: i32) -> Result<ComponentTypeValue, AppError>;
+    async fn get_component_type_values_t_id(&self, t_id: i32) -> Result<Vec<ComponentTypeValue>, AppError>;
+    async fn get_component_type_values_c_id(&self, c_id: i32) -> Result<Vec<ComponentTypeValue>, AppError>;
 
 
 }
@@ -216,7 +141,7 @@ impl ComponentServices for DB{
             .bind(&c.image)
             .bind(&c.datasheet)
             //.bind(&c.attribute_id)
-            .bind(&c.attributes)
+            //.bind(&c.attributes)
             .bind(id)
             .execute(&*self.pool)
             .await?;
@@ -229,102 +154,170 @@ impl ComponentServices for DB{
 
     }
 
+    async fn add_component_type_value(&self, tc: ComponentTypeValue) -> Result<SqliteQueryResult, AppError> {
+        
+        let component_type = self.get_type(tc.type_id).await?;
 
-    async fn add_component_types(&self, c: &Component) -> Result<(), AppError> {
+        component_type.get_attributes()?.veryify_attributes(&tc.attributes)?;
 
-        let array = c.attributes["attributes"].as_array().ok_or(JsonError::ComponentAttributesMalformed("failed to make attribute array".to_owned()))?;
+        println!("got here!");
 
+        let result: SqliteQueryResult = sqlx::query("INSERT INTO component_type (component_id, type_id, attributes) VALUES (?,?,?)")
+            .bind(&tc.component_id)
+            .bind(&tc.type_id)
+            .bind(&tc.attributes)
+            .execute(&*self.pool)
+            .await?;
 
-        for attribute in array {
+        println!("NOT HERE");
 
-            let type_id: i32 = attribute.get("id")
-                .ok_or(JsonError::ComponentAttributesMalformed("failed to get type_id".to_owned()))?
-                .as_i64()
-                .ok_or(JsonError::ComponentAttributesMalformed("failed to get type_id".to_owned()))? as i32;
+        Ok(result)
+    }
 
-            let attributes = attribute.get("values").ok_or(JsonError::ComponentAttributesMalformed("failed to get values".to_owned()))?;
-
-            let component_type = self.get_type(type_id).await?;
-
-            component_type.get_attributes()?.veryify_attributes(attributes)?;
-
-
-            let desired_attributes = component_type.get_attributes()?.attributes["attributes"]
-                .as_array()
-                .ok_or(JsonError::ComponentAttributesMalformed("failed to make attributes array".to_owned()))?;
-
-
-            // for da in desired_attributes {
-            //     let attribute_value = da.get("name").ok_or(JsonError::ComponentAttributesMalformed("failed to get attribute name".to_owned()))?
-            //             .as_str()
-            //             .unwrap();
-            // }
-
-            let column_names = desired_attributes.iter().try_fold("(".to_owned(), |acc, a| -> Result<String, AppError> {
-
-                let name = a.get("name")
-                        .ok_or(JsonError::ComponentAttributesMalformed("failed to get attribute name".to_owned()))?
-                        .as_str()
-                        .ok_or(JsonError::ComponentAttributesMalformed("failed to get attribute name".to_owned()))?;
-
-
-                Ok(acc + name)
-
-            })? + ")";
-            
-
-            let mut temp_places = ("?,".repeat(desired_attributes.len()));
-            temp_places.pop();
-            let values_places = "(".to_owned() + &temp_places + ")";
-
-
-            // let column_names = attributes.as_array()
-            //     .ok_or(JsonError::ComponentAttributesMalformed("failed to make attributes array".to_owned()))?
-            //     .iter()
-            //     .try_fold("(".to_owned(), |acc, a| {
-            //         acc + a.as_object().ok_or(JsonError::ComponentAttributesMalformed("failed to get values".to_owned()))?.keys()
-            //     });
-
-
-
-            // INSERT INTO name (resistance, accuracy) VALUES (?,?)
-            let query = format!("INSERT INTO {} {} VALUES {}", 
-                self.get_type(type_id).await?.name,
-                column_names,
-                temp_places
-            );
-
-            println!("HOLY QUERY: {}", query);
-
-
-            let query2 = sqlx::query(&query);
-
-            let values = attributes.as_array()
-                 .ok_or(JsonError::ComponentAttributesMalformed("failed to make attributes array".to_owned()))?;
-
-            for da in desired_attributes {
-
-
-
-            }
-
+    async fn add_component_type_values(&self, tcs: Vec<ComponentTypeValue>) -> Result<(), AppError> {
+        for tc in tcs {
+            self.add_component_type_value(tc).await?;
         }
 
-
         Ok(())
-        
     }
+
+    async fn get_component_type_value(&self, c_id: i32, t_id: i32) -> Result<ComponentTypeValue, AppError> {
+        let result: ComponentTypeValue = sqlx::query_as("
+            SELECT * FROM component_type
+            WHERE type_id = (?)
+            AND component_id = (?)
+        ")
+        .bind(t_id)
+        .bind(c_id)
+        .fetch_one(&*self.pool)
+        .await?;
+
+        Ok(result)
+    }
+
+    async fn get_component_type_values_c_id(&self, c_id: i32) -> Result<Vec<ComponentTypeValue>, AppError> {
+        
+        let result: Vec<ComponentTypeValue> = sqlx::query_as("
+            SELECT * FROM component_type
+            WHERE component_id = (?)
+        ")
+        .bind(c_id)
+        .fetch_all(&*self.pool)
+        .await?;
+
+        Ok(result)
+    }
+
+    async fn get_component_type_values_t_id(&self, t_id: i32) -> Result<Vec<ComponentTypeValue>, AppError> {
+        let result: Vec<ComponentTypeValue> = sqlx::query_as("
+            SELECT * FROM component_type
+            WHERE type_id = (?)
+        ")
+        .bind(t_id)
+        .fetch_all(&*self.pool)
+        .await?;
+
+        Ok(result)
+    }
+    
+
+
+    // async fn add_component_types(&self, c: &Component) -> Result<(), AppError> {
+
+    //     let array = c.attributes["attributes"].as_array().ok_or(JsonError::ComponentAttributesMalformed("failed to make attribute array".to_owned()))?;
+
+
+    //     for attribute in array {
+
+    //         let type_id: i32 = attribute.get("id")
+    //             .ok_or(JsonError::ComponentAttributesMalformed("failed to get type_id".to_owned()))?
+    //             .as_i64()
+    //             .ok_or(JsonError::ComponentAttributesMalformed("failed to get type_id".to_owned()))? as i32;
+
+    //         let attributes = attribute.get("values").ok_or(JsonError::ComponentAttributesMalformed("failed to get values".to_owned()))?;
+
+    //         let component_type = self.get_type(type_id).await?;
+
+    //         component_type.get_attributes()?.veryify_attributes(attributes)?;
+
+
+    //         let desired_attributes = component_type.get_attributes()?.attributes["attributes"]
+    //             .as_array()
+    //             .ok_or(JsonError::ComponentAttributesMalformed("failed to make attributes array".to_owned()))?;
+
+
+    //         // for da in desired_attributes {
+    //         //     let attribute_value = da.get("name").ok_or(JsonError::ComponentAttributesMalformed("failed to get attribute name".to_owned()))?
+    //         //             .as_str()
+    //         //             .unwrap();
+    //         // }
+
+    //         let column_names = desired_attributes.iter().try_fold("(".to_owned(), |acc, a| -> Result<String, AppError> {
+
+    //             let name = a.get("name")
+    //                     .ok_or(JsonError::ComponentAttributesMalformed("failed to get attribute name".to_owned()))?
+    //                     .as_str()
+    //                     .ok_or(JsonError::ComponentAttributesMalformed("failed to get attribute name".to_owned()))?;
+
+
+    //             Ok(acc + name)
+
+    //         })? + ")";
+            
+
+    //         let mut temp_places = ("?,".repeat(desired_attributes.len()));
+    //         temp_places.pop();
+    //         let values_places = "(".to_owned() + &temp_places + ")";
+
+
+    //         // let column_names = attributes.as_array()
+    //         //     .ok_or(JsonError::ComponentAttributesMalformed("failed to make attributes array".to_owned()))?
+    //         //     .iter()
+    //         //     .try_fold("(".to_owned(), |acc, a| {
+    //         //         acc + a.as_object().ok_or(JsonError::ComponentAttributesMalformed("failed to get values".to_owned()))?.keys()
+    //         //     });
+
+
+
+    //         // INSERT INTO name (resistance, accuracy) VALUES (?,?)
+    //         let query = format!("INSERT INTO {} {} VALUES {}", 
+    //             self.get_type(type_id).await?.name,
+    //             column_names,
+    //             temp_places
+    //         );
+
+    //         println!("HOLY QUERY: {}", query);
+
+
+    //         let query2 = sqlx::query(&query);
+
+    //         let values = attributes.as_array()
+    //              .ok_or(JsonError::ComponentAttributesMalformed("failed to make attributes array".to_owned()))?;
+
+    //         for da in desired_attributes {
+
+
+
+    //         }
+
+    //     }
+
+
+    //     Ok(())
+        
+    // }
     
     
     async fn add(&self, c: &Component) -> Result<SqliteQueryResult, AppError> {
 
 
 
-        self.add_component_types(c).await?;
+        //self.add_component_types(c).await?;
 
         // component_type.veryify_attributes(&c.attributes)?;
 
-        let result: SqliteQueryResult = sqlx::query("INSERT INTO component (name,stock,price,manufacturer,label,image,datasheet,attributes) VALUES (?,?,?,?,?,?,?,?,?)")
+        let result: SqliteQueryResult = sqlx::query("INSERT INTO component (name,stock,price,manufacturer,label,image,datasheet) VALUES (?,?,?,?,?,?,?)")
             .bind(&c.name)
             .bind(&c.stock)
             .bind(&c.price)
@@ -332,7 +325,7 @@ impl ComponentServices for DB{
             .bind(&c.label)
             .bind(&c.image)
             .bind(&c.datasheet)
-            .bind(&c.attributes)
+            //.bind(&c.attributes)
             .execute(&*self.pool)
             .await?;
 
@@ -344,7 +337,7 @@ impl ComponentServices for DB{
 
     async fn get_first(&self) -> Result<Component, AppError>{
         
-        let result: Component = sqlx::query_as("SELECT * FROM components ORDER BY ROWID ASC LIMIT 1")
+        let result: Component = sqlx::query_as("SELECT * FROM component ORDER BY ROWID ASC LIMIT 1")
             .fetch_one(&*self.pool)
             .await?;
 
@@ -357,7 +350,7 @@ impl ComponentServices for DB{
 
     async fn get_all(&self) -> Result<Vec<Component>, AppError>{
 
-        let result: Vec<Component> = sqlx::query_as("SELECT * FROM components")
+        let result: Vec<Component> = sqlx::query_as("SELECT * FROM component")
             .fetch_all(&*self.pool)
             .await?;
 
@@ -371,7 +364,7 @@ impl ComponentServices for DB{
         // let result = sqlx::query_as("SELECT * FROM components WEHERE")
 
 
-        let result: Component = sqlx::query_as("SELECT * FROM components WHERE id = (?)")
+        let result: Component = sqlx::query_as("SELECT * FROM component WHERE id = (?)")
             .bind(i)
             .fetch_one(&*self.pool)
             .await?;
@@ -387,7 +380,7 @@ impl ComponentServices for DB{
 
         for i in list {
 
-            let component: Component = sqlx::query_as("SELECT * FROM components WHERE id = (?)")
+            let component: Component = sqlx::query_as("SELECT * FROM component WHERE id = (?)")
                 .bind(i)
                 .fetch_one(&*self.pool)
                 .await?;
@@ -429,7 +422,7 @@ impl ComponentServices for DB{
 
         // BUILD QUERY
 
-        let mut query: QueryBuilder<Sqlite> = QueryBuilder::new("SELECT * FROM components WHERE ");
+        let mut query: QueryBuilder<Sqlite> = QueryBuilder::new("SELECT * FROM component WHERE ");
 
         for (index, list) in emptied.into_iter().enumerate() {
 
@@ -526,40 +519,3 @@ pub fn write_component_files(id: i32, name: &str, config: &str, option: &Option<
     }
 
 }
-
-
-// pub struct TransportComponent{
-//     pub id: Option<i32>,
-//     pub name: String,
-//     pub size: Option<String>,
-//     pub value: Option<String>,
-//     pub info: Option<String>,
-//     pub stock: i32,
-//     pub origin: Option<String>,
-//     pub label: Option<String>,
-//     pub image: Option<Vec<u8>>,
-//     pub datasheet: Option<Vec<u8>>
-// }
-
-// impl TransportComponent {
-//     pub fn into(&self) -> Component {
-//         Component { 
-//             id: self.id.clone(),
-//             name: self.name.clone(), 
-//             size: self.size.clone(), 
-//             value: self.value.clone(), 
-//             info: self.info.clone(), 
-//             stock: self.stock, 
-//             origin: self.origin.clone(), 
-//             label: self.label.clone(), 
-//             image: self.image.is_some(), 
-//             datasheet: self.datasheet.is_some()
-//         }
-//     }
-
-
-
-//     pub fn 
-
-
-// }

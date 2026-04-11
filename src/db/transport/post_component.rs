@@ -3,7 +3,10 @@ use std::io::Cursor;
 use image::{imageops::FilterType, GenericImageView, ImageReader};
 use serde::{Deserialize, Serialize};
 
-use crate::{config::config::Config, db::components::{write_component_files, Component}};
+use crate::db::component::service::write_component_files;
+use crate::{config::config::Config};
+use crate::db::{component::component::Component, db::DB};
+
 
 
 #[derive(Serialize, Deserialize)]

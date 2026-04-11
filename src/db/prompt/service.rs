@@ -1,7 +1,8 @@
 
 use std::{collections::HashMap, fmt::Debug, ops::Deref, sync::MutexGuard};
 
-use crate::db::{components::Component, db::DB};
+
+use crate::db::{component::component::Component, db::DB};
 
 use super::{prompt::{Prompt, PromptEntry}, prompts::Prompts};
 

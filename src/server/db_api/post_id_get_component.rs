@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{extract::State, Json};
 use serde::Deserialize;
-use crate::{db::components::{Component, ComponentServices}, error::error::AppError, server::server_state::ServerState};
+use crate::{db::component::{component::Component, service::ComponentServices}, error::error::AppError, server::server_state::ServerState};
 
 
 #[derive(Deserialize)]

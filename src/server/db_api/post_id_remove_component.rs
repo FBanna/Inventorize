@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use serde::Deserialize;
-use crate::{db::components::ComponentServices, error::error::AppError, server::server_state::ServerState};
+use crate::{db::component::service::ComponentServices, error::error::AppError, server::server_state::ServerState};
 
 
 #[derive(Deserialize)]

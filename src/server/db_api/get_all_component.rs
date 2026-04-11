@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{Json, extract::State};
-use crate::{db::components::{Component, ComponentServices}, error::{error::AppError}, server::server_state::ServerState};
+use crate::{db::component::{component::Component, service::ComponentServices}, error::error::AppError, server::server_state::ServerState};
 
 
 pub async fn get_component(

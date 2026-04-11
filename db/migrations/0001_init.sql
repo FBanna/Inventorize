@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS component_type
     PRIMARY KEY(component_id, type_id),
     
     FOREIGN KEY(component_id)   REFERENCES component(component_id)  ON DELETE CASCADE,
-    FOREIGN KEY(type_id)        REFERENCES types(type_id)  ON DELETE CASCADE
+    FOREIGN KEY(type_id)        REFERENCES type(type_id)  ON DELETE CASCADE
 );
 
 
@@ -46,7 +46,6 @@ CREATE TABLE IF NOT EXISTS type
 
 CREATE TABLE IF NOT EXISTS type_attribute
 (
-    -- id INTEGER PRIMARY KEY,
     
     type_id     INTEGER         NOT NULL,
     

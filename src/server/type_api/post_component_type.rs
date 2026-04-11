@@ -37,7 +37,7 @@ pub async fn post_component_type(
     Json(tc): Json<TransportComponentType>
 ) -> Result<impl IntoResponse, AppError> {
 
-    println!("Tying hard to add your component");
+    println!("Tying hard to add your type");
 
     let result = shared_state.db.add_type(&tc).await;
 
