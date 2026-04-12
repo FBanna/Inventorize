@@ -5,7 +5,7 @@ use sqlx::prelude::FromRow;
 
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
 pub struct ComponentTypeValue {
-    pub component_id: i32,
-    pub type_id: i32,
+    pub component_id: i64,
+    pub type_id: i64,
     pub attributes: JsonValue
 }

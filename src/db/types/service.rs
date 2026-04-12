@@ -8,7 +8,7 @@ use crate::{db::{db::DB, types::{component_type::ComponentType, component_type_a
 
 #[derive(FromRow, Debug)]
 struct Flat {
-    pub id: i32,
+    pub id: i64,
     pub name: String,
     pub inherits: i32,
     pub fields: Option<JsonValue>,
@@ -17,9 +17,9 @@ struct Flat {
 }
 
 pub trait ComponentTypeService {
-    async fn add_type(&self, tc: &TransportComponentType) -> Result<(), AppError>;
-    async fn remove_type(&self, id: i32) -> Result<PgQueryResult, AppError>;
-    async fn get_type(&self, id: i32) -> Result<ComponentType, AppError>;
+    async fn add_type(&self, tc: &TransportComponentType) -> Result<i64, AppError>;
+    async fn remove_type(&self, id: i64) -> Result<PgQueryResult, AppError>;
+    async fn get_type(&self, id: i64) -> Result<ComponentType, AppError>;
     async fn list_types(&self) -> Result<Vec<ComponentType>, AppError>;
     
 }
@@ -28,7 +28,7 @@ pub trait ComponentTypeService {
 impl ComponentTypeService for DB {
 
     /// takes a type and adds it along with any attributes it may have
-    async fn add_type(&self, tc: &TransportComponentType) -> Result<(), AppError> {
+    async fn add_type(&self, tc: &TransportComponentType) -> Result<i64, AppError> {
 
 
         println!("i am running this");
@@ -37,19 +37,19 @@ impl ComponentTypeService for DB {
 
         println!("now I'm here");
 
-        let result: PgQueryResult = sqlx::query("INSERT INTO type (name, inherits) VALUES ($1,$2)")
+        let id: i64 = sqlx::query_scalar("INSERT INTO type (name, inherits) VALUES ($1,$2) RETURNING type_id")
             .bind(&tc.name)
             .bind(&tc.inherits)
-            .execute(&*self.pool)
+            .fetch_one(&*self.pool)
             .await?;
 
-        println!("affected: {}", result.rows_affected());
+        println!("affected: {}", id);
 
 
         if let Some((schema, prompts, attributes)) = option {
 
             let result: PgQueryResult = sqlx::query("INSERT INTO type_attribute (type_id, fields, schema, prompts) VALUES ($1,$2,$3,$4)")
-                .bind(AnyQueryResult::from(result).last_insert_id().unwrap() as i64)
+                .bind(id)
                 .bind(&attributes)
                 .bind(schema)
                 .bind(prompts)
@@ -86,12 +86,12 @@ impl ComponentTypeService for DB {
         
         // TODO
 
-        Ok(())
+        Ok(id)
     }
     
 
     /// takes a type id and deletes it from types, type_attributes and component_type
-    async fn remove_type(&self, id: i32) -> Result<PgQueryResult, AppError> {
+    async fn remove_type(&self, id: i64) -> Result<PgQueryResult, AppError> {
 
         let result: PgQueryResult = sqlx::query("DELETE FROM type WHERE type_id = ($1)")
             .bind(id)
@@ -104,11 +104,11 @@ impl ComponentTypeService for DB {
 
     }
 
-    async fn get_type(&self, id: i32) -> Result<ComponentType, AppError> {
+    async fn get_type(&self, id: i64) -> Result<ComponentType, AppError> {
         
         let r: Flat = sqlx::query_as("
         SELECT 
-            t.type_id as id,
+            t.type_id AS id,
             t.name,
             t.inherits,
             ta.fields,
@@ -118,7 +118,7 @@ impl ComponentTypeService for DB {
         LEFT JOIN type_attribute ta ON ta.type_id = t.type_id
         WHERE t.type_id = ($1)
         ")
-            .bind(id as i64)
+            .bind(id)
             .fetch_one(&*self.pool)
             .await?;
 

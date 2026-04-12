@@ -52,7 +52,7 @@ async fn main() -> Result<(), Error> {
     };
 
 
-    let result = component_db.add_type(&test_type).await.unwrap();
+    let t_id = component_db.add_type(&test_type).await.unwrap();
 
     let test_component = Component { 
         id: None, 
@@ -82,11 +82,11 @@ async fn main() -> Result<(), Error> {
         // })
     };
 
-    let result1 = component_db.add(&test_component).await.unwrap();
+    let c_id = component_db.add(&test_component).await.unwrap();
 
     let test_component_type = ComponentTypeValue {
-        component_id: result1.rows_affected() as i32,
-        type_id: result.rows_affected() as i32,
+        component_id: c_id,
+        type_id: t_id,
         attributes: json!({
             "resistor": 20,
             "package": "0402"

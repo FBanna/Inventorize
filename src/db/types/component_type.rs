@@ -9,7 +9,7 @@ use crate::{db::types::component_type_attributes::ComponentTypeAttributes, error
 
 #[derive(FromRow, Debug)]
 pub struct ComponentType {
-    pub id: i32,
+    pub id: i64,
     pub name: String,
     pub inherits: i32,
     pub attributes: Option<ComponentTypeAttributes>

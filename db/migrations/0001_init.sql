@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS component_type
     component_id    INTEGER,
     type_id         INTEGER,
 
-    attributes      TEXT        NOT NULL,
+    attributes      JSONB        NOT NULL,
 
     PRIMARY KEY(component_id, type_id),
     
@@ -49,9 +49,9 @@ CREATE TABLE IF NOT EXISTS type_attribute
     
     type_id     INTEGER         NOT NULL,
     
-    fields      TEXT            NOT NULL,
-    schema      TEXT            NOT NULL,
-    prompts     TEXT            NOT NULL,
+    fields      JSONB            NOT NULL,
+    schema      JSONB            NOT NULL,
+--    prompts     JSONB            NOT NULL,
 
     PRIMARY KEY(type_id),
     FOREIGN KEY(type_id)        REFERENCES type(type_id)  ON DELETE CASCADE

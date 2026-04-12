@@ -14,7 +14,7 @@ pub trait ComponentServices {
 
     async fn update_with_files(&self, id: i32, c: PostComponent, config: &Config) -> Result<(), AppError>;
 
-    async fn add(&self, c: &Component) -> Result<PgQueryResult, AppError>;
+    async fn add(&self, c: &Component) -> Result<i64, AppError>;
 
     async fn update(&self, id: i32, c: &Component) -> Result<PgQueryResult, AppError>;
 
@@ -103,9 +103,9 @@ impl ComponentServices for DB{
 
         c.optimise_image();
 
-        let result: PgQueryResult = self.add(&c.component).await?;
+        let id: i64 = self.add(&c.component).await?;
 
-        c.create_assets(result.rows_affected().try_into().unwrap(), config);
+        c.create_assets(id, config);
 
         // c.create_assets(result.last_insert_rowid().try_into().unwrap(), config);
 
@@ -311,7 +311,7 @@ impl ComponentServices for DB{
     // }
     
     
-    async fn add(&self, c: &Component) -> Result<PgQueryResult, AppError> {
+    async fn add(&self, c: &Component) -> Result<i64, AppError> {
 
 
 
@@ -319,7 +319,7 @@ impl ComponentServices for DB{
 
         // component_type.veryify_attributes(&c.attributes)?;
 
-        let result: PgQueryResult = sqlx::query("INSERT INTO component (name,stock,price,manufacturer,label,image,datasheet) VALUES ($1,$2,$3,$4,$5,$6,$7)")
+        let id: i64 = sqlx::query_scalar("INSERT INTO component (name,stock,price,manufacturer,label,image,datasheet) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING component_id")
             .bind(&c.name)
             .bind(&c.stock)
             .bind(&c.price)
@@ -328,12 +328,12 @@ impl ComponentServices for DB{
             .bind(&c.image)
             .bind(&c.datasheet)
             //.bind(&c.attributes)
-            .execute(&*self.pool)
+            .fetch_one(&*self.pool)
             .await?;
 
 
 
-        Ok(result)
+        Ok(id)
     }
 
 
@@ -490,7 +490,7 @@ pub fn remove_component_files(id: i32, config: &str) {
 }
 
 
-pub fn write_component_files(id: i32, name: &str, config: &str, option: &Option<Vec<u8>>, is_present: bool) {
+pub fn write_component_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>, is_present: bool) {
 
     if is_present {
         if let Some(data) = option {
