@@ -1,7 +1,7 @@
 
 use std::{io::Error, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{component::component::Component, types::{component_type_value::ComponentTypeValue, service::ComponentTypeService, transport_type::TransportComponentType}}};
+use crate::{config::config::Config, db::{component::component::Component, transport::transport_type::TransportComponentType, types::{component_type_value::ComponentTypeValue, service::ComponentTypeService}}};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
@@ -31,7 +31,7 @@ async fn main() -> Result<(), Error> {
 
     let test_type = TransportComponentType{
         name: "resistor".to_owned(),
-        inherits: 1,
+        inherits: None,
         attributes: Some(json!({
 
             "attributes": [

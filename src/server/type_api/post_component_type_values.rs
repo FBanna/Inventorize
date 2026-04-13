@@ -29,7 +29,7 @@ use std::sync::Arc;
 
 use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
 
-use crate::{db::{component::service::ComponentServices, types::{component_type_value::ComponentTypeValue, service::ComponentTypeService, transport_type::TransportComponentType}}, error::error::AppError, server::server_state::ServerState};
+use crate::{db::{component::service::ComponentServices, types::{component_type_value::ComponentTypeValue, service::ComponentTypeService}}, error::error::AppError, server::server_state::ServerState};
 
 
 // pub struct TransportComponentTypeValue {

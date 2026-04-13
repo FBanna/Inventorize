@@ -11,7 +11,7 @@ use crate::{db::types::component_type_attributes::ComponentTypeAttributes, error
 pub struct ComponentType {
     pub id: i64,
     pub name: String,
-    pub inherits: i32,
+    pub inherits: Option<i64>,
     pub attributes: Option<ComponentTypeAttributes>
 }
 
@@ -19,7 +19,7 @@ pub struct ComponentType {
 impl Display for ComponentType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         //write!(f, "{} - {}:\nattributes: {:#}\n\nschema: {:#}\n\nprompts: {:#}", self.id, self.name, self.attributes, self.schema, self.prompts)
-        write!(f, "{} - {} inherits {} \nAttributes: {}", self.id, self.name, self.inherits, {
+        write!(f, "{} - {} inherits {} \nAttributes: {}", self.id, self.name, self.inherits.map_or("none".to_owned(), |v| v.to_string()), {
             if let Some(v) = &self.attributes {
                 return v.fmt(f)
             }

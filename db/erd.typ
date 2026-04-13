@@ -59,7 +59,7 @@
 
 
 
-  node((1,1), name: <component_type>, 
+  node((1,1.4), name: <component_type>, 
     erd_table(
       name: "component_type",
       key: (
@@ -68,6 +68,23 @@
       ),
       rows: (
         ("attributes", "string"),
+      )
+
+    )
+  ), 
+
+
+  node((1,0.5), name: <prompt>, 
+    erd_table(
+      name: "prompt",
+      key: (
+        //("component_id","integer"),
+        ("type_id", "integer"),
+      ),
+      rows: (
+        ("attribute", "string"),
+        ("value", "string"),
+        ("count", "integer")
       )
 
     )
@@ -91,7 +108,7 @@
       rows: (
         ("fields", "json"),
         ("schema", "json"),
-        ("prompts", "json")
+        //("prompts", "json")
       )
     )
   ),
@@ -146,13 +163,14 @@
   //   snap: -1,
   //   name: <attribute_example>,
   // ),
-  edge(<type>, (0.5,0), (0.5,1), <component_type>, "-n!"),
+  edge(<type>, (0.5,0), (0.5, 0.5), <prompt>, "-n!"),
+  edge(<type>, (0.5,0), (0.5,1.4), <component_type>, "-n!"),
   edge(<component>, <origin>, "-n!"),
   // edge(<component>, (1.5,0.75),(1.5,0), <smd>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,1), <resistor>, "-1?"),
   //edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-n?"),
   edge(<type>, <type_attributes>, "-1?"),
-  edge(<component>,<component_type>, "-n!")
+  edge(<component>, (1.6,1.4), <component_type>, "-n!")
 
   //fletcher.edge(<type.south>, (0,0.5), <component.west>, "-n")
 

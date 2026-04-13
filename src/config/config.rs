@@ -24,7 +24,8 @@ pub struct Config{
     pub db_location: String,
     pub label_location: String,
     pub font_location: String,
-    pub asset_location: String
+    pub asset_location: String,
+    pub temp_location: String,
 }
 
 impl Default for Config{
@@ -38,6 +39,7 @@ impl Default for Config{
             label_location: "labels".to_owned(),
             font_location: "fonts".to_owned(),
             asset_location: "data".to_owned(),
+            temp_location: "temp".to_owned()
         }
     }
 }
@@ -46,17 +48,7 @@ impl Config{
     pub fn new() -> Config {
 
         Config::default()
-        // Config{
-        //     port:           DEFAULT_PORT_NUMBER,
-        //     user:           DEFAULT_USER.to_owned(),
-        //     password:       DEFAULT_PASSWORD.to_owned(),
-        //     host_address:   DEFAULT_HOST_NAME.to_owned(),
-        //     db_location:    DEFAULT_DB_LOCATION.to_owned(),
-        //     label_location: DEFAULT_LABEL_LOCATION.to_owned(),
-        //     font_location:  DEFAULT_FONT_LOCATION.to_owned(),
-        //     asset_location: DEFAULT_ASSET_LOCATION.to_owned()
 
-        // }
     }
 
     pub fn print(&self){

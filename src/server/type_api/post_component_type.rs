@@ -29,7 +29,7 @@ use std::sync::Arc;
 
 use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
 
-use crate::{db::types::{service::ComponentTypeService, transport_type::TransportComponentType}, error::error::AppError, server::server_state::ServerState};
+use crate::{db::{transport::transport_type::TransportComponentType, types::service::ComponentTypeService}, error::error::AppError, server::server_state::ServerState};
 
 
 pub async fn post_component_type(

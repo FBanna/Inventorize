@@ -9,7 +9,7 @@ use super::prompt::{prompts::Prompts};
 pub struct DB {
     pub pool: Arc<Pool<Postgres>>,
     // could have a cached prompts stay open here
-    pub prompt_cache: Prompts
+    //pub prompt_cache: Prompts
 }
 
 static MIGRATOR: Migrator = sqlx::migrate!("db/migrations");
@@ -29,11 +29,11 @@ impl DB {
 
         // }
 
-        let prompt_cache = Prompts::new();
+        //let prompt_cache = Prompts::new();
 
         
 
-        Self{pool: Arc::new(pool), prompt_cache}
+        Self{pool: Arc::new(pool)}
 
     }
 

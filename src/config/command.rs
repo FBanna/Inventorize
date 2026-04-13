@@ -51,6 +51,11 @@ pub async fn get_config() -> Config{
                 --asset <ASSET> "sets asset location"
             ).required(false).value_parser(value_parser!(String))
         )
+        .arg(
+            arg!(
+                --temp <TEMP> "sets temp location"
+            ).required(false).value_parser(value_parser!(String))
+        )
         .subcommand(
             Command::new("init")
                 .about("initalize the directory")
@@ -82,12 +87,12 @@ pub async fn get_config() -> Config{
             println!("Asset directory already exists");
         }
 
-    
-
         println!("INTITAILIZED DIRECTORY!");
 
         exit(0);
     }
+
+
 
     // GET CONFIG FILE
     if let Some(config_path) = matches.get_one::<PathBuf>("config"){
@@ -139,6 +144,10 @@ pub async fn get_config() -> Config{
 
     if let Some(asset_location) = matches.get_one::<String>("asset") {
         config.asset_location = asset_location.clone();
+    }
+
+    if let Some(temp_location) = matches.get_one::<String>("temp") {
+        config.temp_location = temp_location.clone();
     }
 
     return config;

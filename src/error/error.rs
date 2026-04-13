@@ -1,8 +1,8 @@
 use std::{fmt::Display, sync::Arc};
 
-use axum::{http::{StatusCode, response}, response::{IntoResponse, Response}};
+use axum::{extract::multipart::MultipartError, http::{StatusCode, response}, response::{IntoResponse, Response}};
 
-use crate::error::{json::JsonError, label::LabelError, types::TypeError};
+use crate::error::{json::JsonError, label::LabelError, rest::RestError, types::TypeError};
 
 // helped greatly by - https://github.com/tokio-rs/axum/blob/main/examples/error-handling/src/main.rs
 
@@ -15,7 +15,9 @@ pub enum AppError{
 
     JsonError(JsonError),
 
-    TypeError(TypeError)
+    TypeError(TypeError),
+
+    RestError(RestError)
 
 }
 
@@ -29,6 +31,7 @@ impl Display for AppError{
             AppError::LabelError(err) => err.fmt(f),
             AppError::JsonError(err) => err.fmt(f),
             AppError::TypeError(err) => err.fmt(f),
+            AppError::RestError(err) => err.fmt(f),
             _ => write!(f, "[ERROR] Unknown Error")
         }
     }
@@ -42,6 +45,9 @@ impl IntoResponse for AppError {
                 (err.clone().into_response(), Some(self))
             },
             AppError::JsonError(err) => {
+                (err.clone().into_response(), Some(self))
+            },
+            AppError::RestError(err) => {
                 (err.clone().into_response(), Some(self))
             },
             AppError::DBError(err) => {
@@ -73,11 +79,7 @@ impl IntoResponse for AppError {
 //         MyError::Io(e)
 //     }
 
-impl From<serde_json::Error> for AppError {
-    fn from(value: serde_json::Error) -> Self {
-        Self::JsonError(JsonError::GenSchema)
-    }
-}
+
 
 impl From<LabelError> for AppError {
     fn from(value: LabelError) -> Self {
@@ -97,6 +99,12 @@ impl From<TypeError> for AppError {
     }
 }
 
+impl From<RestError> for AppError {
+    fn from(value: RestError) -> Self {
+        Self::RestError(value)
+    }
+}
+
 
 // EXTERNAL
 
@@ -106,3 +114,14 @@ impl From<sqlx::Error> for AppError {
     }
 }
 
+impl From<serde_json::Error> for AppError {
+    fn from(value: serde_json::Error) -> Self {
+        Self::JsonError(JsonError::GenSchema)
+    }
+}
+
+impl From<MultipartError> for AppError {
+    fn from(value: MultipartError) -> Self {
+        Self::RestError(RestError::Upload(value.body_text()))
+    }
+}

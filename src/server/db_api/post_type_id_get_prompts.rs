@@ -7,7 +7,7 @@ use crate::server::server_state::ServerState;
 
 
 
-pub async fn get_all_prompt(
+pub async fn post_type_id_get_prompts(
     State(shared_state): State<Arc<ServerState>>,
 ) -> ErasedJson{
 

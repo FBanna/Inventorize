@@ -4,20 +4,22 @@ use image::{imageops::FilterType, GenericImageView, ImageReader};
 use serde::{Deserialize, Serialize};
 
 use crate::db::component::service::write_component_files;
+use crate::db::transport::transport_component_type_value::TransportComponentTypeValue;
 use crate::{config::config::Config};
 use crate::db::{component::component::Component, db::DB};
 
 
 
 #[derive(Serialize, Deserialize)]
-pub struct PostComponent {
+pub struct TransportComponent {
     pub component: Component,
+    pub attributes: Vec<TransportComponentTypeValue>,
     image: Option<Vec<u8>>,
     datasheet: Option<Vec<u8>>,
 }
 
 
-impl PostComponent {
+impl TransportComponent {
 
     pub fn update_component_file_bools(&mut self) {
 

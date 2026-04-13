@@ -12,13 +12,13 @@ use crate::error::{error::AppError, json::JsonError};
 pub struct ComponentTypeAttributes {
     pub attributes: JsonValue,
     pub schema: JsonValue,
-    pub prompts: JsonValue
+    //pub prompts: JsonValue
 }
 
 
 impl Display for ComponentTypeAttributes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "attributes: {:#}\n\nschema: {:#}\n\nprompts: {:#}", self.attributes, self.schema, self.prompts)
+        write!(f, "attributes: {:#}\n\nschema: {:#}", self.attributes, self.schema)
     }
 }
 

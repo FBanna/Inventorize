@@ -3,17 +3,17 @@ use std::fmt::format;
 use serde_json::{Value as JsonValue, json};
 use sqlx::{Execute, any::AnyQueryResult, postgres::PgQueryResult, prelude::FromRow, types::JsonRawValue};
 
-use crate::{db::{db::DB, types::{component_type::ComponentType, component_type_attributes::ComponentTypeAttributes, transport_type::{AttributeType, TransportComponentType}}}, error::{error::AppError, json::JsonError}};
+use crate::{db::{db::DB, transport::transport_type::TransportComponentType, types::{component_type::ComponentType, component_type_attributes::ComponentTypeAttributes}}, error::{error::AppError, json::JsonError}};
 
 
 #[derive(FromRow, Debug)]
 struct Flat {
     pub id: i64,
     pub name: String,
-    pub inherits: i32,
+    pub inherits: Option<i64>,
     pub fields: Option<JsonValue>,
     pub schema: Option<JsonValue>,
-    pub prompts: Option<JsonValue>
+    //pub prompts: Option<JsonValue>
 }
 
 pub trait ComponentTypeService {
@@ -33,7 +33,7 @@ impl ComponentTypeService for DB {
 
         println!("i am running this");
 
-        let option = tc.gen_schema_and_prompts_and_attributes()?;
+        let option = tc.gen_schema_and_attributes()?;
 
         println!("now I'm here");
 
@@ -46,13 +46,13 @@ impl ComponentTypeService for DB {
         println!("affected: {}", id);
 
 
-        if let Some((schema, prompts, attributes)) = option {
+        if let Some((schema, attributes)) = option {
 
-            let result: PgQueryResult = sqlx::query("INSERT INTO type_attribute (type_id, fields, schema, prompts) VALUES ($1,$2,$3,$4)")
+            let result: PgQueryResult = sqlx::query("INSERT INTO type_attribute (type_id, fields, schema) VALUES ($1,$2,$3)")
                 .bind(id)
                 .bind(&attributes)
                 .bind(schema)
-                .bind(prompts)
+                //.bind(prompts)
                 .execute(&*self.pool)
                 .await?;
 
@@ -112,8 +112,7 @@ impl ComponentTypeService for DB {
             t.name,
             t.inherits,
             ta.fields,
-            ta.schema,
-            ta.prompts
+            ta.schema
         FROM type t
         LEFT JOIN type_attribute ta ON ta.type_id = t.type_id
         WHERE t.type_id = ($1)
@@ -126,12 +125,12 @@ impl ComponentTypeService for DB {
             id: r.id,
             name: r.name,
             inherits: r.inherits,
-            attributes: match (r.fields, r.schema, r.prompts) {
-                (Some(attributes), Some(schema), Some(prompts)) => {
+            attributes: match (r.fields, r.schema) {
+                (Some(attributes), Some(schema)) => {
                     Some(ComponentTypeAttributes {
                         attributes,
                         schema,
-                        prompts,
+                        
                     })
                 }
                 _ => None,
@@ -152,7 +151,6 @@ impl ComponentTypeService for DB {
             t.inherits,
             ta.attributes,
             ta.schema,
-            ta.prompts
         FROM type t
         LEFT JOIN type_attribute ta ON ta.type_id = t.type_id
         
@@ -165,12 +163,12 @@ impl ComponentTypeService for DB {
                 id: t.id,
                 name: t.name.to_owned(),
                 inherits: t.inherits,
-                attributes: match (t.fields.to_owned(), t.schema.to_owned(), t.prompts.to_owned()) {
-                    (Some(attributes), Some(schema), Some(prompts)) => {
+                attributes: match (t.fields.to_owned(), t.schema.to_owned()) {
+                    (Some(attributes), Some(schema)) => {
                         Some(ComponentTypeAttributes {
                             attributes,
                             schema,
-                            prompts,
+                            
                         })
                     }
                     _ => None,

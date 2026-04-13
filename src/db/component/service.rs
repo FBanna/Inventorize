@@ -4,15 +4,15 @@ use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
 use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, postgres::{PgQueryResult, PgRow, PgValueRef}, types::{Json, JsonRawValue}};
 
-use crate::{config::config::Config, db::{component::component::{Component, ELEMENTS}, db::DB, prompt::service::PromptServices, transport::post_component::PostComponent, types::{component_type_attributes, component_type_value::ComponentTypeValue, service::ComponentTypeService}}, error::{self, error::AppError, json::JsonError}};
+use crate::{config::config::Config, db::{component::component::{Component, ELEMENTS}, db::DB, prompt::service::PromptServices, transport::transport_component::TransportComponent, types::{component_type_attributes, component_type_value::ComponentTypeValue, service::ComponentTypeService}}, error::{self, error::AppError, json::JsonError}};
 
 
 pub trait ComponentServices {
 
 
-    async fn add_with_files(&self, c: PostComponent, config: &Config) -> Result<(), AppError>;
+    async fn add_with_files(&self, c: TransportComponent, config: &Config) -> Result<(), AppError>;
 
-    async fn update_with_files(&self, id: i32, c: PostComponent, config: &Config) -> Result<(), AppError>;
+    async fn update_with_files(&self, id: i32, c: TransportComponent, config: &Config) -> Result<(), AppError>;
 
     async fn add(&self, c: &Component) -> Result<i64, AppError>;
 
@@ -83,7 +83,7 @@ impl ComponentServices for DB{
         Ok(())
     }
 
-    async fn update_with_files(&self, id: i32, mut c: PostComponent, config: &Config) -> Result<(), AppError>{
+    async fn update_with_files(&self, id: i32, mut c: TransportComponent, config: &Config) -> Result<(), AppError>{
 
         //c.update_component_file_bools();
 
@@ -97,22 +97,7 @@ impl ComponentServices for DB{
 
     }
 
-    async fn add_with_files(&self, mut c: PostComponent, config: &Config)  -> Result<(), AppError>{
-
-        //c.update_component_file_bools();
-
-        c.optimise_image();
-
-        let id: i64 = self.add(&c.component).await?;
-
-        c.create_assets(id, config);
-
-        // c.create_assets(result.last_insert_rowid().try_into().unwrap(), config);
-
-
-        return Ok(())
-
-    }
+    
 
     async fn update(&self, id: i32, c: &Component) -> Result<PgQueryResult, AppError> {
 
@@ -162,7 +147,6 @@ impl ComponentServices for DB{
 
         component_type.get_attributes()?.veryify_attributes(&tc.attributes)?;
 
-        println!("got here!");
 
         let result: PgQueryResult = sqlx::query("INSERT INTO component_type (component_id, type_id, attributes) VALUES ($1,$2,$3)")
             .bind(&tc.component_id)
@@ -171,7 +155,6 @@ impl ComponentServices for DB{
             .execute(&*self.pool)
             .await?;
 
-        println!("NOT HERE");
 
         Ok(result)
     }
@@ -309,6 +292,23 @@ impl ComponentServices for DB{
     //     Ok(())
         
     // }
+
+    async fn add_with_files(&self, mut c: TransportComponent, config: &Config)  -> Result<(), AppError>{
+
+        //c.update_component_file_bools();
+
+        c.optimise_image();
+
+        let id: i64 = self.add(&c.component).await?;
+
+        c.create_assets(id, config);
+
+        // c.create_assets(result.last_insert_rowid().try_into().unwrap(), config);
+
+
+        return Ok(())
+
+    }
     
     
     async fn add(&self, c: &Component) -> Result<i64, AppError> {

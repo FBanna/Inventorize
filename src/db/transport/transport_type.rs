@@ -6,7 +6,7 @@ use crate::error::{error::AppError, json::JsonError};
 
 pub struct TransportComponentType {
     pub name: String,
-    pub inherits: i32,
+    pub inherits: Option<i64>,
     pub attributes: Option<JsonValue>
 }
 
@@ -59,7 +59,7 @@ impl TransportComponentType {
     fn verify_attributes(&self, attributes: &JsonValue) -> Result<(), AppError> {
 
 
-        let attribute_schema_str = include_str!("attribute_schema.json");
+        let attribute_schema_str = include_str!("../types/attribute_schema.json");
 
         let schema: JsonValue = serde_json::from_str(attribute_schema_str).unwrap();
 
@@ -108,7 +108,7 @@ impl TransportComponentType {
     ///     }
     /// }
     /// ```
-    pub fn gen_schema_and_prompts_and_attributes(&self) -> Result<Option<(JsonValue, JsonValue, JsonValue)>, AppError> {
+    pub fn gen_schema_and_attributes(&self) -> Result<Option<(JsonValue, JsonValue)>, AppError> {
 
         if self.attributes.is_none(){
             return Ok(None);
@@ -120,13 +120,13 @@ impl TransportComponentType {
 
         let mut map_schema: serde_json::Map<String,JsonValue> = serde_json::Map::new();
 
-        let mut map_prompts: serde_json::Map<String,JsonValue> = serde_json::Map::new();
+        //let mut map_prompts: serde_json::Map<String,JsonValue> = serde_json::Map::new();
 
 
 
         let mut properties: serde_json::Map<String,JsonValue> = serde_json::Map::new();
 
-        let mut prompt_list: serde_json::Map<String,JsonValue> = serde_json::Map::new();
+        //let mut prompt_list: serde_json::Map<String,JsonValue> = serde_json::Map::new();
 
         map_schema.insert("type".to_owned(), JsonValue::String("object".to_owned()));
 
@@ -144,11 +144,11 @@ impl TransportComponentType {
                     .ok_or(JsonError::GenSchema)?
                     .to_owned();
 
-            prompt_list.insert(
-                name.clone(),
-                JsonValue::Array(Vec::new())
+            // prompt_list.insert(
+            //     name.clone(),
+            //     JsonValue::Array(Vec::new())
             
-            );
+            // );
 
 
             properties.insert(
@@ -188,15 +188,15 @@ impl TransportComponentType {
 
         let schema = JsonValue::Object(map_schema);
 
-        map_prompts.insert("prompts".to_owned(), JsonValue::Object(prompt_list));
+        // map_prompts.insert("prompts".to_owned(), JsonValue::Object(prompt_list));
 
-        let prompts = JsonValue::Object(map_prompts);
+        // let prompts = JsonValue::Object(map_prompts);
 
 
 
-        println!("schema: {:#}\nprompts: {:#}", schema, prompts);
+        println!("schema: {:#}", schema);
 
-        Ok(Some((schema, prompts, attributes)))
+        Ok(Some((schema, attributes)))
 
 
 

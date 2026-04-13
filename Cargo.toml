@@ -6,7 +6,7 @@ authors = ["FBanna"]
 description = "organise parts inventory using a web app and qr code stickers!"
 
 [dependencies]
-axum = { version = "0.8.1", features = ["macros"]}
+axum = { version = "0.8.8", features = ["macros", "multipart"]}
 tokio = { version = "1.49.0", features = ["full"] }
 serde = { version = "1.0.164", features = ["derive"] }
 tower-http = { version = "0.6.2", features = ["cors", "fs", "redirect"] }
@@ -37,6 +37,8 @@ futures = "0.3"
 reedline = "0.43.0"
 
 jsonschema = "0.44.1"
+uuid = { version = "1.23.0", features = ["v4",] }
+tokio-util = { version = "0.7.18", features = ["io"]}
 
 [profile.release]
 opt-level = 3
