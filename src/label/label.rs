@@ -262,17 +262,18 @@ mod tests {
 
         println!("config");
         
-
-        let config = Config { 
-            port: 0, 
-            user: "".to_owned(), 
-            password: "".to_owned(), 
-            host_address: "localhost".to_owned(), 
-            db_location: "".to_owned(), 
-            label_location: "labels".to_owned(), 
-            font_location: "fonts".to_owned(), 
-            asset_location: "data".to_owned()
-        };
+        let config = Config::default();
+        // let config = Config { 
+        //     port: 0, 
+        //     user: "".to_owned(), 
+        //     password: "".to_owned(), 
+        //     host_address: "localhost".to_owned(), 
+        //     db_location: "".to_owned(), 
+        //     label_location: "labels".to_owned(), 
+        //     font_location: "fonts".to_owned(), 
+        //     asset_location: "data".to_owned(),
+        //     temp_location
+        // };
 
         println!("building");
 

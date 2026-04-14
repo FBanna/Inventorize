@@ -1,4 +1,4 @@
-use std::{fmt::Display, sync::Arc};
+use std::{fmt::Display, io, sync::Arc};
 
 use axum::{extract::multipart::MultipartError, http::{StatusCode, response}, response::{IntoResponse, Response}};
 
@@ -123,5 +123,12 @@ impl From<serde_json::Error> for AppError {
 impl From<MultipartError> for AppError {
     fn from(value: MultipartError) -> Self {
         Self::RestError(RestError::Upload(value.body_text()))
+    }
+}
+
+
+impl From<io::Error> for AppError {
+    fn from(value: io::Error) -> Self {
+        Self::RestError(RestError::WriteUpload)
     }
 }
