@@ -2310,7 +2310,6 @@ dependencies = [
 name = "inventorize"
 version = "0.0.0"
 dependencies = [
- "async-trait",
  "axum",
  "axum-extra",
  "axum-login",

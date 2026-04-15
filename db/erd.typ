@@ -38,8 +38,8 @@
         ("price", "integer"),
         ("manufacturer", "string"),
         ("label", "string"),
-        ("image", "bool"),
-        ("datasheet", "bool")
+        // ("image", "bool"),
+        // ("datasheet", "bool")
         
       )
 
@@ -67,7 +67,7 @@
         ("type_id", "integer")
       ),
       rows: (
-        ("attributes", "string"),
+        ("attributes", "json"),
       )
 
     )
@@ -78,12 +78,26 @@
     erd_table(
       name: "file",
       key: (
-        ("type_id", "UUID"),
+        ("file_id", "UUID"),
         ("component_id", "integer")
       ),
       rows: (
         ("name", "string"),
         ("mime", "string"),
+        
+      )
+    )
+  
+  ),
+  node((2,2.4), name: <image>,
+
+    erd_table(
+      name: "image",
+      key: (
+        ("component_id", "integer"),
+      ),
+      rows: (
+        ("data", "bytea")
         
       )
     )
@@ -183,12 +197,13 @@
   edge(<type>, (0.5,0), (0.5, 0.5), <prompt>, "-n!"),
   edge(<type>, (0.5,0), (0.5,1.4), <component_type>, "-n!"),
   edge(<component>, <origin>, "-n!"),
-  edge(<component>, (2,2), <file>, "-n!"),
+  edge(<component>, (1.7,1), (1.7,2), <file>, "-n!"),
+  edge(<component>, <image>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,0), <smd>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,1), <resistor>, "-1?"),
   //edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-n?"),
   edge(<type>, <type_attributes>, "-1?"),
-  edge(<component>, (1.6,1.4), <component_type>, "-n!")
+  edge(<component>, (1.6,1.2), (1.5,1.2), (1.5,1.4), <component_type>, "-n!")
 
   //fletcher.edge(<type.south>, (0,0.5), <component.west>, "-n")
 

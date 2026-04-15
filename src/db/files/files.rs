@@ -9,7 +9,12 @@ use uuid::Uuid;
 use crate::{config::config::Config, error::{error::AppError, rest::RestError}};
 
 
-
+pub struct ComponentFile {
+    pub file_id: Uuid,
+    pub component_id: i64,
+    pub name: String,
+    pub mime: String
+}
 
 
 pub async fn stream_file(mut multipart: Multipart, config: &Config) -> Result<(), AppError>{

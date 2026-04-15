@@ -6,8 +6,7 @@ CREATE TABLE IF NOT EXISTS component
     price           FLOAT,
     manufacturer    TEXT,
     label           TEXT,
-    image           BOOLEAN         NOT NULL,
-    datasheet       BOOLEAN         NOT NULL
+
 );
 
 CREATE TABLE IF NOT EXISTS origin
@@ -16,6 +15,15 @@ CREATE TABLE IF NOT EXISTS origin
     origin          TEXT            NOT NULL,
     part_number     TEXT,
     component_id    INTEGER         NOT NULL,
+    FOREIGN KEY(component_id)       REFERENCES component(component_id)  ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS component_file
+(
+    file_id UUID PRIMARY KEY,
+    component_id    INTEGER,
+    name            TEXT,
+    mime            TEXT,
     FOREIGN KEY(component_id)       REFERENCES component(component_id)  ON DELETE CASCADE
 );
 
