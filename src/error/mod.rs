@@ -1,6 +1,6 @@
 pub mod label;
 pub mod json;
 pub mod types;
-pub mod rest;
+pub mod file;
 
 pub mod error;

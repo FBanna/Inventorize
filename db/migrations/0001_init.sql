@@ -11,19 +11,27 @@ CREATE TABLE IF NOT EXISTS component
 
 CREATE TABLE IF NOT EXISTS origin
 (
-    id INTEGER PRIMARY KEY,
+    origin_id BIGSERIAL PRIMARY KEY,
     origin          TEXT            NOT NULL,
     part_number     TEXT,
-    component_id    INTEGER         NOT NULL,
+    component_id    BIGINT         NOT NULL,
     FOREIGN KEY(component_id)       REFERENCES component(component_id)  ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS component_file
 (
     file_id UUID PRIMARY KEY,
-    component_id    INTEGER,
+    component_id    BIGINT,
     name            TEXT,
     mime            TEXT,
+    FOREIGN KEY(component_id)       REFERENCES component(component_id)  ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS component_image
+(
+    component_id    BIGINT PRIMARY KEY,
+    full            BYTEA,
+    thumb           BYTEA,
     FOREIGN KEY(component_id)       REFERENCES component(component_id)  ON DELETE CASCADE
 );
 
@@ -31,7 +39,7 @@ CREATE TABLE IF NOT EXISTS type
 (
     type_id BIGSERIAL PRIMARY KEY ,
     name        TEXT            NOT NULL,
-    inherits    INTEGER,
+    inherits    BIGINT,
 
     FOREIGN KEY(inherits)        REFERENCES type(type_id)  ON DELETE CASCADE
 );
@@ -40,8 +48,8 @@ CREATE TABLE IF NOT EXISTS type
 CREATE TABLE IF NOT EXISTS component_type
 (
 
-    component_id    INTEGER,
-    type_id         INTEGER,
+    component_id    BIGINT,
+    type_id         BIGINT,
 
     attributes      jsonb        NOT NULL,
 
@@ -59,10 +67,10 @@ CREATE INDEX attribute_index ON component_type USING GIN (attributes);
 CREATE TABLE IF NOT EXISTS type_attribute
 (
     
-    type_id     INTEGER         NOT NULL,
+    type_id     BIGINT          NOT NULL,
     
-    fields      jsonb            NOT NULL,
-    schema      jsonb            NOT NULL,
+    fields      jsonb           NOT NULL,
+    schema      jsonb           NOT NULL,
     -- prompts     jsonb            NOT NULL,
 
     PRIMARY KEY(type_id),
@@ -72,7 +80,7 @@ CREATE TABLE IF NOT EXISTS type_attribute
 CREATE TABLE IF NOT EXISTS prompt
 (
 
-    type_id     INTEGER         NOT NULL,
+    type_id     BIGINT         NOT NULL,
 
     attribute   TEXT            NOT NULL,
     value       TEXT            NOT NULL,

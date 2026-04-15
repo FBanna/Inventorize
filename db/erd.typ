@@ -76,7 +76,7 @@
   node((1,2), name: <file>,
 
     erd_table(
-      name: "file",
+      name: "component_file",
       key: (
         ("file_id", "UUID"),
         ("component_id", "integer")
@@ -92,12 +92,13 @@
   node((2,2.4), name: <image>,
 
     erd_table(
-      name: "image",
+      name: "component_image",
       key: (
         ("component_id", "integer"),
       ),
       rows: (
-        ("data", "bytea")
+        ("full", "bytea"),
+        ("thumb", "bytea")
         
       )
     )

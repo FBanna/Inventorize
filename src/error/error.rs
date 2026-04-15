@@ -2,7 +2,7 @@ use std::{fmt::Display, io, sync::Arc};
 
 use axum::{extract::multipart::MultipartError, http::{StatusCode, response}, response::{IntoResponse, Response}};
 
-use crate::error::{json::JsonError, label::LabelError, rest::RestError, types::TypeError};
+use crate::error::{file::{FileError}, json::JsonError, label::LabelError, types::TypeError};
 
 // helped greatly by - https://github.com/tokio-rs/axum/blob/main/examples/error-handling/src/main.rs
 
@@ -17,7 +17,7 @@ pub enum AppError{
 
     TypeError(TypeError),
 
-    RestError(RestError)
+    FileError(FileError)
 
 }
 
@@ -31,7 +31,7 @@ impl Display for AppError{
             AppError::LabelError(err) => err.fmt(f),
             AppError::JsonError(err) => err.fmt(f),
             AppError::TypeError(err) => err.fmt(f),
-            AppError::RestError(err) => err.fmt(f),
+            AppError::FileError(err) => err.fmt(f),
             _ => write!(f, "[ERROR] Unknown Error")
         }
     }
@@ -47,7 +47,7 @@ impl IntoResponse for AppError {
             AppError::JsonError(err) => {
                 (err.clone().into_response(), Some(self))
             },
-            AppError::RestError(err) => {
+            AppError::FileError(err) => {
                 (err.clone().into_response(), Some(self))
             },
             AppError::DBError(err) => {
@@ -99,9 +99,9 @@ impl From<TypeError> for AppError {
     }
 }
 
-impl From<RestError> for AppError {
-    fn from(value: RestError) -> Self {
-        Self::RestError(value)
+impl From<FileError> for AppError {
+    fn from(value: FileError) -> Self {
+        Self::FileError(value)
     }
 }
 
@@ -122,13 +122,13 @@ impl From<serde_json::Error> for AppError {
 
 impl From<MultipartError> for AppError {
     fn from(value: MultipartError) -> Self {
-        Self::RestError(RestError::Upload(value.body_text()))
+        Self::FileError(FileError::Upload(value.body_text()))
     }
 }
 
 
 impl From<io::Error> for AppError {
     fn from(value: io::Error) -> Self {
-        Self::RestError(RestError::WriteUpload)
+        Self::FileError(FileError::WriteUpload)
     }
 }
