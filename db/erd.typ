@@ -1,7 +1,7 @@
 #import "lib.typ": *
 #import "@preview/fletcher:0.5.8": diagram, node, edge
 
-#set page(height: 500pt, width: 1200pt)
+#set page(height: 600pt, width: 1200pt)
 
 #set block(spacing: 0pt)
 
@@ -72,6 +72,23 @@
 
     )
   ), 
+
+  node((1,2), name: <file>,
+
+    erd_table(
+      name: "file",
+      key: (
+        ("type_id", "UUID"),
+        ("component_id", "integer")
+      ),
+      rows: (
+        ("name", "string"),
+        ("mime", "string"),
+        
+      )
+    )
+  
+  ),
 
 
   node((1,0.5), name: <prompt>, 
@@ -166,6 +183,7 @@
   edge(<type>, (0.5,0), (0.5, 0.5), <prompt>, "-n!"),
   edge(<type>, (0.5,0), (0.5,1.4), <component_type>, "-n!"),
   edge(<component>, <origin>, "-n!"),
+  edge(<component>, (2,2), <file>, "-n!"),
   // edge(<component>, (1.5,0.75),(1.5,0), <smd>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,1), <resistor>, "-1?"),
   //edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-n?"),

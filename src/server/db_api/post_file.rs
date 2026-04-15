@@ -4,7 +4,7 @@ use axum::{Json, extract::{Multipart, State}, http::StatusCode, response::IntoRe
 use crate::{db::{component::service::ComponentServices, files::files::stream_file, transport::transport_component::TransportComponent}, error::error::AppError, server::server_state::ServerState};
 
 
-pub async fn post_component(
+pub async fn post_file(
 
     State(shared_state): State<Arc<ServerState>>,
     mut multipart: Multipart,

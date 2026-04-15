@@ -11,5 +11,4 @@ pub mod get_first_component;                // JSON COMPONENT
 pub mod get_all_component;                  // JSON LIST
 pub mod post_type_id_get_prompts;           // JSON 
 
-pub mod post_datasheet;
-pub mod post_image;
+pub mod post_file;
