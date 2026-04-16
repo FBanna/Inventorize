@@ -1,14 +1,16 @@
-use std::{path::{Path, PathBuf}, string};
-
+use std::{fs, path::{Path, PathBuf}, string};
+use infer::Type as MimeType;
+use serde::{Deserialize, Serialize};
+use sqlx::prelude::FromRow;
 use uuid::Uuid;
 
-use crate::{config::config::Config, error::error::AppError};
+use crate::{config::config::Config, error::{error::AppError, file::FileError}};
 
 
-
+#[derive(Clone, Debug, FromRow, Serialize, Deserialize)]
 pub struct ComponentFile {
     pub file_id: Uuid,
-    pub component_id: i64,
+    // pub component_id: i64,
     pub name: String,
     pub mime: String
 }
@@ -16,23 +18,33 @@ pub struct ComponentFile {
 
 impl ComponentFile {
 
-    pub fn add_from_temp_file(c_id: i64, temp_path: PathBuf, uuid: Uuid, config: &Config) -> Result<Self, AppError> {
+    pub fn add_from_temp_file(c_id: i64, uuid: Uuid, temp_path: PathBuf, file_name: String, config: &Config) -> Result<Self, AppError> {
+
+        let option_mime = infer::get_from_path(&temp_path).map_err(|_| FileError::WriteUpload)?;
+
+        let mime = option_mime.ok_or(FileError::WriteUpload)?;
 
 
         let final_path = Path::new(&config.asset_location)
-            .join(String::from_utf8())
+            .join(c_id.to_string())
             .join({
-                match file_type.ok_or(RestError::WriteUpload)?.as_str() {
-                    "image" => "image."
-                }
+                
+                format!("{}.{}", &uuid.as_hyphenated().to_string(), &mime.extension())
+
             });
-
-        fs::rename(file_path.ok_or(RestError::WriteUpload)?, final_path);
-
-
         
 
-    };
+        fs::rename(temp_path, final_path)?;
+
+        Ok(Self {
+            file_id: uuid,
+            //component_id: c_id,
+            name: file_name,
+            mime: mime.mime_type().to_owned()
+        })
+        
+
+    }
 
 }
 

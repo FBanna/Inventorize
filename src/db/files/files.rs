@@ -17,6 +17,7 @@ pub async fn stream_file(mut multipart: Multipart, config: &Config) -> Result<()
     let mut option_c_id: Option<i64> = None;
     let mut option_file_type: Option<String> = None;
     let mut option_file: Option<(PathBuf, Uuid)> = None;
+    let mut option_file_name: Option<String> = None;
 
 
 
@@ -24,7 +25,7 @@ pub async fn stream_file(mut multipart: Multipart, config: &Config) -> Result<()
 
         match field.name() {
             Some("c_id") => option_c_id = {
-                let bytes = field.bytes().await?;
+                let mut bytes = field.bytes().await?;
 
                 let id = bytes.try_get_i64().map_err(|_| FileError::Upload("could not get i64 id from input".to_owned()))?;
 
@@ -33,6 +34,7 @@ pub async fn stream_file(mut multipart: Multipart, config: &Config) -> Result<()
                 Some(id)
             
             },
+            Some("name") => option_file_name = Some(field.text().await?),
             Some("file_type") => option_file_type = Some(field.text().await?),
             Some("file") => {
 
@@ -70,6 +72,7 @@ pub async fn stream_file(mut multipart: Multipart, config: &Config) -> Result<()
     let c_id = option_c_id.ok_or(FileError::WriteUpload)?;
     let file_type = option_file_type.ok_or(FileError::WriteUpload)?;
     let file_path_uuid = option_file.ok_or(FileError::WriteUpload)?;
+    
 
 
     match file_type.as_str(){
@@ -77,7 +80,10 @@ pub async fn stream_file(mut multipart: Multipart, config: &Config) -> Result<()
 
         },
         "file" => {
-            ComponentFile::add_from_temp_file(c_id, file_path_uuid.0, file_path_uuid.1, config)?;
+
+            let file_name = option_file_name.ok_or(FileError::WriteUpload)?;
+
+            ComponentFile::add_from_temp_file(c_id, file_path_uuid.1, file_path_uuid.0,  file_name, config)?;
         },
         _ => return Err(FileError::WriteUpload.into())
     }
