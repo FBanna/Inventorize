@@ -32,7 +32,7 @@ typst = "0.14.2"
 typst-kit = "0.14.2"
 
 # db
-sqlx = { version = "0.8.3", features = ["runtime-tokio-native-tls", "postgres"] }
+sqlx = { version = "0.8.3", features = ["runtime-tokio-native-tls", "postgres", "uuid"] }
 
 #async-trait = "0.1.88"
 
