@@ -20,7 +20,7 @@ pub struct ComponentImage{
 
 impl ComponentImage {
 
-    pub async fn new(c_id: i64, temp_path: PathBuf, config: &Config) -> Result<Self, AppError> {
+    pub fn new(c_id: i64, temp_path: PathBuf, config: &Config) -> Result<Self, AppError> {
 
         let file = File::open(temp_path)?;
 

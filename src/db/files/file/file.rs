@@ -36,6 +36,8 @@ impl ComponentFile {
 
         fs::rename(temp_path, final_path)?;
 
+        
+
         Ok(Self {
             file_id: uuid,
             //component_id: c_id,

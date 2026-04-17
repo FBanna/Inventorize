@@ -6,13 +6,13 @@ use tokio::{fs::File as TkFile, io::BufWriter};
 use tokio_util::{bytes::Buf, io::StreamReader};
 use uuid::Uuid;
 
-use crate::{config::config::Config, db::files::file::file::ComponentFile, error::{error::AppError, file::FileError}};
+use crate::{config::config::Config, db::{db::DB, files::{file::file::ComponentFile, image::image::ComponentImage, service::ComponentFileService}}, error::{error::AppError, file::FileError}};
 
 
 
 
 
-pub async fn stream_file(mut multipart: Multipart, config: &Config) -> Result<(), AppError>{
+pub async fn add_file(mut multipart: Multipart, config: &Config, db: &DB) -> Result<(), AppError>{
 
     let mut option_c_id: Option<i64> = None;
     let mut option_file_type: Option<String> = None;
@@ -78,12 +78,18 @@ pub async fn stream_file(mut multipart: Multipart, config: &Config) -> Result<()
     match file_type.as_str(){
         "image" => {
 
+            let c_image = ComponentImage::new(c_id, file_path_uuid.0, config)?;
+
+            db.add_img(c_id, c_image).await?;
+
         },
         "file" => {
 
             let file_name = option_file_name.ok_or(FileError::WriteUpload)?;
 
-            ComponentFile::add_from_temp_file(c_id, file_path_uuid.1, file_path_uuid.0,  file_name, config)?;
+            let c_file = ComponentFile::add_from_temp_file(c_id, file_path_uuid.1, file_path_uuid.0,  file_name, config)?;
+
+            db.add_file(c_id, c_file).await?;
         },
         _ => return Err(FileError::WriteUpload.into())
     }

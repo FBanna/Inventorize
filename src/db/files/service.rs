@@ -1,10 +1,18 @@
-use jsonschema::output;
+use sqlx::prelude::FromRow;
 use uuid::Uuid;
 
 use crate::{db::{db::DB, files::{file::file::ComponentFile, image::image::ComponentImage}}, error::error::AppError};
 
+#[derive(FromRow)]
+struct FullBytes {
+    full: Vec<u8>
+}
 
 
+#[derive(FromRow)]
+struct ThumbBytes {
+    thumb: Vec<u8>
+}
 
 pub trait ComponentFileService {
 
@@ -101,15 +109,35 @@ impl ComponentFileService for DB {
 
     async fn get_img(&self, c_id: i64) -> Result<ComponentImage, AppError> {
         
-        let output: ComponentImage = sqlx::query_as("")
+        let output: ComponentImage = sqlx::query_as("SELECT (full, thumb) FROM component_image WHERE component_id = ($1)")
+            .bind(c_id)
+            .fetch_one(&*self.pool)
+            .await?;
+
+        Ok(output)
 
     }
 
     async fn get_full(&self, c_id: i64) -> Result<Vec<u8>, AppError> {
-        todo!()
+        
+        let output: FullBytes  = sqlx::query_as("SELECT (full) FROM component_image WHERE component_id = ($1)")
+            .bind(c_id)
+            .fetch_one(&*self.pool)
+            .await?;
+
+        Ok(output.full)
+
     }
 
     async fn get_thumb(&self, c_id: i64) -> Result<Vec<u8>, AppError> {
-        todo!()
+        
+        let output: ThumbBytes  = sqlx::query_as("SELECT (thumb) FROM component_image WHERE component_id = ($1)")
+            .bind(c_id)
+            .fetch_one(&*self.pool)
+            .await?;
+
+        Ok(output.thumb)
+
+
     }
 }
