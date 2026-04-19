@@ -16,7 +16,12 @@ pub async fn post_component(
 
     //c.optimise_image();
 
-    shared_state.db.add_with_files(c, &shared_state.config).await?;
+    //shared_state.db.add_with_files(c, &shared_state.config).await?;
+    let id = shared_state.db.add(&c.component).await?;
+
+    let attributes = c.create_component_types(id);
+
+    shared_state.db.add_component_type_values(attributes).await?;
 
     //shared_state.db.add(c, &shared_state.config).await;
 

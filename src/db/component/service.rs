@@ -10,9 +10,9 @@ use crate::{config::config::Config, db::{component::component::{Component, ELEME
 pub trait ComponentServices {
 
 
-    async fn add_with_files(&self, c: TransportComponent, config: &Config) -> Result<(), AppError>;
+    // async fn add_with_files(&self, c: TransportComponent, config: &Config) -> Result<(), AppError>;
 
-    async fn update_with_files(&self, id: i32, c: TransportComponent, config: &Config) -> Result<(), AppError>;
+    // async fn update_with_files(&self, id: i32, c: TransportComponent, config: &Config) -> Result<(), AppError>;
 
     async fn add(&self, c: &Component) -> Result<i64, AppError>;
 
@@ -83,19 +83,19 @@ impl ComponentServices for DB{
         Ok(())
     }
 
-    async fn update_with_files(&self, id: i32, mut c: TransportComponent, config: &Config) -> Result<(), AppError>{
+    // async fn update_with_files(&self, id: i32, mut c: TransportComponent, config: &Config) -> Result<(), AppError>{
 
-        //c.update_component_file_bools();
+    //     //c.update_component_file_bools();
 
-        c.optimise_image();
+    //     c.optimise_image();
 
-        self.update(id,&c.component).await?;
+    //     self.update(id,&c.component).await?;
 
-        c.create_assets(id.into(), config);
+    //     c.create_assets(id.into(), config);
 
-        return Ok(());
+    //     return Ok(());
 
-    }
+    // }
 
     
 
@@ -293,22 +293,22 @@ impl ComponentServices for DB{
         
     // }
 
-    async fn add_with_files(&self, mut c: TransportComponent, config: &Config)  -> Result<(), AppError>{
+    // async fn add_with_files(&self, mut c: TransportComponent, config: &Config)  -> Result<(), AppError>{
 
-        //c.update_component_file_bools();
+    //     //c.update_component_file_bools();
 
-        c.optimise_image();
+    //     c.optimise_image();
 
-        let id: i64 = self.add(&c.component).await?;
+    //     let id: i64 = self.add(&c.component).await?;
 
-        c.create_assets(id, config);
+    //     c.create_assets(id, config);
 
-        // c.create_assets(result.last_insert_rowid().try_into().unwrap(), config);
+    //     // c.create_assets(result.last_insert_rowid().try_into().unwrap(), config);
 
 
-        return Ok(())
+    //     return Ok(())
 
-    }
+    // }
     
     
     async fn add(&self, c: &Component) -> Result<i64, AppError> {
