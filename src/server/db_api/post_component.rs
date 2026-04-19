@@ -10,22 +10,16 @@ pub async fn post_component(
     Json(c): Json<TransportComponent>,
 ) -> Result<impl IntoResponse, AppError> {
 
-    // println!("IM HERE!");
 
-    // println!("{}", c.fmt());
+    let id = shared_state.db.add_transport_component(&c).await?;
 
-    //c.optimise_image();
-
-    //shared_state.db.add_with_files(c, &shared_state.config).await?;
-    let id = shared_state.db.add(&c.component).await?;
-
-    let attributes = c.create_component_types(id);
+    
+    let attributes = c.create_component_type_values(id);
 
     shared_state.db.add_component_type_values(attributes).await?;
 
-    //shared_state.db.add(c, &shared_state.config).await;
 
     Ok(StatusCode::OK.into_response())
 
-    //Redirect::to("/").into_response()
+
 }

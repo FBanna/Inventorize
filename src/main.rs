@@ -55,7 +55,7 @@ async fn main() -> Result<(), Error> {
     let t_id = component_db.add_type(&test_type).await.unwrap();
 
     let test_component = Component { 
-        id: None, 
+        id: 0, 
         name: "Boring Old Resistor".to_owned(), 
         stock: 1000, 
         price: Some(14.0), 

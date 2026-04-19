@@ -160,7 +160,7 @@ impl Label for Component{
 
                     dict.insert(
                         Str::from("url"), 
-                        Value::Str(Str::from(config.host_address.to_owned() + "/component/" + &x.id.clone().get_or_insert_default().to_string()))
+                        Value::Str(Str::from(config.host_address.to_owned() + "/component/" + &x.id.to_string()))
                     );
 
                     return Value::Dict(dict);
@@ -237,7 +237,7 @@ mod tests {
 
         let component =
             Component {
-                id: Some(0),
+                id: 0,
                 name: ("Resistor".to_string()),
                 stock: 5000,
                 price: Some(100.0),

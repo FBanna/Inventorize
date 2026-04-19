@@ -7,7 +7,7 @@ use crate::{db::component::{component::Component, service::ComponentServices}, e
 
 #[derive(Deserialize)]
 pub struct ComponentID{
-    i: i32
+    i: i64
 }
 
 pub async fn post_id_get_component(

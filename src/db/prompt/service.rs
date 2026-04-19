@@ -17,13 +17,12 @@ use super::{prompt::{Prompt, PromptEntry}, prompts::Prompts};
 /// 
 pub trait PromptServices {
     
-    async fn del_prompt(&self, i: usize, index: i32);
+    async fn del_prompt(&self, type_i: i64, index: i32);
 
 
     async fn add_prompt(&self, i: usize, value: &str);
 
     async fn get_prompts(&self, )
-
 
 
     // async fn update_prompt(&self, i: usize, index: i32, count: i32);

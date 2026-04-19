@@ -14,22 +14,25 @@ pub trait ComponentServices {
 
     // async fn update_with_files(&self, id: i32, c: TransportComponent, config: &Config) -> Result<(), AppError>;
 
+    #[warn(deprecated)]
     async fn add(&self, c: &Component) -> Result<i64, AppError>;
 
-    async fn update(&self, id: i32, c: &Component) -> Result<PgQueryResult, AppError>;
+    async fn add_transport_component(&self, c: &TransportComponent) -> Result<i64, AppError>;
+
+    async fn update(&self, id: i64, c: &Component) -> Result<PgQueryResult, AppError>;
 
     async fn get_first(&self)  -> Result<Component, AppError>;
     async fn get_all(&self) -> Result<Vec<Component>, AppError>; // UPDATE
 
-    async fn get(&self, i: i32) -> Result<Component, AppError>;
+    async fn get(&self, i: i64) -> Result<Component, AppError>;
 
-    async fn get_from_list(&self, list: Vec<i32>) -> Result<Vec<Component>, AppError>;
+    async fn get_from_list(&self, list: Vec<i64>) -> Result<Vec<Component>, AppError>;
 
     async fn search(&self, c: Vec<Vec<String>>) -> Result<Vec<Component>, AppError>;
 
-    async fn remove(&self, i: i32, config: &Config) -> Result<PgQueryResult, AppError>;   
+    async fn remove(&self, i: i64, config: &Config) -> Result<PgQueryResult, AppError>;   
 
-    async fn remove_list(&self, list: Vec<i32>, config: &Config) -> Result<(), AppError>;
+    async fn remove_list(&self, list: Vec<i64>, config: &Config) -> Result<(), AppError>;
 
 
 
@@ -38,9 +41,9 @@ pub trait ComponentServices {
     async fn add_component_type_value(&self, tc: ComponentTypeValue) -> Result<PgQueryResult, AppError>;
     async fn add_component_type_values(&self, tcs: Vec<ComponentTypeValue>) -> Result<(), AppError>;
 
-    async fn get_component_type_value(&self, c_id: i32, t_id: i32) -> Result<ComponentTypeValue, AppError>;
-    async fn get_component_type_values_t_id(&self, t_id: i32) -> Result<Vec<ComponentTypeValue>, AppError>;
-    async fn get_component_type_values_c_id(&self, c_id: i32) -> Result<Vec<ComponentTypeValue>, AppError>;
+    async fn get_component_type_value(&self, c_id: i64, t_id: i64) -> Result<ComponentTypeValue, AppError>;
+    async fn get_component_type_values_t_id(&self, t_id: i64) -> Result<Vec<ComponentTypeValue>, AppError>;
+    async fn get_component_type_values_c_id(&self, c_id: i64) -> Result<Vec<ComponentTypeValue>, AppError>;
 
 
 }
@@ -48,7 +51,7 @@ pub trait ComponentServices {
 
 impl ComponentServices for DB{
 
-    async fn remove(&self, i: i32, config: &Config) -> Result<PgQueryResult, AppError>{
+    async fn remove(&self, i: i64, config: &Config) -> Result<PgQueryResult, AppError>{
 
         let c = self.get(i).await?;
 
@@ -74,7 +77,7 @@ impl ComponentServices for DB{
         Ok(result)
     }
 
-    async fn remove_list(&self, list: Vec<i32>, config: &Config) -> Result<(), AppError> {
+    async fn remove_list(&self, list: Vec<i64>, config: &Config) -> Result<(), AppError> {
 
         for i in list{
             self.remove(i, config).await?;
@@ -82,24 +85,9 @@ impl ComponentServices for DB{
 
         Ok(())
     }
-
-    // async fn update_with_files(&self, id: i32, mut c: TransportComponent, config: &Config) -> Result<(), AppError>{
-
-    //     //c.update_component_file_bools();
-
-    //     c.optimise_image();
-
-    //     self.update(id,&c.component).await?;
-
-    //     c.create_assets(id.into(), config);
-
-    //     return Ok(());
-
-    // }
-
     
 
-    async fn update(&self, id: i32, c: &Component) -> Result<PgQueryResult, AppError> {
+    async fn update(&self, id: i64, c: &Component) -> Result<PgQueryResult, AppError> {
 
 
         let old = self.get(id).await?;
@@ -147,6 +135,8 @@ impl ComponentServices for DB{
 
         component_type.get_attributes()?.veryify_attributes(&tc.attributes)?;
 
+        
+
 
         let result: PgQueryResult = sqlx::query("INSERT INTO component_type (component_id, type_id, attributes) VALUES ($1,$2,$3)")
             .bind(&tc.component_id)
@@ -167,7 +157,7 @@ impl ComponentServices for DB{
         Ok(())
     }
 
-    async fn get_component_type_value(&self, c_id: i32, t_id: i32) -> Result<ComponentTypeValue, AppError> {
+    async fn get_component_type_value(&self, c_id: i64, t_id: i64) -> Result<ComponentTypeValue, AppError> {
         let result: ComponentTypeValue = sqlx::query_as("
             SELECT * FROM component_type
             WHERE type_id = ($1)
@@ -181,7 +171,7 @@ impl ComponentServices for DB{
         Ok(result)
     }
 
-    async fn get_component_type_values_c_id(&self, c_id: i32) -> Result<Vec<ComponentTypeValue>, AppError> {
+    async fn get_component_type_values_c_id(&self, c_id: i64) -> Result<Vec<ComponentTypeValue>, AppError> {
         
         let result: Vec<ComponentTypeValue> = sqlx::query_as("
             SELECT * FROM component_type
@@ -194,7 +184,7 @@ impl ComponentServices for DB{
         Ok(result)
     }
 
-    async fn get_component_type_values_t_id(&self, t_id: i32) -> Result<Vec<ComponentTypeValue>, AppError> {
+    async fn get_component_type_values_t_id(&self, t_id: i64) -> Result<Vec<ComponentTypeValue>, AppError> {
         let result: Vec<ComponentTypeValue> = sqlx::query_as("
             SELECT * FROM component_type
             WHERE type_id = ($1)
@@ -206,111 +196,7 @@ impl ComponentServices for DB{
         Ok(result)
     }
     
-
-
-    // async fn add_component_types(&self, c: &Component) -> Result<(), AppError> {
-
-    //     let array = c.attributes["attributes"].as_array().ok_or(JsonError::ComponentAttributesMalformed("failed to make attribute array".to_owned()))?;
-
-
-    //     for attribute in array {
-
-    //         let type_id: i32 = attribute.get("id")
-    //             .ok_or(JsonError::ComponentAttributesMalformed("failed to get type_id".to_owned()))?
-    //             .as_i64()
-    //             .ok_or(JsonError::ComponentAttributesMalformed("failed to get type_id".to_owned()))? as i32;
-
-    //         let attributes = attribute.get("values").ok_or(JsonError::ComponentAttributesMalformed("failed to get values".to_owned()))?;
-
-    //         let component_type = self.get_type(type_id).await?;
-
-    //         component_type.get_attributes()?.veryify_attributes(attributes)?;
-
-
-    //         let desired_attributes = component_type.get_attributes()?.attributes["attributes"]
-    //             .as_array()
-    //             .ok_or(JsonError::ComponentAttributesMalformed("failed to make attributes array".to_owned()))?;
-
-
-    //         // for da in desired_attributes {
-    //         //     let attribute_value = da.get("name").ok_or(JsonError::ComponentAttributesMalformed("failed to get attribute name".to_owned()))?
-    //         //             .as_str()
-    //         //             .unwrap();
-    //         // }
-
-    //         let column_names = desired_attributes.iter().try_fold("(".to_owned(), |acc, a| -> Result<String, AppError> {
-
-    //             let name = a.get("name")
-    //                     .ok_or(JsonError::ComponentAttributesMalformed("failed to get attribute name".to_owned()))?
-    //                     .as_str()
-    //                     .ok_or(JsonError::ComponentAttributesMalformed("failed to get attribute name".to_owned()))?;
-
-
-    //             Ok(acc + name)
-
-    //         })? + ")";
-            
-
-    //         let mut temp_places = ("?,".repeat(desired_attributes.len()));
-    //         temp_places.pop();
-    //         let values_places = "(".to_owned() + &temp_places + ")";
-
-
-    //         // let column_names = attributes.as_array()
-    //         //     .ok_or(JsonError::ComponentAttributesMalformed("failed to make attributes array".to_owned()))?
-    //         //     .iter()
-    //         //     .try_fold("(".to_owned(), |acc, a| {
-    //         //         acc + a.as_object().ok_or(JsonError::ComponentAttributesMalformed("failed to get values".to_owned()))?.keys()
-    //         //     });
-
-
-
-    //         // INSERT INTO name (resistance, accuracy) VALUES (?,?)
-    //         let query = format!("INSERT INTO {} {} VALUES {}", 
-    //             self.get_type(type_id).await?.name,
-    //             column_names,
-    //             temp_places
-    //         );
-
-    //         println!("HOLY QUERY: {}", query);
-
-
-    //         let query2 = sqlx::query(&query);
-
-    //         let values = attributes.as_array()
-    //              .ok_or(JsonError::ComponentAttributesMalformed("failed to make attributes array".to_owned()))?;
-
-    //         for da in desired_attributes {
-
-
-
-    //         }
-
-    //     }
-
-
-    //     Ok(())
-        
-    // }
-
-    // async fn add_with_files(&self, mut c: TransportComponent, config: &Config)  -> Result<(), AppError>{
-
-    //     //c.update_component_file_bools();
-
-    //     c.optimise_image();
-
-    //     let id: i64 = self.add(&c.component).await?;
-
-    //     c.create_assets(id, config);
-
-    //     // c.create_assets(result.last_insert_rowid().try_into().unwrap(), config);
-
-
-    //     return Ok(())
-
-    // }
-    
-    
+    /// DEPRECATED
     async fn add(&self, c: &Component) -> Result<i64, AppError> {
 
 
@@ -318,6 +204,25 @@ impl ComponentServices for DB{
         //self.add_component_types(c).await?;
 
         // component_type.veryify_attributes(&c.attributes)?;
+
+        let id: i64 = sqlx::query_scalar("INSERT INTO component (name,stock,price,manufacturer,label,image,datasheet) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING component_id")
+            .bind(&c.name)
+            .bind(&c.stock)
+            .bind(&c.price)
+            .bind(&c.manufacturer)
+            .bind(&c.label)
+            .bind(&c.image)
+            .bind(&c.datasheet)
+            //.bind(&c.attributes)
+            .fetch_one(&*self.pool)
+            .await?;
+
+
+
+        Ok(id)
+    }
+
+    async fn add_transport_component(&self, c: &TransportComponent) -> Result<i64, AppError> {
 
         let id: i64 = sqlx::query_scalar("INSERT INTO component (name,stock,price,manufacturer,label,image,datasheet) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING component_id")
             .bind(&c.name)
@@ -361,7 +266,7 @@ impl ComponentServices for DB{
     }
     
 
-    async fn get(&self, i: i32) -> Result<Component, AppError> {
+    async fn get(&self, i: i64) -> Result<Component, AppError> {
 
         // let result = sqlx::query_as("SELECT * FROM components WEHERE")
 
@@ -374,7 +279,7 @@ impl ComponentServices for DB{
         Ok(result)
     }
 
-    async fn get_from_list(&self, list: Vec<i32>) -> Result<Vec<Component>, AppError> {
+    async fn get_from_list(&self, list: Vec<i64>) -> Result<Vec<Component>, AppError> {
 
         let mut result: Vec<Component> = Vec::new();
 
@@ -478,8 +383,8 @@ pub fn get_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>>
     None
 }
 
-
-pub fn remove_component_files(id: i32, config: &str) {
+/// NEED TO CHANGE
+pub fn remove_component_files(id: i64, config: &str) {
 
     let path: PathBuf = Path::new(config).join(id.to_string());
 

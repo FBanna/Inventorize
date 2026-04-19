@@ -13,16 +13,25 @@ use crate::db::{component::component::Component, db::DB};
 
 #[derive(Serialize, Deserialize)]
 pub struct TransportComponent {
-    pub component: Component,
+
+    // COMPONENT 
+    pub name: String,
+    pub stock: i32,
+    pub price: Option<f32>,
+    pub manufacturer: Option<String>,
+    pub label: Option<String>,
+    pub image: bool,
+    pub datasheet: bool,
+
+    // ATTRIBUTES
     pub attributes: Vec<TransportComponentTypeValue>,
-    // image: Option<Vec<u8>>,
-    // datasheet: Option<Vec<u8>>,
+
 }
 
 
 impl TransportComponent {
 
-    pub fn create_component_types(&self, c_id: i64) -> Vec<ComponentTypeValue> {
+    pub fn create_component_type_values(&self, c_id: i64) -> Vec<ComponentTypeValue> {
 
         let mut list = Vec::new();
 

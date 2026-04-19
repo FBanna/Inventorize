@@ -7,7 +7,7 @@ use crate::{db::component::service::ComponentServices, error::error::AppError, s
 
 #[derive(Deserialize)]
 pub struct ComponentID{
-    i: Vec<i32>
+    i: Vec<i64>
 }
 
 pub async fn post_id_remove_list_component(

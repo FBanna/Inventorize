@@ -42,7 +42,7 @@ pub const ELEMENTS: [&str;6] = ["name","size","value","info","manufacturer","lab
 
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
 pub struct Component{
-    pub id: Option<i32>,
+    pub id: i64,
     pub name: String,
     pub stock: i32,
     pub price: Option<f32>,
@@ -61,7 +61,7 @@ impl Component{
 
         format!(
             "id: {}\n name: {}\n stock: {}\n image: {}\n datasheet: {}",
-            self.id.unwrap_or_else(|| 0),
+            self.id,
             self.name.clone(),
             self.stock,
             self.image,

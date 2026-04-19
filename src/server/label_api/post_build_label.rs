@@ -7,7 +7,7 @@ use crate::{db::component::{component::Component, service::ComponentServices}, e
 
 #[derive(Deserialize)]
 pub struct BuildLabelList{
-    list: Vec<i32>
+    list: Vec<i64>
 }
 
 pub async fn post_build_label(

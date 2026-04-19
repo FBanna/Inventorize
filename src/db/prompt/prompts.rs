@@ -10,7 +10,6 @@ use super::prompt::Prompt;
 pub struct Prompts(pub Vec<Prompt>);
 
 
-
 impl Prompts{
     pub fn new() -> Self {
         let prompt_names = ELEMENTS;
