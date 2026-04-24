@@ -77,16 +77,16 @@ CREATE TABLE IF NOT EXISTS type_attribute
     FOREIGN KEY(type_id)        REFERENCES type(type_id)  ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS prompt
-(
+-- CREATE TABLE IF NOT EXISTS prompt
+-- (
 
-    type_id     BIGINT         NOT NULL,
+--     type_id     BIGINT         NOT NULL,
 
-    attribute   TEXT            NOT NULL,
-    value       TEXT            NOT NULL,
-    count       INTEGER         NOT NULL,
+--     attribute   TEXT            NOT NULL,
+--     value       TEXT            NOT NULL,
+--     count       INTEGER         NOT NULL,
 
-    PRIMARY KEY(type_id),
-    FOREIGN KEY(type_id)        REFERENCES type(type_id)  ON DELETE CASCADE
+--     PRIMARY KEY(type_id, attribute, value),
+--     FOREIGN KEY(type_id)        REFERENCES type(type_id)  ON DELETE CASCADE
     
-)
+-- )

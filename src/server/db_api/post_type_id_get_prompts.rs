@@ -6,7 +6,12 @@ use axum_extra::response::ErasedJson;
 use crate::server::server_state::ServerState;
 
 
-
+/// takes in a type_id -> fetches all distinct values of all attributes
+/// returns it as a json object 
+/// {
+///     resistance: [100, 20, 60, 80, 110, 111, ...],
+///     package: ["0402", "0603", ...]
+/// }
 pub async fn post_type_id_get_prompts(
     State(shared_state): State<Arc<ServerState>>,
 ) -> ErasedJson{
