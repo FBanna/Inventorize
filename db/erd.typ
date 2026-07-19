@@ -35,7 +35,6 @@
       rows: (
         ("name", "string"),
         ("stock", "integer"),
-        ("price", "integer"),
         ("manufacturer", "string"),
         ("label", "string"),
         // ("image", "bool"),
@@ -52,6 +51,7 @@
       rows: (
         ("origin", "string"),
         ("part_number", "string"),
+        ("price", "integer"),
         
       )
     )
@@ -59,12 +59,12 @@
 
 
 
-  node((1,1.4), name: <component_type>, 
+  node((1,1), name: <component_type>, 
     erd_table(
       name: "component_type",
       key: (
         ("component_id","integer"),
-        ("type_id", "integer")
+        ("type_instance_id", "integer")
       ),
       rows: (
         ("attributes", "json"),
@@ -106,34 +106,49 @@
   ),
 
 
-  node((1,0.5), name: <prompt>, 
-    erd_table(
-      name: "prompt",
-      key: (
-        //("component_id","integer"),
-        ("type_id", "integer"),
-      ),
-      rows: (
-        ("attribute", "string"),
-        ("value", "string"),
-        ("count", "integer")
-      )
+  // node((1,0.5), name: <prompt>, 
+  //   erd_table(
+  //     name: "prompt",
+  //     key: (
+  //       //("component_id","integer"),
+  //       ("type_id", "integer"),
+  //     ),
+  //     rows: (
+  //       ("attribute", "string"),
+  //       ("value", "string"),
+  //       ("count", "integer")
+  //     )
 
-    )
-  ), 
+  //   )
+  // ), 
+  // 
+  
+  node((0,1), name: <type>,
 
-
-  node((0,0), name: <type>,
     erd_table(
       name: "type",
-      key: (("type_id","integer"),),
+      key:(("type_id", "integer"),),
       rows: (
-        ("name", "string"),
-        ("inherits", "integer"),
+        ("name", "string")
+      )
+    )
+  
+  ),
+
+
+  node((0,0), name: <type_instance>,
+    erd_table(
+      name: "type_instance",
+      key: (
+        ("type_instance_id","integer"),
+        ("type_id", "integer")  
+      ),
+      rows: (
+        ("path", "ltree"),
       )
     )
   ),
-  node((0,1), name: <type_attributes>,
+  node((0,2), name: <type_attributes>,
     erd_table(
       name: "type_attribute",
       key: (("type_id","integer"),),
@@ -143,6 +158,18 @@
         //("prompts", "json")
       )
     )
+  ),
+
+  node((1,3), name: <error>,
+    erd_table(
+      name: "error",
+      key: (("component_id", "integer"),),
+      rows: (
+        ("message ??", "string"),
+      ),
+      colour: rgb("#eaa65c")
+    )
+
   ),
   // node((2,0.5), name: <types>,
     // diagram(
@@ -195,16 +222,17 @@
   //   snap: -1,
   //   name: <attribute_example>,
   // ),
-  edge(<type>, (0.5,0), (0.5, 0.5), <prompt>, "-n!"),
-  edge(<type>, (0.5,0), (0.5,1.4), <component_type>, "-n!"),
-  edge(<component>, <origin>, "-n!"),
-  edge(<component>, (1.7,1), (1.7,2), <file>, "-n!"),
+  //edge(<type>, (0.5,0), (0.5, 0.5), <prompt>, "-n!"),
+  edge(<type_instance>, (0.5, 0), (0.5, 1), <component_type>, "-n!"),
+  edge(<type>, <type_instance>, "-n?"),
+  edge(<component>, <origin>, "-n?"),
+  edge(<component>, (1.7,1), (1.7,2), <file>, "-n?"), 
   edge(<component>, <image>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,0), <smd>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,1), <resistor>, "-1?"),
   //edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-n?"),
   edge(<type>, <type_attributes>, "-1?"),
-  edge(<component>, (1.6,1.2), (1.5,1.2), (1.5,1.4), <component_type>, "-n!")
+  edge(<component>, (1.6,1.2), (1.5,1.2), (1.5,1), <component_type>, "-n!")
 
   //fletcher.edge(<type.south>, (0,0.5), <component.west>, "-n")
 

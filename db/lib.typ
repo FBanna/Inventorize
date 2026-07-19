@@ -6,7 +6,8 @@
 
   name: text,
   key: (),
-  rows: ()
+  rows: (),
+  colour: rgb("#b1d3ff")
   
   // (
   //   // {(name: text, 
@@ -30,9 +31,9 @@
   set table(
     fill: (x,y) => {
       if calc.rem(y,2) == 0 {
-        rgb("#b1d3ff")
+        colour
       } else {
-        rgb("#d9e8fc")
+        colour.lighten(50%)
       }
     },
 
