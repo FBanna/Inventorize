@@ -31,27 +31,27 @@
   node((2,1), name: <component>, 
     erd_table(
       name: "component",
-      key: (("component_id","integer"),),
+      key: (("component_id","uuid"),),
       rows: (
-        ("name", "string"),
-        ("stock", "integer"),
-        ("manufacturer", "string"),
-        ("label", "string"),
-        // ("image", "bool"),
-        // ("datasheet", "bool")
-        
+        ("name", "text"),
+        ("stock", "int"),
+        ("manufacturer", "text"),
+        ("label", "text"),        
       )
 
     )
   ),
-  node((2,0), name: <origin>,
+  node((2,0.1), name: <component_origin>,
     erd_table(
-      name: "origin",
-      key: (("component_id","integer"),),
+      name: "component_origin",
+      key: (
+        ("origin_id", "uuid"),
+        ("component_id","uuid"),
+        ),
       rows: (
-        ("origin", "string"),
-        ("part_number", "string"),
-        ("price", "integer"),
+        ("origin", "text"),
+        ("part_number", "text"),
+        ("price", "numeric"),
         
       )
     )
@@ -63,8 +63,8 @@
     erd_table(
       name: "component_type",
       key: (
-        ("component_id","integer"),
-        ("type_instance_id", "integer")
+        ("component_id","uuid"),
+        ("type_instance_id", "uuid")
       ),
       rows: (
         ("attributes", "json"),
@@ -78,12 +78,12 @@
     erd_table(
       name: "component_file",
       key: (
-        ("file_id", "UUID"),
-        ("component_id", "integer")
+        ("file_id", "uuid"),
+        ("component_id", "uuid")
       ),
       rows: (
-        ("name", "string"),
-        ("mime", "string"),
+        ("name", "text"),
+        ("mime", "text"),
         
       )
     )
@@ -94,7 +94,7 @@
     erd_table(
       name: "component_image",
       key: (
-        ("component_id", "integer"),
+        ("component_id", "uuid"),
       ),
       rows: (
         ("full", "bytea"),
@@ -110,49 +110,50 @@
   //   erd_table(
   //     name: "prompt",
   //     key: (
-  //       //("component_id","integer"),
-  //       ("type_id", "integer"),
+  //       //("component_id","int"),
+  //       ("type_id", "int"),
   //     ),
   //     rows: (
-  //       ("attribute", "string"),
-  //       ("value", "string"),
-  //       ("count", "integer")
+  //       ("attribute", "text"),
+  //       ("value", "text"),
+  //       ("count", "int")
   //     )
 
   //   )
   // ), 
   // 
   
-  node((0,1), name: <type>,
+  // node((0,1), name: <type>,
 
-    erd_table(
-      name: "type",
-      key:(("type_id", "integer"),),
-      rows: (
-        ("name", "string")
-      )
-    )
+  //   erd_table(
+  //     name: "type",
+  //     key:(("type_id", "int"),),
+  //     rows: (
+        
+  //     )
+  //   )
   
-  ),
+  // ),
 
 
-  node((0,0), name: <type_instance>,
+  node((0,1), name: <type_instance>,
     erd_table(
       name: "type_instance",
       key: (
-        ("type_instance_id","integer"),
-        ("type_id", "integer")  
+        ("type_instance_id","uuid"),
+        ("type_id", "uuid")  
       ),
       rows: (
         ("path", "ltree"),
       )
     )
   ),
-  node((0,2), name: <type_attributes>,
+  node((0,2), name: <type>,
     erd_table(
-      name: "type_attribute",
-      key: (("type_id","integer"),),
+      name: "type",
+      key: (("type_id","uuid"),),
       rows: (
+        ("name", "text"),
         ("fields", "json"),
         ("schema", "json"),
         //("prompts", "json")
@@ -163,9 +164,9 @@
   node((1,3), name: <error>,
     erd_table(
       name: "error",
-      key: (("component_id", "integer"),),
+      key: (("component_id", "uuid"),),
       rows: (
-        ("message ??", "string"),
+        ("message ??", "text"),
       ),
       colour: rgb("#eaa65c")
     )
@@ -184,9 +185,9 @@
 
   //   erd_table(
   //     name: "SMD",
-  //     P_key: ("C_ID", "integer"),
+  //     P_key: ("C_ID", "int"),
   //     rows: (
-  //       ("footprint", "string"),
+  //       ("footprint", "text"),
   //     )
   //   )
   
@@ -195,10 +196,10 @@
 
   //   erd_table(
   //     name: "Resistors",
-  //     P_key: ("C_ID", "integer"),
+  //     P_key: ("C_ID", "int"),
   //     rows: (
-  //       ("resistance", "integer"),
-  //       ("accuracy", "integer")
+  //       ("resistance", "int"),
+  //       ("accuracy", "int")
   //     )
   //   )
   
@@ -207,10 +208,10 @@
 
   //   erd_table(
   //     name: "Capacitors",
-  //     P_key: ("C_ID", "integer"),
+  //     P_key: ("C_ID", "int"),
   //     rows: (
-  //       ("capacitance", "integer"),
-  //       ("voltage", "integer")
+  //       ("capacitance", "int"),
+  //       ("voltage", "int")
   //     )
   //   )
   // ),
@@ -223,15 +224,15 @@
   //   name: <attribute_example>,
   // ),
   //edge(<type>, (0.5,0), (0.5, 0.5), <prompt>, "-n!"),
-  edge(<type_instance>, (0.5, 0), (0.5, 1), <component_type>, "-n!"),
+  edge(<type_instance>, <component_type>, "-n!"),
   edge(<type>, <type_instance>, "-n?"),
-  edge(<component>, <origin>, "-n?"),
+  edge(<component>, <component_origin>, "-n?"),
   edge(<component>, (1.7,1), (1.7,2), <file>, "-n?"), 
   edge(<component>, <image>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,0), <smd>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,1), <resistor>, "-1?"),
   //edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-n?"),
-  edge(<type>, <type_attributes>, "-1?"),
+  //edge(<type>, <type_attributes>, "-1?"),
   edge(<component>, (1.6,1.2), (1.5,1.2), (1.5,1), <component_type>, "-n!")
 
   //fletcher.edge(<type.south>, (0,0.5), <component.west>, "-n")
@@ -244,9 +245,9 @@
 //   dy: -60pt,
 //   erd_table(
 //     name: "Components",
-//     P_key: ("ID","integer"),
+//     P_key: ("ID","int"),
 //     rows: (
-//       ("name", "string"),
+//       ("name", "text"),
 //       ("ho", "hsdf")
 //     )
 
@@ -260,9 +261,9 @@
 //   dx: -300pt,
 //   erd_table(
 //     name: "Types",
-//     P_key: ("ID","integer"),
+//     P_key: ("ID","int"),
 //     rows: (
-//       ("name", "string"),
+//       ("name", "text"),
 //       ("ho", "hsdf")
 //     )
 
