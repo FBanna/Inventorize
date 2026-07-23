@@ -28,12 +28,12 @@ pub trait ComponentServices {
     async fn remove_component_list(&self, list: Vec<Uuid>, config: &Config) -> Result<(), AppError>;
 
 
-    async fn add_component_type_value(&self, tc: ComponentTypeValue) -> Result<PgQueryResult, AppError>;
-    async fn add_component_type_values(&self, tcs: Vec<ComponentTypeValue>) -> Result<(), AppError>;
+    // async fn add_component_type_value(&self, tc: ComponentTypeValue) -> Result<PgQueryResult, AppError>;
+    // async fn add_component_type_values(&self, tcs: Vec<ComponentTypeValue>) -> Result<(), AppError>;
 
-    async fn get_component_type_value(&self, c_id: i64, t_id: i64) -> Result<ComponentTypeValue, AppError>;
-    async fn get_component_type_values_t_id(&self, t_id: i64) -> Result<Vec<ComponentTypeValue>, AppError>;
-    async fn get_component_type_values_c_id(&self, c_id: i64) -> Result<Vec<ComponentTypeValue>, AppError>;
+    // async fn get_component_type_value(&self, c_id: i64, t_id: i64) -> Result<ComponentTypeValue, AppError>;
+    // async fn get_component_type_values_t_id(&self, t_id: i64) -> Result<Vec<ComponentTypeValue>, AppError>;
+    // async fn get_component_type_values_c_id(&self, c_id: i64) -> Result<Vec<ComponentTypeValue>, AppError>;
 
 
 }
@@ -94,72 +94,6 @@ impl ComponentServices for DB{
 
     }
 
-    async fn add_component_type_value(&self, tc: ComponentTypeValue) -> Result<PgQueryResult, AppError> {
-        
-        let component_type = self.get_type(tc.type_id).await?;
-
-        component_type.get_attributes()?.veryify_attributes(&tc.attributes)?;
-
-        
-
-
-        let result: PgQueryResult = sqlx::query("INSERT INTO component_type (component_id, type_id, attributes) VALUES ($1,$2,$3)")
-            .bind(&tc.component_id)
-            .bind(&tc.type_id)
-            .bind(&tc.attributes)
-            .execute(&*self.pool)
-            .await?;
-
-
-        Ok(result)
-    }
-
-    async fn add_component_type_values(&self, tcs: Vec<ComponentTypeValue>) -> Result<(), AppError> {
-        for tc in tcs {
-            self.add_component_type_value(tc).await?;
-        }
-
-        Ok(())
-    }
-
-    async fn get_component_type_value(&self, c_id: i64, t_id: i64) -> Result<ComponentTypeValue, AppError> {
-        let result: ComponentTypeValue = sqlx::query_as("
-            SELECT * FROM component_type
-            WHERE type_id = ($1)
-            AND component_id = ($2)
-        ")
-        .bind(t_id)
-        .bind(c_id)
-        .fetch_one(&*self.pool)
-        .await?;
-
-        Ok(result)
-    }
-
-    async fn get_component_type_values_c_id(&self, c_id: i64) -> Result<Vec<ComponentTypeValue>, AppError> {
-        
-        let result: Vec<ComponentTypeValue> = sqlx::query_as("
-            SELECT * FROM component_type
-            WHERE component_id = ($1)
-        ")
-        .bind(c_id)
-        .fetch_all(&*self.pool)
-        .await?;
-
-        Ok(result)
-    }
-
-    async fn get_component_type_values_t_id(&self, t_id: i64) -> Result<Vec<ComponentTypeValue>, AppError> {
-        let result: Vec<ComponentTypeValue> = sqlx::query_as("
-            SELECT * FROM component_type
-            WHERE type_id = ($1)
-        ")
-        .bind(t_id)
-        .fetch_all(&*self.pool)
-        .await?;
-
-        Ok(result)
-    }
     
     /// DEPRECATED
     async fn add_component(&self, c: &Component) -> Result<Uuid, AppError> {

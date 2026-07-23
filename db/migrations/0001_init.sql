@@ -10,12 +10,15 @@ CREATE TABLE IF NOT EXISTS origin
 -- Components
 CREATE TABLE IF NOT EXISTS component
 (
-    component_id    uuid DEFAULT uuidv7()   PRIMARY KEY,
+    component_id        uuid DEFAULT uuidv7()   PRIMARY KEY,
+    class_instance_id   uuid        NOT NULL,
 
     name            TEXT            NOT NULL,
     stock           INTEGER         NOT NULL,
     manufacturer    TEXT,
-    label           TEXT
+    label           TEXT,
+
+    FOREIGN KEY(class_instance_id)  REFERENCES class_instance(class_instance_id) ON DELETE CASCADE;
 
 );
 

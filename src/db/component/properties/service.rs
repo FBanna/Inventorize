@@ -1,7 +1,7 @@
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
 
-use crate::{db::{db::DB, files::{file::file::ComponentFile, image::image::ComponentImage}}, error::error::AppError};
+use crate::{db::{component::properties::{file::file::ComponentFile, image::image::ComponentImage}, db::DB}, error::error::AppError};
 
 #[derive(FromRow)]
 struct FullBytes {

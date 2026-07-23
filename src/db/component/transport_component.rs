@@ -11,6 +11,7 @@ use crate::db::component::properties::origin::origin::ComponentOrigin;
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TransportComponent {
     pub class_instance_id: Uuid,
+
     pub name: String,
     pub stock: i32,
     pub manufacturer: Option<String>,
@@ -18,7 +19,7 @@ pub struct TransportComponent {
 
     pub attributes: Vec<TransportComponentClassAttributes>,
     
-    pub origin: ComponentOrigin
+    pub origin: Vec<ComponentOrigin>
 
 }
 

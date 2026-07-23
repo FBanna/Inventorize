@@ -6,7 +6,7 @@ use tokio::{fs::File as TkFile, io::BufWriter};
 use tokio_util::{bytes::Buf, io::StreamReader};
 use uuid::Uuid;
 
-use crate::{config::config::Config, db::{db::DB, files::{file::file::ComponentFile, image::image::ComponentImage, service::ComponentFileService}}, error::{error::AppError, file::FileError}};
+use crate::{config::config::Config, db::{db::DB, component::properties::{file::file::ComponentFile, image::image::ComponentImage, service::ComponentFileService}}, error::{error::AppError, file::FileError}};
 
 
 
@@ -26,6 +26,7 @@ pub async fn add_file(mut multipart: Multipart, config: &Config, db: &DB) -> Res
         match field.name() {
             Some("c_id") => option_c_id = {
                 let mut bytes = field.bytes().await?;
+                
 
                 let id = bytes.try_get_i64().map_err(|_| FileError::Upload("could not get i64 id from input".to_owned()))?;
 

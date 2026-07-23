@@ -10,6 +10,7 @@ use uuid::Uuid;
 pub struct Component{
     pub component_id: Uuid,
     pub class_instance_id: Uuid,
+    
     pub name: String,
     pub stock: i32, // should this be i32?
     pub manufacturer: Option<String>,
