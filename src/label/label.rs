@@ -160,7 +160,7 @@ impl Label for Component{
 
                     dict.insert(
                         Str::from("url"), 
-                        Value::Str(Str::from(config.host_address.to_owned() + "/component/" + &x.id.to_string()))
+                        Value::Str(Str::from(config.host_address.to_owned() + "/component/" + &x.component_id.to_string()))
                     );
 
                     return Value::Dict(dict);
@@ -224,7 +224,9 @@ fn json_to_typst(value: &JsonValue) -> Value {
 #[cfg(test)]
 mod tests {
 
-    use super::*;
+    use uuid::Uuid;
+
+use super::*;
 
     #[test]
 
@@ -237,14 +239,14 @@ mod tests {
 
         let component =
             Component {
-                id: 0,
+                component_id: Uuid::now_v7(),
+                class_instance_id: Uuid::now_v7(), // random!
                 name: ("Resistor".to_string()),
                 stock: 5000,
-                price: Some(100.0),
+
                 manufacturer: None, 
                 label: Some("vial".to_string()),
-                image: false,
-                datasheet: false,
+
                 //attribute_id: 10,
                 // attributes: serde_json::json!({"value": {"test1": "ok!", "test2": 1000, "hiisd": ["help", "please", "SOS", 1000]}})
             };

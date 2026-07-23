@@ -1,9 +1,17 @@
 pub mod db;
 
+pub mod class;
+pub mod class_instance;
+
 pub mod component;
-pub mod prompt;
-pub mod types;
 
-pub mod files;
+pub mod component_class;
 
-pub mod transport;
+pub mod origin;
+//pub mod prompt;
+//pub mod types;
+
+
+
+
+//pub mod transport;

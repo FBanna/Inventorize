@@ -2,12 +2,13 @@ use std::sync::Arc;
 
 use axum::{body::Bytes, extract::State, response::IntoResponse, Json};
 use serde::Deserialize;
+use uuid::Uuid;
 use crate::{db::component::{component::Component, service::ComponentServices}, error::error::AppError, label::label::Label, server::server_state::ServerState};
 
 
 #[derive(Deserialize)]
 pub struct BuildLabelList{
-    list: Vec<i64>
+    list: Vec<Uuid>
 }
 
 pub async fn post_build_label(
@@ -19,7 +20,7 @@ pub async fn post_build_label(
 
     println!("1: starting");
 
-    let list = shared_state.db.get_from_list(components.list).await?;
+    let list = shared_state.db.get_component_list(components.list).await?;
 
     println!("2");
 

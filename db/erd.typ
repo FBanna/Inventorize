@@ -17,7 +17,7 @@
 
 
   node((
-    1,0), 
+    0,0), 
     stroke: rgb("#396bac"),
     fill: rgb("#f6f8ff"), {
 
@@ -31,12 +31,16 @@
   node((2,1), name: <component>, 
     erd_table(
       name: "component",
-      key: (("component_id","uuid"),),
+      key: (
+        ("component_id","uuid"),
+        ("class_instance_id", "uuid")
+      
+      ),
       rows: (
         ("name", "text"),
         ("stock", "int"),
-        ("manufacturer", "text"),
-        ("label", "text"),        
+        ("manufacturer*", "text"),
+        ("label*", "text"),        
       )
 
     )
@@ -49,22 +53,35 @@
         ("component_id","uuid"),
         ),
       rows: (
-        ("origin", "text"),
-        ("part_number", "text"),
-        ("price", "numeric"),
+        ("part_number*", "text"),
+        ("price*", "numeric")
         
       )
     )
   ),
 
-
-
-  node((1,1), name: <component_type>, 
+  node((1,0), name: <origin>,
     erd_table(
-      name: "component_type",
+      name: "Origin",
+      key: (
+        ("origin_id", "uuid"),
+      ),
+      rows: (
+        ("name", "text"),
+        ("url", "text")
+      )
+    )
+  
+  ),
+
+
+
+  node((1,1), name: <component_class>, 
+    erd_table(
+      name: "component_class",
       key: (
         ("component_id","uuid"),
-        ("type_instance_id", "uuid")
+        ("class_instance_id", "uuid")
       ),
       rows: (
         ("attributes", "json"),
@@ -111,7 +128,7 @@
   //     name: "prompt",
   //     key: (
   //       //("component_id","int"),
-  //       ("type_id", "int"),
+  //       ("class_id", "int"),
   //     ),
   //     rows: (
   //       ("attribute", "text"),
@@ -123,11 +140,11 @@
   // ), 
   // 
   
-  // node((0,1), name: <type>,
+  // node((0,1), name: <class>,
 
   //   erd_table(
-  //     name: "type",
-  //     key:(("type_id", "int"),),
+  //     name: "class",
+  //     key:(("class_id", "int"),),
   //     rows: (
         
   //     )
@@ -136,22 +153,23 @@
   // ),
 
 
-  node((0,1), name: <type_instance>,
+  node((0,1), name: <class_instance>,
     erd_table(
-      name: "type_instance",
+      name: "class_instance",
       key: (
-        ("type_instance_id","uuid"),
-        ("type_id", "uuid")  
+        ("class_instance_id","uuid"),
+        ("class_id", "uuid"),
+        ("parent**", "uuid")
       ),
       rows: (
-        ("path", "ltree"),
+        
       )
     )
   ),
-  node((0,2), name: <type>,
+  node((0,2), name: <class>,
     erd_table(
-      name: "type",
-      key: (("type_id","uuid"),),
+      name: "class",
+      key: (("class_id","uuid"),),
       rows: (
         ("name", "text"),
         ("fields", "json"),
@@ -172,7 +190,7 @@
     )
 
   ),
-  // node((2,0.5), name: <types>,
+  // node((2,0.5), name: <classs>,
     // diagram(
     //   debug: 0,
     //   spacing: 30pt,
@@ -223,19 +241,20 @@
   //   snap: -1,
   //   name: <attribute_example>,
   // ),
-  //edge(<type>, (0.5,0), (0.5, 0.5), <prompt>, "-n!"),
-  edge(<type_instance>, <component_type>, "-n!"),
-  edge(<type>, <type_instance>, "-n?"),
+  //edge(<class>, (0.5,0), (0.5, 0.5), <prompt>, "-n!"),
+  edge(<class_instance>, <component_class>, "-n!"),
+  edge(<class>, <class_instance>, "-n?"),
   edge(<component>, <component_origin>, "-n?"),
   edge(<component>, (1.7,1), (1.7,2), <file>, "-n?"), 
   edge(<component>, <image>, "-1?"),
+  edge(<origin>, (1,0.1), <component_origin>, "-n?"),
   // edge(<component>, (1.5,0.75),(1.5,0), <smd>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,1), <resistor>, "-1?"),
   //edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-n?"),
-  //edge(<type>, <type_attributes>, "-1?"),
-  edge(<component>, (1.6,1.2), (1.5,1.2), (1.5,1), <component_type>, "-n!")
+  //edge(<class>, <class_attributes>, "-1?"),
+  edge(<component>, (1.6,1.2), (1.5,1.2), (1.5,1), <component_class>, "-n!")
 
-  //fletcher.edge(<type.south>, (0,0.5), <component.west>, "-n")
+  //fletcher.edge(<class.south>, (0,0.5), <component.west>, "-n")
 
 )
 ]
@@ -260,7 +279,7 @@
 //   dy: -60pt,
 //   dx: -300pt,
 //   erd_table(
-//     name: "Types",
+//     name: "classs",
 //     P_key: ("ID","int"),
 //     rows: (
 //       ("name", "text"),
