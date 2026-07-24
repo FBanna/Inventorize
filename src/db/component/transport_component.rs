@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use serde_json::Value as Json;
@@ -17,7 +19,7 @@ pub struct TransportComponent {
     pub manufacturer: Option<String>,
     pub label: Option<String>,
 
-    pub attributes: Vec<EmbeddedComponentClassAttributes>,
+    pub attributes: HashMap<Uuid, Json>,
 
     pub origins: Vec<EmbeddedComponentOrigin>
 

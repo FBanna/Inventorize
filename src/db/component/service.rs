@@ -1,8 +1,10 @@
 
+use std::path::Ancestors;
+
 use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, postgres::{PgQueryResult, PgRow, PgValueRef}, types::{Json, JsonRawValue}};
 use uuid::Uuid;
 
-use crate::{config::config::Config, db::{component::{component::Component, transport_component::TransportComponent}, db::DB}, error::{self, error::AppError, json::JsonError}};
+use crate::{config::config::Config, db::{class::service::ClassServices, class_instance::service::ClassInstanceServices, component::{component::Component, transport_component::TransportComponent}, db::DB}, error::{self, error::AppError, json::JsonError}};
 
 
 pub trait ComponentServices {
@@ -115,6 +117,14 @@ impl ComponentServices for DB{
     }
 
     async fn add_transport_component(&self, c: &TransportComponent) -> Result<Uuid, AppError> {
+        
+        let ancestors = self.get_class_ancestors_from_instance(c.class_instance_id).await?;
+
+        for ancestor in ancestors {
+            ancestor.verify_component_attributes(c.attributes.)
+        }
+
+        let mut tx = self.pool.begin().await?;
 
         let id: Uuid = sqlx::query_scalar("INSERT INTO component (class_instance_id,name,stock,manufacturer,label) VALUES ($1,$2,$3,$4,$5) RETURNING component_id")
             .bind(&c.class_instance_id)
@@ -123,7 +133,7 @@ impl ComponentServices for DB{
             .bind(&c.manufacturer)
             .bind(&c.label)
 
-            .fetch_one(&*self.pool)
+            .fetch_one(tx)
             .await?;
 
         // handle attribute & other
