@@ -4,7 +4,7 @@ use typst::{Library, LibraryExt, diag::{SourceDiagnostic, SourceResult}, ecow::E
 use typst_kit::fonts::{FontSearcher};
 use typst_pdf::PdfOptions;
 
-use crate::{config::config::Config, db::component::component::Component, error::{error::AppError, label::LabelError}};
+use crate::{config::config::Config, db::component::component::Component, error::{error::AppError, label::LabelErrors}};
 
 use super::typst_wrapper;
 
@@ -57,7 +57,7 @@ impl Label for Component{
 
             if !path.exists(){
 
-                return Err(AppError::LabelError(LabelError::MissingTemplate(label_type)));
+                return Err(AppError::LabelError(LabelErrors::MissingTemplate(label_type)));
             }
 
             let label_template = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
@@ -85,7 +85,7 @@ impl Label for Component{
                         println!("ERROR: {}", i.message);
                     }
 
-                    return Err(LabelError::Compilation.into()) 
+                    return Err(LabelErrors::Compilation.into()) 
                 }
             }
 
@@ -102,7 +102,7 @@ impl Label for Component{
         };
 
         let Ok(final_pdf): Result<Vec<u8>, _> = typst_pdf::pdf(&final_document, &PdfOptions::default()) else {
-            return Err(LabelError::Export.into());
+            return Err(LabelErrors::Export.into());
         };
         
         

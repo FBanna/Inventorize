@@ -1,10 +1,10 @@
 
-use std::path::Ancestors;
+use std::{format, path::Ancestors, println};
 
 use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, postgres::{PgQueryResult, PgRow, PgValueRef}, types::{Json, JsonRawValue}};
 use uuid::Uuid;
 
-use crate::{config::config::Config, db::{class::service::ClassServices, class_instance::service::ClassInstanceServices, component::{component::Component, transport_component::TransportComponent}, db::DB}, error::{self, error::AppError, json::JsonError}};
+use crate::{config::config::Config, db::{class::{class::Class, service::ClassServices}, class_instance::service::ClassInstanceServices, component::{component::Component, transport_component::TransportComponent}, component_class::{component_class::ComponentClass, service::ComponentClassServices}, db::DB}, error::{self, error::AppError, json::JsonErrors}};
 
 
 pub trait ComponentServices {
@@ -97,10 +97,6 @@ impl ComponentServices for DB{
     /// DEPRECATED
     async fn add_component(&self, c: &Component) -> Result<Uuid, AppError> {
 
-
-
-        //self.add_component_types(c).await?;
-
         // component_type.veryify_attributes(&c.attributes)?;
 
         let id: Uuid = sqlx::query_scalar("INSERT INTO component (name,stock,manufacturer,label) VALUES ($1,$2,$3,$4) RETURNING component_id")
@@ -118,14 +114,13 @@ impl ComponentServices for DB{
 
     async fn add_transport_component(&self, c: &TransportComponent) -> Result<Uuid, AppError> {
         
+        // retrieve class + class instance object
         let ancestors = self.get_class_ancestors_from_instance(c.class_instance_id).await?;
 
-        for ancestor in ancestors {
-            ancestor.verify_component_attributes(c.attributes.)
-        }
-
+        // start transaction
         let mut tx = self.pool.begin().await?;
 
+        // insert component
         let id: Uuid = sqlx::query_scalar("INSERT INTO component (class_instance_id,name,stock,manufacturer,label) VALUES ($1,$2,$3,$4,$5) RETURNING component_id")
             .bind(&c.class_instance_id)
             .bind(&c.name)
@@ -133,10 +128,35 @@ impl ComponentServices for DB{
             .bind(&c.manufacturer)
             .bind(&c.label)
 
-            .fetch_one(tx)
+            .fetch_one(&mut *tx)
             .await?;
 
-        // handle attribute & other
+        // insert and verify attributes
+        for ancestor in ancestors {
+
+            let value = c.attributes
+                    .get(&ancestor.class_id)
+                    .ok_or(JsonErrors::ComponentClassAttributesMalformed(format!("Does not have attribute for {}", ancestor.name)))?;
+
+            // verify
+            Into::<Class>::into(ancestor.clone()).verify_component_attributes(value)?;
+
+            // insert
+            self.add_component_class(
+                ComponentClass{
+                    component_id: id,
+                    class_instance_id: ancestor.class_instance_id,
+                    attributes: value.to_owned()
+                },
+                &mut *tx
+            ).await?;
+        }
+
+        // commit transaction
+        tx.commit().await?;
+
+
+        // handle other elements
 
         Ok(id)
     }

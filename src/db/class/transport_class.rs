@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value as Json};
 
-use crate::error::{error::AppError, json::JsonError};
+use crate::error::{error::AppError::{self, JsonError}, json::JsonErrors};
 
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -64,33 +64,15 @@ impl TransportClass {
         let schema: Json = serde_json::from_str(attribute_schema_str).unwrap();
 
 
-        //println!("schema: {:#}\n\n", schema);
-        //println!("{:#}", self.attributes);
 
         let validator = jsonschema::validator_for(&schema).expect("ERROR: Could not make json validator");
 
-        let evaluation = validator.evaluate(attributes);
+        validator.validate(attributes).map_err(|err| -> AppError {
 
-        match evaluation.flag().valid{
-            true => return Ok(()),
-            false => {
+            JsonError(JsonErrors::ClassAttributesMalformed(err.to_string()))
+        })?;
 
-                let errors = evaluation.iter_errors().map(|err| -> String {
-
-                    return err.error.to_string();
-
-                }).fold("".to_string(), |acc, x| {
-                    return format!("{}\n{}", acc, x);
-                });
-
-
-                Err(JsonError::ComponentTypeAttributesMalformed(errors).into())
-
-
-            },
-        }
-
-        
+        Ok(())       
 
     }
 
@@ -100,6 +82,7 @@ impl TransportClass {
     /// ```json
     ///     {
     ///     "type": "object",
+    ///     "required": ["resistance", "package"],
     ///     "properties": {
     ///         
     ///         "resistance": { "type": "integer" },
@@ -120,12 +103,13 @@ impl TransportClass {
 
 
         let mut properties: serde_json::Map<String,Json> = serde_json::Map::new();
+        let mut required: Vec<Json> = Vec::new();
 
-        //let mut prompt_list: serde_json::Map<String,JsonValue> = serde_json::Map::new();
 
         map_schema.insert("type".to_owned(), Json::String("object".to_owned()));
 
-        let array = self.fields["attributes"].as_array().ok_or(JsonError::GenSchema)?;
+
+        let array = self.fields["attributes"].as_array().ok_or(JsonErrors::GenSchema)?;
 
         // let required: Vec<String> = Vec::new();
 
@@ -134,9 +118,9 @@ impl TransportClass {
         for attribute in array{
 
             let name = attribute.get("name")
-                    .ok_or(JsonError::GenSchema)?
+                    .ok_or(JsonErrors::GenSchema)?
                     .as_str()
-                    .ok_or(JsonError::GenSchema)?
+                    .ok_or(JsonErrors::GenSchema)?
                     .to_owned();
 
             // prompt_list.insert(
@@ -144,6 +128,8 @@ impl TransportClass {
             //     JsonValue::Array(Vec::new())
             
             // );
+
+            required.push(Json::String(name.clone()));
 
 
             properties.insert(
@@ -159,17 +145,14 @@ impl TransportClass {
                         {
 
                             let object_type = attribute.get("object_type")
-                                .ok_or(JsonError::GenSchema)?
+                                .ok_or(JsonErrors::GenSchema)?
                                 .to_owned();
 
                             let a_type: AttributeType = serde_json::from_value(object_type)?;
 
                             Json::String(a_type.to_json().to_owned())
-
                         }
-
                         
-
                     );
 
                     type_map
@@ -180,6 +163,10 @@ impl TransportClass {
         }
 
         map_schema.insert("properties".to_owned(), Json::Object(properties));
+        map_schema.insert("required".to_owned(), Json::Array(required));
+        map_schema.insert("additionalProperties".to_owned(), Json::Bool(false));
+
+
 
         let schema = Json::Object(map_schema);
 

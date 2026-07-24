@@ -1,9 +1,12 @@
+use std::println;
+
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
 use serde_json::Value as Json;
 
-use crate::error::{error::AppError, json::JsonError};
+use crate::error::{error::AppError::{self, JsonError}, json::JsonErrors};
+
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
@@ -18,26 +21,15 @@ impl Class {
 
     pub fn verify_component_attributes(&self, attributes: &Json) -> Result<(), AppError> {
 
-        let validator = jsonschema::validator_for(&self.schema).expect("ERROR: Could not make validator");
+        let validator = jsonschema::validator_for(&self.schema)?;
 
-        let evaluation = validator.evaluate(attributes);
+        validator.validate(attributes).map_err(|err| -> AppError {
 
-        match evaluation.flag().valid{
-            true => return Ok(()),
-            false => {
+            return JsonError(JsonErrors::ComponentClassAttributesMalformed(err.to_string()));
 
-                let errors = evaluation.iter_errors().map(|err| -> String {
+        })?;
 
-                    return err.error.to_string();
+        Ok(())
 
-                }).fold("".to_string(), |acc, x| {
-                    return format!("{}\n{}", acc, x);
-                });
-
-
-                Err(JsonError::ComponentTypeAttributesMalformed(errors).into())
-
-            },
-        }
     }
 }

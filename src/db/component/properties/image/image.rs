@@ -7,7 +7,7 @@ use sqlx::prelude::FromRow;
 use tokio::fs;
 use uuid::Uuid;
 
-use crate::{config::config::Config, db::component::properties::files::{DownloadedFile}, error::{error::AppError, file::FileError}};
+use crate::{config::config::Config, db::component::properties::files::{DownloadedFile}, error::{error::AppError, file::FileErrors}};
 
 
 const FULL_SIZE: u32 = 1000;
@@ -30,7 +30,7 @@ impl ComponentImage {
 
         let reader = BufReader::new(temp_file);
 
-        let img = ImageReader::new(reader).with_guessed_format()?.decode().map_err(|_| FileError::WriteUpload)?;
+        let img = ImageReader::new(reader).with_guessed_format()?.decode().map_err(|_| FileErrors::WriteUpload)?;
 
         let full_img = img.resize(FULL_SIZE, FULL_SIZE, image::imageops::FilterType::Nearest);
         let thumb_img = img.resize(THUMB_SIZE, THUMB_SIZE, image::imageops::FilterType::Nearest);

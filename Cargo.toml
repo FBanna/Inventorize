@@ -25,7 +25,7 @@ async-trait = "0.1.88"
 serde = { version = "1.0.164", features = ["derive"] }
 serde_yaml = "0.9.34"
 serde_json = "1.0.149"
-jsonschema = "0.44.1"
+jsonschema = "0.48.5"
 
 # typst
 typst-pdf = "0.14.2"

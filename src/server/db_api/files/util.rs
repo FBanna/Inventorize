@@ -6,7 +6,7 @@ use tokio::{fs::File as TkFile, io::BufWriter};
 use tokio_util::{bytes::{self, Buf}, io::StreamReader};
 use uuid::Uuid;
 
-use crate::{config::config::Config, db::{component::properties::{file::file::ComponentFile, files::DownloadedFile, image::image::ComponentImage}, db::DB}, error::{error::AppError, file::FileError}};
+use crate::{config::config::Config, db::{component::properties::{file::file::ComponentFile, files::DownloadedFile, image::image::ComponentImage}, db::DB}, error::{error::AppError, file::FileErrors}};
 
 
 
@@ -32,7 +32,7 @@ pub async fn get_file(mut multipart: Multipart, config: &Config) -> Result<Downl
                 let mut bytes = field.bytes().await?;
 
                 // might fail!
-                let raw_bytes: &[u8; 16] = bytes.as_array().ok_or(FileError::Upload("Could not extract component_id from request!".to_owned()))?;
+                let raw_bytes: &[u8; 16] = bytes.as_array().ok_or(FileErrors::Upload("Could not extract component_id from request!".to_owned()))?;
 
 
                 let id = Uuid::from_bytes(raw_bytes.to_owned());
@@ -78,9 +78,9 @@ pub async fn get_file(mut multipart: Multipart, config: &Config) -> Result<Downl
 
 
 
-    let component_id = option_component_id.ok_or(FileError::WriteUpload)?;
-    let name = option_file_name.ok_or(FileError::WriteUpload)?;
-    let file_path_uuid = option_file.ok_or(FileError::WriteUpload)?;
+    let component_id = option_component_id.ok_or(FileErrors::WriteUpload)?;
+    let name = option_file_name.ok_or(FileErrors::WriteUpload)?;
+    let file_path_uuid = option_file.ok_or(FileErrors::WriteUpload)?;
 
     return Ok(DownloadedFile {
         name,

@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS component_class
 
     PRIMARY KEY(component_id, class_instance_id),
     
-    FOREIGN KEY(component_id)       REFERENCES component(component_id)          ON DELETE CASCADE,
+    FOREIGN KEY(component_id)        REFERENCES component(component_id)          ON DELETE CASCADE,
     FOREIGN KEY(class_instance_id)   REFERENCES class_instance(class_instance_id)  ON DELETE CASCADE
 );
 

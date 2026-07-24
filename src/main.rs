@@ -1,5 +1,5 @@
 
-use std::{io::Error, sync::{Arc, atomic::AtomicBool}};
+use std::{collections::HashMap, io::Error, println, sync::{Arc, atomic::AtomicBool}};
 
 use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}}};
 use db::{component::service::ComponentServices, db::DB};
@@ -78,7 +78,9 @@ async fn main() -> Result<(), Error> {
         stock: 5,
         manufacturer: None,
         label: Some("vial".to_owned()),
-        attributes: Vec::new(),
+        attributes: HashMap::from([
+            (passive_class_id, json!({}))
+        ]),
         origins: Vec::new()
     };
 
@@ -88,21 +90,19 @@ async fn main() -> Result<(), Error> {
         stock: 1000,
         manufacturer: None,
         label: None,
-        attributes: Vec::from(
-            [
-                EmbeddedComponentClassAttributes {
-                    class_instance_id: resistor_class_instance_id,
-                    attributes: json!({
-                        "resistance": 60,
-                        "package": "0402"
-                    })
-                },
-                EmbeddedComponentClassAttributes {
-                    class_instance_id: passive_class_instance_id,
-                    attributes: json!({})
-                }
-            ]
-        ),
+        attributes: HashMap::from([
+            (
+                resistor_class_id, 
+                json!({
+                    "resistance": 60,
+                    "package": "0402"
+                })
+            ),
+            (
+                passive_class_id,
+                json!({})
+            )
+        ]),
         origins: Vec::new()
     };
 

@@ -1,3 +1,4 @@
+use sqlx::PgExecutor;
 use uuid::Uuid;
 
 use crate::{db::{class_instance::class_instance::ClassInstance, component::component::Component, component_class::component_class::ComponentClass, db::DB}, error::error::AppError};
@@ -7,7 +8,7 @@ use crate::{db::{class_instance::class_instance::ClassInstance, component::compo
 
 pub trait ComponentClassServices {
 
-    async fn add_component_class(&self, component_class: ComponentClass) -> Result<(), AppError>;
+    async fn add_component_class(&self, component_class: ComponentClass, executor: impl PgExecutor<'_>) -> Result<(), AppError>;
     async fn add_list_component_class(&self, component_class_list: Vec<ComponentClass>) -> Result<(), AppError>;
 
     async fn get_component_class(&self, component_id: Uuid, class_instance_id: Uuid) -> Result<ComponentClass, AppError>;
@@ -21,13 +22,13 @@ pub trait ComponentClassServices {
 
 impl ComponentClassServices for DB {
 
-    async fn add_component_class(&self, component_class: ComponentClass) -> Result<(), AppError> {
+    async fn add_component_class(&self, component_class: ComponentClass, executor: impl PgExecutor<'_>) -> Result<(), AppError> {
         
         sqlx::query("INSERT INTO component_class (component_id, class_instance_id, attributes) VALUES ($1,$2,$3)")
             .bind(component_class.component_id)
             .bind(component_class.class_instance_id)
             .bind(component_class.attributes)
-            .fetch_one(&*self.pool)
+            .execute(executor)
             .await?;
 
         return Ok(());
@@ -43,7 +44,7 @@ impl ComponentClassServices for DB {
                 .bind(component_class.component_id)
                 .bind(component_class.class_instance_id)
                 .bind(component_class.attributes)
-                .fetch_one(&mut *tx)
+                .execute(&mut *tx)
                 .await?;
 
         }

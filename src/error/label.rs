@@ -3,7 +3,7 @@ use std::{error, fmt::{format, Display}};
 use axum::{http::StatusCode, response::IntoResponse};
 
 #[derive(Debug, Clone)]
-pub enum LabelError {
+pub enum LabelErrors {
 
     MissingTemplate(String),
     Compilation,
@@ -12,16 +12,16 @@ pub enum LabelError {
 }
 
 
-impl std::error::Error for LabelError {}
+impl std::error::Error for LabelErrors {}
 
 
 
-impl Display for LabelError{
+impl Display for LabelErrors{
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            LabelError::MissingTemplate(template) => write!(f, "[ERROR] LabelCreation - Missing Template - Could not find {}.typ", template),
-            LabelError::Compilation => write!(f, "[ERROR] LabelCreation - Compilation - Failed to compile labels"),
-            LabelError::Export =>  write!(f, "[ERROR] LabelCreation - Export - Failed to export labels")
+            LabelErrors::MissingTemplate(template) => write!(f, "[ERROR] LabelCreation - Missing Template - Could not find {}.typ", template),
+            LabelErrors::Compilation => write!(f, "[ERROR] LabelCreation - Compilation - Failed to compile labels"),
+            LabelErrors::Export =>  write!(f, "[ERROR] LabelCreation - Export - Failed to export labels")
         }
     }
 }
@@ -32,7 +32,7 @@ impl Display for LabelError{
 
 // }
 
-impl IntoResponse for LabelError{
+impl IntoResponse for LabelErrors{
     fn into_response(self) -> axum::response::Response {
         (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()).into_response()
     }

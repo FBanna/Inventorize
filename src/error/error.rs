@@ -1,8 +1,10 @@
 use std::{fmt::Display, io, sync::Arc};
 
 use axum::{extract::multipart::MultipartError, http::{StatusCode, response}, response::{IntoResponse, Response}};
+use jsonschema::ValidationError;
+use serde::de::value;
 
-use crate::error::{file::{FileError}, json::JsonError, label::LabelError, types::TypeError};
+use crate::error::{file::{FileErrors}, json::JsonErrors, label::LabelErrors, class::ClassErrors};
 
 // helped greatly by - https://github.com/tokio-rs/axum/blob/main/examples/error-handling/src/main.rs
 
@@ -11,13 +13,13 @@ pub enum AppError{
 
     DBError(sqlx::Error),
 
-    LabelError(LabelError),
+    LabelError(LabelErrors),
 
-    JsonError(JsonError),
+    JsonError(JsonErrors),
 
-    TypeError(TypeError),
+    TypeError(ClassErrors),
 
-    FileError(FileError)
+    FileError(FileErrors)
 
 }
 
@@ -81,26 +83,26 @@ impl IntoResponse for AppError {
 
 
 
-impl From<LabelError> for AppError {
-    fn from(value: LabelError) -> Self {
+impl From<LabelErrors> for AppError {
+    fn from(value: LabelErrors) -> Self {
         Self::LabelError(value)
     }
 }
 
-impl From<JsonError> for AppError {
-    fn from(value: JsonError) -> Self {
+impl From<JsonErrors> for AppError {
+    fn from(value: JsonErrors) -> Self {
         Self::JsonError(value)
     }
 }
 
-impl From<TypeError> for AppError {
-    fn from(value: TypeError) -> Self {
+impl From<ClassErrors> for AppError {
+    fn from(value: ClassErrors) -> Self {
         Self::TypeError(value)
     }
 }
 
-impl From<FileError> for AppError {
-    fn from(value: FileError) -> Self {
+impl From<FileErrors> for AppError {
+    fn from(value: FileErrors) -> Self {
         Self::FileError(value)
     }
 }
@@ -116,19 +118,25 @@ impl From<sqlx::Error> for AppError {
 
 impl From<serde_json::Error> for AppError {
     fn from(value: serde_json::Error) -> Self {
-        Self::JsonError(JsonError::GenSchema)
+        Self::JsonError(JsonErrors::GenSchema)
     }
 }
 
 impl From<MultipartError> for AppError {
     fn from(value: MultipartError) -> Self {
-        Self::FileError(FileError::Upload(value.body_text()))
+        Self::FileError(FileErrors::Upload(value.body_text()))
     }
 }
 
 
 impl From<io::Error> for AppError {
     fn from(value: io::Error) -> Self {
-        Self::FileError(FileError::WriteUpload)
+        Self::FileError(FileErrors::WriteUpload)
+    }
+}
+
+impl<'a> From<ValidationError<'a>> for AppError {
+    fn from(value: ValidationError) -> Self {
+        Self::JsonError(JsonErrors::GenValidator)
     }
 }

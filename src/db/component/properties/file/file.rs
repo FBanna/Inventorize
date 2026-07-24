@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
 
-use crate::{config::config::Config, db::component::properties::files::DownloadedFile, error::{error::AppError, file::FileError}};
+use crate::{config::config::Config, db::component::properties::files::DownloadedFile, error::{error::AppError, file::FileErrors}};
 
 
 #[derive(Clone, Debug, FromRow, Serialize, Deserialize)]
@@ -18,9 +18,9 @@ pub struct ComponentFile {
 impl ComponentFile {
 
     pub fn new(file: DownloadedFile, config: &Config) -> Result<Self, AppError> {
-        let option_mime = infer::get_from_path(&file.file_path).map_err(|_| FileError::WriteUpload)?;
+        let option_mime = infer::get_from_path(&file.file_path).map_err(|_| FileErrors::WriteUpload)?;
 
-        let mime = option_mime.ok_or(FileError::WriteUpload)?;
+        let mime = option_mime.ok_or(FileErrors::WriteUpload)?;
 
 
         let final_path = Path::new(&config.asset_location)

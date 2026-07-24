@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display, write};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -19,7 +19,9 @@ pub struct TransportComponent {
     pub manufacturer: Option<String>,
     pub label: Option<String>,
 
-    pub attributes: HashMap<Uuid, Json>,
+
+    // class_id, Json
+    pub attributes: HashMap<Uuid, Json>, // looks like "attributes: {"(uuid)": "...", "(uuid)": "..."}"
 
     pub origins: Vec<EmbeddedComponentOrigin>
 
@@ -40,5 +42,20 @@ pub struct EmbeddedComponentOrigin {
     pub part_number: Option<String>,
     pub price: Option<i32>
 }
+
+impl Display for TransportComponent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // write!(f, "[ERROR] ClassError - AttributeParsing - Failed to parse class attributes: {}", template)
+        return write!(f,
+            "name: {}\nstock: {}\nclass_instance: {}\nattributes: {:#?}",
+            self.name,
+            self.stock,
+            self.class_instance_id.as_hyphenated().to_string(),
+            self.attributes
+            
+        );
+    }
+}
+
 
 

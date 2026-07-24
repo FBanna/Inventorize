@@ -3,8 +3,25 @@ use std::todo;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
+use serde_json::Value as Json;
 
-use crate::{db::{class_instance::{class_instance::ClassInstance, transport_class_instance::TransportClassInstance}, db::DB}, error::error::AppError};
+use crate::{db::{class::class::Class, class_instance::{class_instance::ClassInstance, transport_class_instance::TransportClassInstance}, db::DB}, error::error::AppError};
+
+
+#[derive(Clone, Debug, FromRow)]
+pub struct ClassClassInstance {
+    pub class_id: Uuid,
+    pub name: String,
+    pub fields: Json,
+    pub schema: Json,
+    pub class_instance_id: Uuid
+}
+
+impl Into<Class> for ClassClassInstance {
+    fn into(self) -> Class {
+        Class { class_id: self.class_id, name: self.name, fields: self.fields, schema: self.schema }
+    }
+}
 
 
 
@@ -16,6 +33,8 @@ pub trait ClassInstanceServices {
 
     async fn get_class_instance_descendants(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
     async fn get_class_instance_ancestors(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
+
+    async fn get_class_ancestors_from_instance(&self, class_instance_id: Uuid) -> Result<Vec<ClassClassInstance>, AppError>;
 
     // async fn update_class_instance(&self, class_instance_id: Uuid, class_instance: ClassInstance) -> Result<Uuid, AppError>;
 
@@ -97,21 +116,8 @@ impl ClassInstanceServices for DB {
         .fetch_all(&*self.pool)
         .await?;
 
-        
-        // let result: ClassInstance = sqlx::query_as("
-        //     WITH RECURSIVE tree AS (
-        //         SELECT *, ARRAY[] AS ancestors
-        //         FROM test WHERE parent_id IS NULL
 
-        //         UNION ALL
-
-        //         SELECT test.id, tree.ancestors || test.parent_id
-        //         FROM test, tree
-        //         WHERE test.parent_id = tree.id
-        //     ) SELECT * FROM tree WHERE 3 = ANY(tree.ancestors);
-        // ")
-
-        todo!()
+        Ok(result)
     }
     
     /// All the way to the root
@@ -156,6 +162,49 @@ impl ClassInstanceServices for DB {
         .await?;
 
         Ok(result)
+    }
+
+    async fn get_class_ancestors_from_instance(&self, class_instance_id: Uuid) -> Result<Vec<ClassClassInstance>, AppError> {
+        
+        let result: Vec<ClassClassInstance> = sqlx::query_as("
+
+            WITH RECURSIVE ancestors AS (
+                SELECT
+                    class_instance_id,
+                    class_id,
+                    parent,
+                    0 AS depth
+                FROM class_instance
+                WHERE class_instance_id = ($1)
+
+                UNION ALL
+
+                SELECT
+                    ci.class_instance_id,
+                    ci.class_id,
+                    ci.parent,
+                    a.depth + 1
+                FROM class_instance ci
+                JOIN ancestors a
+                    ON ci.class_instance_id = a.parent
+            )
+            SELECT 
+                c.class_id,
+                c.name,
+                c.fields,
+                c.schema,
+                a.class_instance_id
+            FROM ancestors a
+            JOIN class c
+                ON c.class_id = a.class_id
+            ORDER BY a.depth;      
+        ")
+        .bind(class_instance_id)
+        .fetch_all(&*self.pool)
+        .await?;
+
+        Ok(result)
+
     }
 
 }
