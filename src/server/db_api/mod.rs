@@ -14,4 +14,4 @@
 // pub mod post_file;
 
 pub mod component;
-pub mod file;
+pub mod files;
