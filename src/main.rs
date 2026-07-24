@@ -1,7 +1,7 @@
 
 use std::{io::Error, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{component::component::Component, transport::transport_type::TransportComponentType, types::{component_type_value::ComponentTypeValue, service::ComponentTypeService}}};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::TransportComponent}}};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
@@ -29,11 +29,16 @@ async fn main() -> Result<(), Error> {
     let pool_clone = Arc::clone(&component_db.pool);
 
 
-    let test_type = TransportComponentType{
-        name: "resistor".to_owned(),
-        inherits: None,
-        attributes: Some(json!({
+    let passive_class = TransportClass {
+        name: "passives".to_owned(),
+        fields: json!({
+            "attributes": []
+        })
+    };
 
+    let resistor_class = TransportClass {
+        name: "resistor".to_owned(),
+        fields: json!({
             "attributes": [
                 {
                     "name": "resistance",
@@ -45,82 +50,81 @@ async fn main() -> Result<(), Error> {
                     "object_type": "string",
                     "unit": ""
                 }
-
             ]
+        }) 
+    };
+
+    let passive_class_id = component_db.add_transport_class(passive_class).await.unwrap();
+
+    let passive_class_instance = TransportClassInstance {
+        class_id: passive_class_id,
+        parent: None
+    };
+
+    let passive_class_instance_id = component_db.add_transport_class_instance(passive_class_instance).await.unwrap();
+
+    let component1 = TransportComponent {
+        class_instance_id: passive_class_instance_id,
+        name: "test".to_owned(),
+        stock: 5,
+        manufacturer: None,
+        label: Some("vial".to_owned()),
+        attributes: Vec::new(),
+        origins: Vec::new()
+    };
+
+    let result = component_db.add_transport_component(&component1).await.unwrap();
+
+
+
+
+    // let t_id = component_db.add_type(&test_type).await.unwrap();
+
+    // let test_component = Component { 
+    //     id: 0, 
+    //     name: "Boring Old Resistor".to_owned(), 
+    //     stock: 1000, 
+    //     price: Some(14.0), 
+    //     manufacturer: Some("lcsc".to_owned()), 
+    //     label: Some("vial".to_owned()), 
+    //     image: false, 
+    //     datasheet: false, 
+    //     //attribute_id: result.last_insert_rowid() as i32, 
+    //     // attributes: json!({
+
+    //     //     "attributes": [
+    //     //         {
+    //     //             "id": result.last_insert_rowid() as i32,
+    //     //             "values": {
+
+    //     //                 "resistance": 60,
+    //     //                 "package": "0402"
+
+    //     //             }
+    //     //         },
+    //     //     ]
             
-        }))
-    };
 
-
-    let t_id = component_db.add_type(&test_type).await.unwrap();
-
-    let test_component = Component { 
-        id: 0, 
-        name: "Boring Old Resistor".to_owned(), 
-        stock: 1000, 
-        price: Some(14.0), 
-        manufacturer: Some("lcsc".to_owned()), 
-        label: Some("vial".to_owned()), 
-        image: false, 
-        datasheet: false, 
-        //attribute_id: result.last_insert_rowid() as i32, 
-        // attributes: json!({
-
-        //     "attributes": [
-        //         {
-        //             "id": result.last_insert_rowid() as i32,
-        //             "values": {
-
-        //                 "resistance": 60,
-        //                 "package": "0402"
-
-        //             }
-        //         },
-        //     ]
-            
-
-        // })
-    };
-
-    let c_id = component_db.add(&test_component).await.unwrap();
-
-    let test_component_type = ComponentTypeValue {
-        component_id: c_id,
-        type_id: t_id,
-        attributes: json!({
-            "resistor": 20,
-            "package": "0402"
-        })
-
-
-    };
-
-    let result2 = component_db.add_component_type_value(test_component_type).await.unwrap();
-
-
-    // let component = db::components::Component{
-    //     //ID:5000,
-    //     id: None,
-    //     name:("Resistor".to_string()),
-    //     size:Some("0402".to_string()),
-    //     value:Some("60 OHM".to_string()),
-    //     info:None,
-    //     stock:5000,
-    //     origin:None, 
-    //     //url: None,
-    //     label: Some("vial".to_string()),
-    //     image: false,
-    //     datasheet: false
+    //     // })
     // };
 
-    // println!("start");
+    // let c_id = component_db.add(&test_component).await.unwrap();
 
-    // for i in 1..100 {
-    //     component_db.add(&component).await;
-        
-    // }
+    // let test_component_type = ComponentTypeValue {
+    //     component_id: c_id,
+    //     type_id: t_id,
+    //     attributes: json!({
+    //         "resistor": 20,
+    //         "package": "0402"
+    //     })
 
-    // println!("stop");
+
+    // };
+
+    // let result2 = component_db.add_component_type_value(test_component_type).await.unwrap();
+
+
+
 
     let join_handle = server::entry::start_server(config, component_db).await; 
 

@@ -19,6 +19,8 @@ pub trait ClassServices {
 
 
 impl ClassServices for DB {
+
+    // Add class & verify attributes
     async fn add_transport_class(&self, transport_class: TransportClass) -> Result<Uuid, AppError> {
         
         let schema = transport_class.gen_schema_and_verify()?;

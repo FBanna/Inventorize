@@ -1,7 +1,4 @@
-use std::{fs, io::Cursor, path::{Path, PathBuf}, todo};
 
-use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
-use serde::{Deserialize, Serialize};
 use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, postgres::{PgQueryResult, PgRow, PgValueRef}, types::{Json, JsonRawValue}};
 use uuid::Uuid;
 
@@ -66,7 +63,7 @@ impl ComponentServices for DB{
         Ok(())
     }
     
-
+    /// cant change component class_instance
     async fn update_component(&self, component_id: Uuid, c: &Component) -> Result<PgQueryResult, AppError> {
         
         let result: PgQueryResult = sqlx::query("
@@ -119,7 +116,8 @@ impl ComponentServices for DB{
 
     async fn add_transport_component(&self, c: &TransportComponent) -> Result<Uuid, AppError> {
 
-        let id: Uuid = sqlx::query_scalar("INSERT INTO component (name,stock,manufacturer,label) VALUES ($1,$2,$3,$4) RETURNING component_id")
+        let id: Uuid = sqlx::query_scalar("INSERT INTO component (class_instance_id,name,stock,manufacturer,label) VALUES ($1,$2,$3,$4,$5) RETURNING component_id")
+            .bind(&c.class_instance_id)
             .bind(&c.name)
             .bind(&c.stock)
             .bind(&c.manufacturer)
@@ -166,57 +164,57 @@ impl ComponentServices for DB{
 }
 
 
-// why are you here?
+// // why are you here?
 
-pub fn get_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>> {
+// pub fn get_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>> {
     
-    //let binding = config.to_owned() + "/" + &id.to_string() + "/" + name;
+//     //let binding = config.to_owned() + "/" + &id.to_string() + "/" + name;
 
 
-    let asset_location = Path::new(config).join(id.to_string()).join(name);
+//     let asset_location = Path::new(config).join(id.to_string()).join(name);
 
-    println!("finding file {} at {}", name, asset_location.display());
+//     println!("finding file {} at {}", name, asset_location.display());
 
-    if asset_location.exists() {
+//     if asset_location.exists() {
 
-        let result = fs::read(asset_location);
+//         let result = fs::read(asset_location);
 
-        return result.ok()
+//         return result.ok()
 
-    }
-    None
-}
+//     }
+//     None
+// }
 
 
 
-pub fn write_component_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>, is_present: bool) {
+// pub fn write_component_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>, is_present: bool) {
 
-    if is_present {
-        if let Some(data) = option {
-            //let binding = config.to_owned() + "\\" + &id.to_string();
+//     if is_present {
+//         if let Some(data) = option {
+//             //let binding = config.to_owned() + "\\" + &id.to_string();
 
             
-            let path: PathBuf = Path::new(config).join(id.to_string());
+//             let path: PathBuf = Path::new(config).join(id.to_string());
 
-            //println!("trying to access path at {}", path.as_os_str().to_str().get_or_insert_default());
+//             //println!("trying to access path at {}", path.as_os_str().to_str().get_or_insert_default());
 
-            if !path.exists() {
-                fs::create_dir_all(&path).expect("could not create asset dir for component!");
-            }
+//             if !path.exists() {
+//                 fs::create_dir_all(&path).expect("could not create asset dir for component!");
+//             }
 
-            fs::write(path.join(name.to_owned()), data).expect("Could not write asset file");
+//             fs::write(path.join(name.to_owned()), data).expect("Could not write asset file");
 
-        }
+//         }
 
-    } else {
+//     } else {
 
-        // THIS RUNS EVERY TIME YOU UPDATE A COMPONENT, LOTS OF SYS CALLS. COULD ADD
-        // ANOTHER PARAMETER TO REMOVE CERTAIN DATA FILES
-        let path: PathBuf = Path::new(config).join(id.to_string()).join(name.to_owned());
+//         // THIS RUNS EVERY TIME YOU UPDATE A COMPONENT, LOTS OF SYS CALLS. COULD ADD
+//         // ANOTHER PARAMETER TO REMOVE CERTAIN DATA FILES
+//         let path: PathBuf = Path::new(config).join(id.to_string()).join(name.to_owned());
 
-        if path.exists(){
-            fs::remove_file(path).expect("could not remove file");
-        }
-    }
+//         if path.exists(){
+//             fs::remove_file(path).expect("could not remove file");
+//         }
+//     }
 
-}
+// }

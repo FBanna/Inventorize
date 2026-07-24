@@ -1,3 +1,26 @@
+-- Classes
+
+CREATE TABLE IF NOT EXISTS class
+(
+    class_id     uuid DEFAULT uuidv7()   PRIMARY KEY,
+
+    name        TEXT            NOT NULL,
+    fields      jsonb           NOT NULL,
+    schema      jsonb           NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS class_instance
+(
+    class_instance_id   uuid DEFAULT uuidv7()   PRIMARY KEY,
+    class_id            uuid    NOT NULL,
+
+    parent              uuid, -- can be null
+
+    FOREIGN KEY(class_id)        REFERENCES class(class_id)  ON DELETE CASCADE,
+    FOREIGN KEY(parent)       REFERENCES class_instance(class_instance_id) ON DELETE CASCADE
+);
+
+
 -- Origin
 CREATE TABLE IF NOT EXISTS origin
 (
@@ -18,7 +41,7 @@ CREATE TABLE IF NOT EXISTS component
     manufacturer    TEXT,
     label           TEXT,
 
-    FOREIGN KEY(class_instance_id)  REFERENCES class_instance(class_instance_id) ON DELETE CASCADE;
+    FOREIGN KEY(class_instance_id)  REFERENCES class_instance(class_instance_id) ON DELETE CASCADE
 
 );
 
@@ -49,34 +72,12 @@ CREATE TABLE IF NOT EXISTS component_file
 CREATE TABLE IF NOT EXISTS component_image
 (
     component_id    uuid PRIMARY KEY,
-
-    full            BYTEA   NOT NULL,
-    thumb           BYTEA   NOT NULL,
+    full_img        BYTEA   NOT NULL,
+    thumb_img       BYTEA   NOT NULL,
 
     FOREIGN KEY(component_id)       REFERENCES component(component_id)  ON DELETE CASCADE
 );
 
--- Classes
-
-CREATE TABLE IF NOT EXISTS class
-(
-    class_id     uuid DEFAULT uuidv7()   PRIMARY KEY,
-
-    name        TEXT            NOT NULL,
-    fields      jsonb           NOT NULL,
-    schema      jsonb           NOT NULL,
-);
-
-CREATE TABLE IF NOT EXISTS class_instance
-(
-    class_instance_id   uuid DEFAULT uuidv7()   PRIMARY KEY,
-    class_id            uuid    NOT NULL,
-
-    parent              uuid, -- can be null
-
-    FOREIGN KEY(class_id)        REFERENCES class(class_id)  ON DELETE CASCADE,
-    FOREIGN KEY(parent)       REFERENCES class_instance(class_instance_id) ON DELETE CASCADE
-);
 
 -- Component <---> Classes
 

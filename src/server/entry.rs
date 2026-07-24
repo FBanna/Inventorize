@@ -1,11 +1,10 @@
-use crate::{Config, db::{component::component::Component, db::DB}, server::label_api::post_build_label};
+use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::component::post_component, label_api::post_build_label}};
 
 // mod login_api;
 // pub mod login_api;
 // pub mod db_api;
 // pub mod server_state;
 
-use super::db_api::{get_all_component, post_type_id_get_prompts, get_first_component, post_component, post_id_get_component, post_id_remove_component, post_id_remove_list_component::post_id_remove_list_component, post_search_get_component::post_search_get_component, post_update_component};
 
 use axum::{
     extract::{DefaultBodyLimit, Query}, http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}, Form, Json, Router
@@ -112,17 +111,18 @@ pub async fn start_server(config: Config, db: DB) -> tokio::task::JoinHandle<()>
 fn api() -> Router<Arc<ServerState>>{
     let api: Router<Arc<ServerState>> = Router::new()
         //.route("/", get(handler))
-        .route("/post_component", post(post_component::post_component))
-        .route("/post_update_component", post(post_update_component::post_update_component))
-        .route("/post_build_label", post(post_build_label::post_build_label))
         //.route("/post_build_zip", post(post_build_label::post_build_label))
-        .route("/post_search_component", post(post_search_get_component))
-        .route("/post_id_get_component", post(post_id_get_component::post_id_get_component))
-        .route("/post_id_remove_component", post(post_id_remove_component::post_id_remove_component))
-        .route("/post_id_remove_list_component", post(post_id_remove_list_component))
-        .route("/get_first_component", get(get_first_component::get_component))
-        .route("/get_all_component", get(get_all_component::get_component))
-        .route("/post_type_id_get_prompts", get(post_type_id_get_prompts::post_type_id_get_prompts));
+
+        .route("/post_component", post(post_component::post_component));
+        // .route("/post_update_component", post(post_update_component::post_update_component))
+        // .route("/post_build_label", post(post_build_label::post_build_label))
+        // .route("/post_search_component", post(post_search_get_component))
+        // .route("/post_id_get_component", post(post_id_get_component::post_id_get_component))
+        // .route("/post_id_remove_component", post(post_id_remove_component::post_id_remove_component))
+        // .route("/post_id_remove_list_component", post(post_id_remove_list_component))
+        // .route("/get_first_component", get(get_first_component::get_component))
+        // .route("/get_all_component", get(get_all_component::get_component))
+        // .route("/post_type_id_get_prompts", get(post_type_id_get_prompts::post_type_id_get_prompts));
     
 
     return api;

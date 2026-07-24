@@ -15,3 +15,5 @@
 
 pub mod component;
 pub mod files;
+pub mod class;
+pub mod class_instance;

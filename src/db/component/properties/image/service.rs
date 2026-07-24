@@ -33,7 +33,7 @@ impl ComponentImageService for DB {
     async fn add_img(&self, img: ComponentImage) -> Result<(), AppError> {
         
 
-        let _output = sqlx::query("INSERT INTO component_image (component_id, full, thumb) VALUES ($1, $2, $3)")
+        let _output = sqlx::query("INSERT INTO component_image (component_id, full_img, thumb_img) VALUES ($1, $2, $3)")
             .bind(img.component_id)
             .bind(img.full)
             .bind(img.thumb)
@@ -66,7 +66,7 @@ impl ComponentImageService for DB {
 
     async fn get_full(&self, c_id: Uuid) -> Result<Vec<u8>, AppError> {
         
-        let output: FullBytes  = sqlx::query_as("SELECT (full) FROM component_image WHERE component_id = ($1)")
+        let output: FullBytes  = sqlx::query_as("SELECT (full_img) FROM component_image WHERE component_id = ($1)")
             .bind(c_id)
             .fetch_one(&*self.pool)
             .await?;
@@ -77,7 +77,7 @@ impl ComponentImageService for DB {
 
     async fn get_thumb(&self, c_id: Uuid) -> Result<Vec<u8>, AppError> {
         
-        let output: ThumbBytes  = sqlx::query_as("SELECT (thumb) FROM component_image WHERE component_id = ($1)")
+        let output: ThumbBytes  = sqlx::query_as("SELECT (thumb_img) FROM component_image WHERE component_id = ($1)")
             .bind(c_id)
             .fetch_one(&*self.pool)
             .await?;

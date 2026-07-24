@@ -10,6 +10,9 @@ pub trait ClassInstanceServices {
     async fn remove_class_instance(&self, class_instance_id: Uuid) -> Result<(), AppError>;
     async fn get_class_instance(&self, class_instance_id: Uuid) -> Result<ClassInstance, AppError>;
 
+    async fn get_class_instance_descendants(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
+    async fn get_class_instance_ancestors(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
+
     // async fn update_class_instance(&self, class_instance_id: Uuid, class_instance: ClassInstance) -> Result<Uuid, AppError>;
 
 }
@@ -36,9 +39,6 @@ impl ClassInstanceServices for DB {
             .execute(&*self.pool)
             .await?;
 
-        // REMOVE ALL COMPONENTS OF TYPE (id) & inherited
-        todo!();
-
         Ok(())
 
     }
@@ -52,6 +52,14 @@ impl ClassInstanceServices for DB {
 
         Ok(result)
 
+    }
+    
+    async fn get_class_instance_descendants(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError> {
+        todo!()
+    }
+    
+    async fn get_class_instance_ancestors(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError> {
+        todo!()
     }
 
 }

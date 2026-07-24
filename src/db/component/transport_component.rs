@@ -19,7 +19,7 @@ pub struct TransportComponent {
 
     pub attributes: Vec<TransportComponentClassAttributes>,
     
-    pub origin: Vec<ComponentOrigin>
+    pub origins: Vec<ComponentOrigin>
 
 }
 
