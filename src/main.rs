@@ -1,7 +1,7 @@
 
 use std::{io::Error, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::TransportComponent}}};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}}};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
@@ -55,13 +55,22 @@ async fn main() -> Result<(), Error> {
     };
 
     let passive_class_id = component_db.add_transport_class(passive_class).await.unwrap();
+    let resistor_class_id = component_db.add_transport_class(resistor_class).await.unwrap();
 
     let passive_class_instance = TransportClassInstance {
         class_id: passive_class_id,
         parent: None
     };
 
+
     let passive_class_instance_id = component_db.add_transport_class_instance(passive_class_instance).await.unwrap();
+
+    let resistor_class_instance = TransportClassInstance {
+        class_id: resistor_class_id,
+        parent: Some(passive_class_instance_id)
+    };
+
+    let resistor_class_instance_id = component_db.add_transport_class_instance(resistor_class_instance).await.unwrap();
 
     let component1 = TransportComponent {
         class_instance_id: passive_class_instance_id,
@@ -73,7 +82,32 @@ async fn main() -> Result<(), Error> {
         origins: Vec::new()
     };
 
+    let component2 = TransportComponent {
+        class_instance_id: resistor_class_instance_id,
+        name: "some resistor".to_owned(),
+        stock: 1000,
+        manufacturer: None,
+        label: None,
+        attributes: Vec::from(
+            [
+                EmbeddedComponentClassAttributes {
+                    class_instance_id: resistor_class_instance_id,
+                    attributes: json!({
+                        "resistance": 60,
+                        "package": "0402"
+                    })
+                },
+                EmbeddedComponentClassAttributes {
+                    class_instance_id: passive_class_instance_id,
+                    attributes: json!({})
+                }
+            ]
+        ),
+        origins: Vec::new()
+    };
+
     let result = component_db.add_transport_component(&component1).await.unwrap();
+    let result = component_db.add_transport_component(&component2).await.unwrap();
 
 
 

@@ -17,15 +17,26 @@ pub struct TransportComponent {
     pub manufacturer: Option<String>,
     pub label: Option<String>,
 
-    pub attributes: Vec<TransportComponentClassAttributes>,
-    
-    pub origins: Vec<ComponentOrigin>
+    pub attributes: Vec<EmbeddedComponentClassAttributes>,
+
+    pub origins: Vec<EmbeddedComponentOrigin>
 
 }
-
 // add image, files, origins
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct TransportComponentClassAttributes {
+pub struct EmbeddedComponentClassAttributes {
     pub class_instance_id: Uuid,
     pub attributes: Json
 }
+
+
+// add image, files, origins
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct EmbeddedComponentOrigin {
+    pub origin_id: Uuid,
+    pub part_number: Option<String>,
+    pub price: Option<i32>
+}
+
+
