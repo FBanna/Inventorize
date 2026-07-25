@@ -1,4 +1,4 @@
-import { fileURLToPath, URL } from 'node:url'
+import { fileURLToPath, resolve, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -10,9 +10,19 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-    },
+  build: {
+    outDir: "../target_dist",
+    emptyOutDir: true,
+    rolldownOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        login: resolve(__dirname, "login_src/index.html") // go to "/login/" last slash important!!!!
+      }
+    }
   },
+  // resolve: {
+  //   alias: {
+  //     '@': fileURLToPath(new URL('./src', import.meta.url)),
+  //   },
+  // },
 })
