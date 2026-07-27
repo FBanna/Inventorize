@@ -8,5 +8,11 @@ use uuid::Uuid;
 pub struct ClassInstance {
     pub class_instance_id: Uuid,
     pub class_id: Uuid,
-    pub parent: Uuid
+    pub parent: Option<Uuid>
+}
+
+impl ClassInstance {
+    pub fn to_tree(&self) -> {
+        
+    }
 }

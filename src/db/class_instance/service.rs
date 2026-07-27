@@ -32,6 +32,7 @@ pub trait ClassInstanceServices {
     async fn get_class_instance(&self, class_instance_id: Uuid) -> Result<ClassInstance, AppError>;
 
     async fn get_class_instance_descendants(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
+    async fn get_class_instance_descendants_child(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
     async fn get_class_instance_ancestors(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
 
     async fn get_class_ancestors_from_instance(&self, class_instance_id: Uuid) -> Result<Vec<ClassClassInstance>, AppError>;
@@ -78,34 +79,51 @@ impl ClassInstanceServices for DB {
     }
 
 
-// "WITH RECURSIVE descendants AS (
-	
-// 	SELECT
-// 		class_instance_id,
-//       class_id,
-//       parent,
-//       0 AS depth
-//    FROM class_instance
-//    WHERE class_instance_id = '019f93f3-a2c2-7783-95b2-1af8c151aaa3'
-   
-//    UNION ALL
-   
-//    SELECT
-//    	ci.class_instance_id,
-//    	ci.class_id,
-//    	ci.parent,
-//    	d.depth + 1
-//    FROM class_instance ci
-//    JOIN descendants d
-//    	ON ci.parent = d.class_instance_id
-		
-// )
-// SELECT *
-// FROM descendants
-// ORDER BY DEPTH, class_instance_id;"
+    async fn get_class_instance_descendants(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError> {
+        
+        let result: Vec<ClassInstance> = sqlx::query_as(
+            
+        "WITH RECURSIVE descendants AS (
+
+                SELECT
+                    class_instance_id,
+                    class_id,
+                    parent,
+                    0 AS depth
+                FROM class_instance
+                WHERE class_instance_id = '019f93f3-a2c2-7783-95b2-1af8c151aaa3'
+                
+                UNION ALL
+                
+                SELECT
+                    ci.class_instance_id,
+                    ci.class_id,
+                    ci.parent,
+                    d.depth + 1
+                FROM class_instance ci
+                JOIN descendants d
+                    ON ci.parent = d.class_instance_id
+                        
+            )
+            SELECT 
+                class_instance_id,
+                class_id,
+                parent
+            FROM descendants
+            ORDER BY DEPTH, class_instance_id;
+        ")
+        .bind(class_instance_id)
+        .fetch_all(&*self.pool)
+        .await?;
+
+        return Ok(result);
+    }
+
+
+
 
     /// only 1 level!
-    async fn get_class_instance_descendants(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError> {
+    async fn get_class_instance_descendants_child(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError> {
 
         let result: Vec<ClassInstance> = sqlx::query_as("
             SELECT * 
@@ -206,5 +224,7 @@ impl ClassInstanceServices for DB {
         Ok(result)
 
     }
+    
+    
 
 }
