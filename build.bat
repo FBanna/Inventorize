@@ -1,7 +1,7 @@
 @echo off
 
 cd frontend
-call yarn build
+call npm run build
 cd ..
 call cargo build --release
 PAUSE

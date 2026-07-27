@@ -1,7 +1,7 @@
 cd frontend
 
-start "Frontend BUILD" cmd /k call watchexec -r yarn build
-start "Frontend DEBUG" cmd /k call yarn dev
+start "Frontend BUILD" cmd /k call watchexec -r npm run build
+start "Frontend DEBUG" cmd /k call npm run dev
 
 
 cd ../target/debug

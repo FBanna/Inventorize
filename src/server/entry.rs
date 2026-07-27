@@ -47,13 +47,13 @@ pub async fn start_server(config: Config, db: DB) -> tokio::task::JoinHandle<()>
     // RELEASE BUILD
     #[cfg(not(debug_assertions))]
     let prot_frontend: Router<Arc<ServerState>> = Router::new()
-        .nest_service("/login", ServeDir::new("./dist/login/index.html"))
+        .nest_service("/login", ServeDir::new("./dist/login.html"))
         .nest_service("/assets", ServeDir::new("./dist/assets"));
 
     // DEBUG BUILD
     #[cfg(debug_assertions)]
     let prot_frontend: Router<Arc<ServerState>> = Router::new()
-        .nest_service("/login", ServeDir::new("../dist/login/index.html"))
+        .nest_service("/login", ServeDir::new("../dist/login.html"))
         .nest_service("/assets", ServeDir::new("../dist/assets"));
 
 
