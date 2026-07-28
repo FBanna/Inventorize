@@ -32,7 +32,7 @@ import { ref } from 'vue';
 
 <style scoped lang="scss">
 
-@use "../../public/import";
+@use "/public/import";
 
 .error_box {
     background-color: import.$primary;

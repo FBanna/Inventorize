@@ -3,7 +3,13 @@
 
     <PresentError ref="error"/>
 
-    <TreeElement v-for="root in tree" :node="root" :depth=0 />
+    <div class="sidebar">
+        <ol>
+            <TreeElement v-for="root in tree" :node="root" :depth=0 />
+        </ol>
+    </div>
+
+    
 
 
 </template>
@@ -46,7 +52,26 @@
 
 </script>
 
-<style lang="sass" scoped>
+<style lang="scss" scoped>
+
+@use "/public/import";
+
+.sidebar {
+    background-color: import.$white;
+    position: fixed;
+    height: 100%;
+    width: 150px;
+}
+
+ol {
+    margin: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    list-style-type: none;
+    padding: 0px;
+    width: 100%;
+    height: 100%;
+}
 
 
 
