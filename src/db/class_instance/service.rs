@@ -1,27 +1,12 @@
-use std::todo;
+use std::{println, todo};
 
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
 use serde_json::Value as Json;
 
-use crate::{db::{class::class::Class, class_instance::{class_instance::ClassInstance, transport_class_instance::TransportClassInstance}, db::DB}, error::error::AppError};
+use crate::{db::{class::class::Class, class_instance::{class_instance::{ClassClassInstance, ClassInstance, ClassInstanceTree, ClassInstanceTreeLeaf}, transport_class_instance::TransportClassInstance}, db::DB}, error::error::AppError};
 
-
-#[derive(Clone, Debug, FromRow)]
-pub struct ClassClassInstance {
-    pub class_id: Uuid,
-    pub name: String,
-    pub fields: Json,
-    pub schema: Json,
-    pub class_instance_id: Uuid
-}
-
-impl Into<Class> for ClassClassInstance {
-    fn into(self) -> Class {
-        Class { class_id: self.class_id, name: self.name, fields: self.fields, schema: self.schema }
-    }
-}
 
 
 
@@ -31,8 +16,8 @@ pub trait ClassInstanceServices {
     async fn remove_class_instance(&self, class_instance_id: Uuid) -> Result<(), AppError>;
     async fn get_class_instance(&self, class_instance_id: Uuid) -> Result<ClassInstance, AppError>;
 
-    async fn get_class_instance_descendants(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
-    async fn get_class_instance_descendants_child(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
+    async fn get_class_instance_descendants(&self, class_instance_id: Option<Uuid>) -> Result<Vec<ClassInstanceTree>, AppError>;
+    async fn get_class_instance_descendants_child(&self, class_instance_id: Option<Uuid>) -> Result<Vec<ClassInstance>, AppError>;
     async fn get_class_instance_ancestors(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
 
     async fn get_class_ancestors_from_instance(&self, class_instance_id: Uuid) -> Result<Vec<ClassClassInstance>, AppError>;
@@ -78,12 +63,11 @@ impl ClassInstanceServices for DB {
 
     }
 
-
-    async fn get_class_instance_descendants(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError> {
+    /// excludes the starting id
+    async fn get_class_instance_descendants(&self, class_instance_id: Option<Uuid>) -> Result<Vec<ClassInstanceTree>, AppError> {
         
-        let result: Vec<ClassInstance> = sqlx::query_as(
-            
-        "WITH RECURSIVE descendants AS (
+        let result: Vec<ClassInstanceTreeLeaf> = sqlx::query_as("
+        WITH RECURSIVE descendants AS (
 
                 SELECT
                     class_instance_id,
@@ -91,7 +75,7 @@ impl ClassInstanceServices for DB {
                     parent,
                     0 AS depth
                 FROM class_instance
-                WHERE class_instance_id = '019f93f3-a2c2-7783-95b2-1af8c151aaa3'
+                WHERE parent IS NOT DISTINCT FROM ($1)
                 
                 UNION ALL
                 
@@ -106,29 +90,33 @@ impl ClassInstanceServices for DB {
                         
             )
             SELECT 
-                class_instance_id,
-                class_id,
-                parent
-            FROM descendants
-            ORDER BY DEPTH, class_instance_id;
+                d.class_instance_id,
+                c.name,
+                d.parent
+            FROM descendants d
+            JOIN class c
+                ON c.class_id = d.class_id
+            ORDER BY d.depth, class_instance_id;
         ")
         .bind(class_instance_id)
         .fetch_all(&*self.pool)
         .await?;
 
-        return Ok(result);
+        println!("result size is: {}", result.len());
+
+        return Ok(ClassInstanceTree::to_tree(result));
     }
 
 
 
 
     /// only 1 level!
-    async fn get_class_instance_descendants_child(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError> {
+    async fn get_class_instance_descendants_child(&self, class_instance_id: Option<Uuid>) -> Result<Vec<ClassInstance>, AppError> {
 
         let result: Vec<ClassInstance> = sqlx::query_as("
             SELECT * 
             FROM class_instance
-            WHERE parent = (?)
+            WHERE parent IS NOT DISTINCT FROM ($1)
         ")
         .bind(class_instance_id)
         .fetch_all(&*self.pool)
@@ -151,7 +139,7 @@ impl ClassInstanceServices for DB {
                     parent,
                     0 AS depth
                 FROM class_instance
-                WHERE class_instance_id = '019f93f3-a2c4-7b5a-989a-2ca8e6610ae9'
+                WHERE class_instance_id = ($1)
 
                 UNION ALL
 

@@ -55,3 +55,13 @@ export async function fetchURL(
 
   throw error;
 }
+
+export async function fetchJSON<T>(
+  url: string,
+  opts: ApiOpts
+): Promise<T> {
+
+  const res = await fetchURL(url, opts)
+  return res.json() as Promise<T>
+
+}
