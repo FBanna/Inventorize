@@ -13,7 +13,6 @@
 
 
     function get_depth() {
-
         return ((props.depth * 20).toString() + "px")
     }
 

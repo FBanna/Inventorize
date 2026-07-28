@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ClassInstanceTreeSidebar from '@/components/ClassInstanceTreeSidebar.vue';
 
 </script>
 
@@ -12,7 +11,7 @@ import ClassInstanceTreeSidebar from '@/components/ClassInstanceTreeSidebar.vue'
         
 
         <RouterLink class="logo_button" to="/"><img class="image" src="/public/logo.svg"></RouterLink>
-        <RouterLink class="nav_buttons" to="/addcomponent">Add</RouterLink>
+        <!-- <RouterLink class="nav_buttons" to="/addcomponent">Add</RouterLink> -->
         <!-- <RouterLink class="nav_buttons" to="/component/1">build</RouterLink> -->
 
 
@@ -31,8 +30,8 @@ import ClassInstanceTreeSidebar from '@/components/ClassInstanceTreeSidebar.vue'
     </div>
   </header>
 
-    <RouterView />
-    <ClassInstanceTreeSidebar />
+  <RouterView />
+
 </template>
 
 <style scoped lang="scss">
