@@ -58,9 +58,17 @@
 
 .sidebar {
     background-color: import.$white;
-    position: fixed;
+    position: relative;
     height: 100%;
     width: 150px;
+
+    overflow-y: auto;
+    overflow-clip-margin: -10px;
+    
+    
+    //margin-bottom: 100px;
+
+    // overflow-clip-margin: 10px;
 }
 
 ol {
@@ -68,9 +76,10 @@ ol {
     margin-left: 0px;
     margin-right: 0px;
     list-style-type: none;
-    padding: 0px;
+    padding-left: 0px;
     width: 100%;
     height: 100%;
+
 }
 
 
