@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { login } from '@/api/login';
 import { StatusError } from '@/api/util';
-import PresentError from '@/components/PresentError.vue';
+import { pushAppError } from '@/error/error_state';
+
 import { ref } from 'vue';
 
 
 
   const username = ref("")
   const password = ref("")
-  const error = ref();
+
 
   const urlParams = new URLSearchParams(window.location.search);
   const next = urlParams.get('next');
@@ -22,7 +23,7 @@ import { ref } from 'vue';
         next
       )
     } catch (e) {
-      error.value.showError(e)
+      pushAppError(e)
     }
     
   }
@@ -34,7 +35,6 @@ import { ref } from 'vue';
 
   
 
-  <PresentError ref="error" />
 
   
 

@@ -1,11 +1,15 @@
 
 <template>
 
-    <PresentError ref="error"/>
+    <!-- <PresentError ref="error"/> -->
 
     <div class="sidebar">
         <ol>
-            <TreeElement ref="children" v-for="root in tree" :node="root" :depth=0 />
+
+            <TreeElement ref="children" v-for="root in tree" :node="root" :depth=0 :onSuccess="setup" />
+
+            <li class="end_add"><img class="add_img" @click="end_add" src="/public/add.svg"></li>
+
         </ol>
 
         <div class="controls">
@@ -22,29 +26,29 @@
 <script setup lang="ts">
     import { get_class_instance_descendants } from '@/api/class_instance';
     import TreeElement from './TreeElement.vue';
-    import PresentError from './PresentError.vue';
-    import { ref } from 'vue';
 
-    const error = ref();
+    import { ref } from 'vue';
+    import { pushAppError } from '@/error/error_state.ts';
+    import { Popups, setActivePopup } from '@/app/popup/popup_state.ts';
+
     const tree = ref();
     const collapsed = ref(true);
 
     const children = ref();
 
-    
-
-
-    async function setup() {
-
-        try {
-            let result = await get_class_instance_descendants(null)
-            tree.value = result;
-            
-        } catch (e) {
-            error.value.showError(e)
-
+    function end_add() {
+        let opts = {
+            class_instance_id: null,
+            class_name: "Root"
         }
-        
+
+        setActivePopup(
+            Popups.AddClassInstance,
+            opts,
+            async () => { // never do this again! NEVER
+                await setup()
+            }
+        )
     }
 
     function collapse() {
@@ -61,13 +65,23 @@
     }
 
 
+    async function setup() {
+
+        try {
+            let result = await get_class_instance_descendants(null)
+            tree.value = result;
+            
+        } catch (e) {
+            pushAppError(e)
+            //error.value.showError(e)
+
+        }
+        
+    }
+
+
     setup()
 
-    
-
-    
-
-    
 
 
 </script>
@@ -118,6 +132,28 @@ ol {
     height: 100px;
     //flex: 0 0 100px;
 }
+
+.end_add {
+    box-sizing: border-box;
+    height: 30px;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+}
+
+
+.add_img {
+    height: 90%;
+    padding: 0;
+    margin: auto;
+}
+
+
+
 
 
 

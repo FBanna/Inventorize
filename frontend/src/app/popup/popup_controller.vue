@@ -1,0 +1,45 @@
+<template>
+
+    <div class="screen" v-if="active != null" @click="clear">
+
+         <div v-on:click.stop> <!-- click stopper -->
+
+            <Add_class_instance v-if="active == Popups.AddClassInstance" :opts="opts" />
+
+        </div>
+
+        
+
+    </div>
+    
+
+</template>
+
+
+<script lang="ts" setup>
+    import Add_class_instance from './add_class_instance.vue';
+    import { ref } from "vue";
+    import {active, Popups, opts, clearActivePopup} from "@/app/popup/popup_state.ts";
+
+    function clear() {
+        clearActivePopup()
+    }
+
+
+</script>
+
+
+<style lang="scss" scoped>
+
+    .screen {
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        background-color: rgba(175, 175, 175, 0.301);
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+</style>

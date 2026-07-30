@@ -6,17 +6,19 @@
         <div class="text" @click="drop()">
             {{props.node.name}}
         </div>
-        <img class="add add_hide" src="/public/add.svg">
+        <img class="add add_hide" @click="add" src="/public/add.svg">
     </li>
 
-    <tree-element ref="children" v-if="dropped" v-for="child_node in props.node.children" :node="child_node" :depth="props.depth+1" />
+    <tree-element ref="children" v-if="dropped" v-for="child_node in props.node.children" :node="child_node" :depth="props.depth+1" :onSuccess="props.onSuccess" />
 
 </template>
 
 <script setup lang="ts">
+import Add_class_instance from '@/app/popup/add_class_instance.vue';
+import { Popups, setActivePopup } from '@/app/popup/popup_state';
 import { ref } from 'vue';
 
-    const props = defineProps(["node", "depth"])
+    const props = defineProps(["node", "depth", "onSuccess"])
     const dropped = ref<boolean>(true)
     const children = ref();
 
@@ -30,6 +32,23 @@ import { ref } from 'vue';
 
     function should_drop() {
         return dropped.value && (props.node.children.length != 0)
+    }
+
+    function add() {
+        
+        let opts = {
+            class_instance_id: props.node.class_instance_id,
+            class_name: props.node.name
+        }
+
+        setActivePopup(
+            Popups.AddClassInstance,
+            opts,
+            async () => { // never do this again! NEVER
+                await props.onSuccess?.()
+            }
+        )
+
     }
 
     function collapse(value: boolean) {

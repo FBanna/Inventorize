@@ -31,7 +31,6 @@ export async function fetchURL(
     });
   } catch (e) {
 
-    console.log("errored here 1")
 
     throw new StatusError("000 No connection", 0);
 
@@ -43,15 +42,13 @@ export async function fetchURL(
     
   }
 
-  console.log("errored here 2")
-
   const body = await res.text();
+
   const error = new StatusError(
       body || `${res.status} ${res.statusText}`,
       res.status
   );
 
-  console.log(error)
 
   throw error;
 }

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import ClassInstanceTreeSidebar from '@/components/ClassInstanceTreeSidebar.vue';
+import Popup_controller from './popup/popup_controller.vue';
+import Error_controller from '@/error/error_controller.vue';
 
 
 </script>
@@ -34,9 +36,11 @@ import ClassInstanceTreeSidebar from '@/components/ClassInstanceTreeSidebar.vue'
 
   <ClassInstanceTreeSidebar />
 
-  
-
   <RouterView />
+
+  <Popup_controller class="popup" />
+
+  <Error_controller />
   
 
 </template>
@@ -47,7 +51,7 @@ import ClassInstanceTreeSidebar from '@/components/ClassInstanceTreeSidebar.vue'
 
   .nav {
     margin: 0;
-    z-index: 10;
+    z-index: 1;
     position: fixed;
     top: 0;
     left: 0;
@@ -60,6 +64,10 @@ import ClassInstanceTreeSidebar from '@/components/ClassInstanceTreeSidebar.vue'
     box-shadow: 0 0 5px rgb(88, 88, 88);
     margin-bottom: 0px;
     
+  }
+
+  .popup {
+    z-index: 2;
   }
 
   .nav_buttons {

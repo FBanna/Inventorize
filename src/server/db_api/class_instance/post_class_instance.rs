@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{println, sync::Arc};
 
 use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
 
@@ -10,10 +10,7 @@ pub async fn post_class_instance(
     Json(tc): Json<TransportClassInstance>
 ) -> Result<impl IntoResponse, AppError> {
 
-    println!("Tying hard to add your class instance");
-
     let result = shared_state.db.add_transport_class_instance(tc).await?;
-
 
     // TODO
 

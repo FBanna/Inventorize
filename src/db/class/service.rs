@@ -16,6 +16,7 @@ pub trait ClassServices {
     //async fn update_class(&self, class: Class) -> Result<(), AppError>;
     async fn remove_class(&self, class_id: Uuid) -> Result<(), AppError>;
     async fn get_class(&self, class_id: Uuid) -> Result<Class, AppError>;
+    async fn get_all_classes(&self) -> Result<Vec<Class>, AppError>;
     
 }
 
@@ -46,8 +47,6 @@ impl ClassServices for DB {
             .execute(&*self.pool)
             .await?;
 
-        // REMOVE ALL COMPONENTS OF TYPE (id) & inherited
-        todo!();
 
         Ok(())
     }
@@ -61,6 +60,16 @@ impl ClassServices for DB {
 
         Ok(result)
         
+    }
+    
+    async fn get_all_classes(&self) -> Result<Vec<Class>, AppError> {
+
+        let result: Vec<Class> = sqlx::query_as("SELECT * FROM class")
+            .fetch_all(&*self.pool)
+            .await?;
+
+        Ok(result)
+
     }
     
     
