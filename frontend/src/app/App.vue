@@ -1,36 +1,43 @@
 <script setup lang="ts">
+import ClassInstanceTreeSidebar from '@/components/ClassInstanceTreeSidebar.vue';
+
 
 </script>
 
-<template>
+<template>    
 
     <header>
-    <div class="nav">
-      <nav>
+      <div class="nav">
+        <nav>
 
-        
+          
 
-        <RouterLink class="logo_button" to="/"><img class="image" src="/public/logo.svg"></RouterLink>
-        <!-- <RouterLink class="nav_buttons" to="/addcomponent">Add</RouterLink> -->
-        <!-- <RouterLink class="nav_buttons" to="/component/1">build</RouterLink> -->
-
-
+          <RouterLink class="logo_button" to="/"><img class="image" src="/public/logo.svg"></RouterLink>
+          <!-- <RouterLink class="nav_buttons" to="/addcomponent">Add</RouterLink> -->
+          <!-- <RouterLink class="nav_buttons" to="/component/1">build</RouterLink> -->
 
 
 
-        <div class="right_side">
 
-          <a class="nav_buttons" href="/logout">Logout</a>
 
-        </div>
+          <div class="right_side">
 
-        
+            <a class="nav_buttons" href="/logout">Logout</a>
 
-      </nav>
-    </div>
-  </header>
+          </div>
+
+          
+
+        </nav>
+      </div>
+    </header>
+
+  <ClassInstanceTreeSidebar />
+
+  
 
   <RouterView />
+  
 
 </template>
 
@@ -41,11 +48,11 @@
   .nav {
     margin: 0;
     z-index: 10;
-    position: relative;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 40pt;
+    height: 50px;
     background: import.$white;
     box-sizing: border-box;
     padding: 5px;
@@ -58,8 +65,9 @@
   .nav_buttons {
     float: left;
     color: import.$primary;
-    text-align: center;
-    padding: 14px 16px;
+    padding: 10px;
+    vertical-align: middle;
+
     text-decoration: none;
     font-size: 17px;
   }
@@ -69,12 +77,16 @@
   }
 
   .image {
-    height: 30pt;
+    height: 40px;
+    align-self: center;
+    vertical-align: middle;
   }
 
   .right_side{
     float: right;
     height: 100%;
   }
+
+
 
 </style>

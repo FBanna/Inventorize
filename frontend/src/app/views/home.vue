@@ -6,7 +6,7 @@ import ClassInstanceTreeSidebar from '@/components/ClassInstanceTreeSidebar.vue'
 </script>
 
 <template>
-    <ClassInstanceTreeSidebar />
+    
 </template>
 
 
