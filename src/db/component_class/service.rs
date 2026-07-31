@@ -1,7 +1,8 @@
 use sqlx::PgExecutor;
 use uuid::Uuid;
+use serde_json::Value as Json;
 
-use crate::{db::{class_instance::class_instance::ClassInstance, component::component::Component, component_class::component_class::ComponentClass, db::DB}, error::error::AppError};
+use crate::{db::{class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::ComponentClass, db::DB}, error::error::AppError};
 
 
 
@@ -15,6 +16,8 @@ pub trait ComponentClassServices {
     async fn get_components_from_class_instance(&self, class_instance_id: Uuid) -> Result<Vec<Component>, AppError>;
     async fn get_class_instances_from_component(&self, component_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
     async fn remove_component_class(&self, component_id: Uuid, class_instance_id: Uuid) -> Result<(), AppError>;
+
+    async fn search_components_on_component_class(&self, class_instance_id: Uuid, search: Json) -> Result<Vec<ComponentWithAttributes>, AppError>;
 
     async fn update_component_class(&self, component_class: ComponentClass) -> Result<(), AppError>;
 
@@ -123,6 +126,34 @@ impl ComponentClassServices for DB {
         .await?;
 
         Ok(())
+    }
+    
+    async fn search_components_on_component_class(&self, class_instance_id: Uuid, search: Json) -> Result<Vec<ComponentWithAttributes>, AppError> {
+
+        let result: Vec<ComponentWithAttributes> = sqlx::query_as("
+            SELECT
+                cc.component_id,
+
+                cl.name,
+                cl.stock,
+                cl.manufacturer,
+                cl.label,
+
+                cc.attributes
+                
+            FROM component_class cc
+            JOIN component cl
+                ON cl.component_id = cc.component_id
+
+            WHERE cc.class_instance_id = ($1)
+            AND attributes @> ($2)
+        ")
+        .bind(class_instance_id)
+        .bind(search)
+        .fetch_all(&*self.pool)
+        .await?;
+
+        Ok(result)
     }
     
     

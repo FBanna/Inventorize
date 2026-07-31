@@ -1,4 +1,4 @@
-use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::get_all_classes::get_all_classes, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance}, component::post_component::{self, post_component}}, label_api::post_build_label}};
+use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::get_all_classes::get_all_classes, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance}, component::{post_component::{self, post_component}, post_search_get_component_with_attributes::post_search_get_component_with_attributes}}, label_api::post_build_label}};
 
 // mod login_api;
 // pub mod login_api;
@@ -113,7 +113,11 @@ fn api() -> Router<Arc<ServerState>>{
         //.route("/", get(handler))
         //.route("/post_build_zip", post(post_build_label::post_build_label))
 
+
+        // COMPONENT
+
         .route("/post_component", post(post_component))
+        .route("/search_components_on_component_class", post(post_search_get_component_with_attributes))
         
         // CLASS INSTANCE
         .route("/post_class_instance", post(post_class_instance))
