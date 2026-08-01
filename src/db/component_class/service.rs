@@ -128,6 +128,29 @@ impl ComponentClassServices for DB {
         Ok(())
     }
     
+    /// takes in a json search query eg
+    /// 
+    /// ```json
+    /// {
+    ///     [
+    ///         {
+    ///             class_instance_id: UUID,
+    ///             fields: {
+    ///                 "resistance": 60,
+    ///                 "resistance": 120,
+    ///                 "package": "0402"
+    ///             }
+    ///         },
+    ///         {
+    ///             ...
+    ///         }
+    /// 
+    ///     ]
+    /// }
+    /// 
+    /// ```
+    /// 
+    /// and returns a list of ComponentWithAttributes
     async fn search_components_on_component_class(&self, class_instance_id: Uuid, search: Json) -> Result<Vec<ComponentWithAttributes>, AppError> {
 
         let result: Vec<ComponentWithAttributes> = sqlx::query_as("
