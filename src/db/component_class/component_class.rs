@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use sqlx::prelude::FromRow;
+use sqlx::{Encode, prelude::{FromRow, Type}};
 use uuid::Uuid;
 use serde_json::Value as Json;
 
@@ -36,15 +36,13 @@ pub struct ComponentClassSearch {
     pub class_instance_id: Uuid,
 
     /// key: field name -- value: list of values
-    pub facets: HashMap<String, Vec<SearchValue>>
+    pub facets: HashMap<String, SearchValues>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub enum SearchValue {
-    String(String),
-    Integer(i64),
-    Float(f64),
-    Bool(bool),
+pub enum SearchValues {
+    String(Vec<String>),
+    Integer(Vec<i64>),
+    Float(Vec<f64>),
+    Bool(Vec<bool>),
 }
-
-

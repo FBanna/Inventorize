@@ -1,7 +1,7 @@
 
 use std::{collections::HashMap, io::Error, println, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::ComponentClassSearch, service::ComponentClassServices}}};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::{ComponentClassSearch, SearchValues}, service::ComponentClassServices}}};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
@@ -128,14 +128,12 @@ async fn main() -> Result<(), Error> {
 
     let json = json!({"resistor": 60});
 
-    json.
-
     let search = ComponentClassSearch {
         class_instance_id: resistor_class_instance_id,
         facets: HashMap::from([
             (
                 "resistance".to_owned(),
-                Vec::from([json!([60])])
+                SearchValues::Integer(Vec::from([60]))
             ),
         ])
     };

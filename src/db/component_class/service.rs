@@ -4,7 +4,7 @@ use sqlx::{Execute, PgExecutor, Postgres, QueryBuilder};
 use uuid::Uuid;
 use serde_json::Value as Json;
 
-use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, ComponentClassSearch}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
+use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, ComponentClassSearch, SearchValues}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
 
 
 
@@ -210,32 +210,32 @@ impl ComponentClassServices for DB {
 
 
 
-            let class = self.get_class_from_class_instance(search.class_instance_id).await?;
+            // let class = self.get_class_from_class_instance(search.class_instance_id).await?;
 
-            for potential_field in class.fields.as_array().ok_or(JsonError(IncorrectFieldsFound))? {
+            // for potential_field in class.fields.as_array().ok_or(JsonError(IncorrectFieldsFound))? {
 
-                let field_name = potential_field
-                    .get("name")
-                    .ok_or(JsonError(IncorrectFieldsFound))?
-                    .to_string();
+            //     let field_name = potential_field
+            //         .get("name")
+            //         .ok_or(JsonError(IncorrectFieldsFound))?
+            //         .to_string();
 
-                if !search.facets.contains_key(&field_name) {
-                    break;
-                }
-
-                
-
-                query.push(" AND cc.attributes->>");
-                query.push_bind(field.0);
-                query.push(" = ANY(");
+            //     if !search.facets.contains_key(&field_name) {
+            //         break;
+            //     }
 
                 
 
+            //     query.push(" AND cc.attributes->>");
+            //     query.push_bind(field.0);
+            //     query.push(" = ANY(");
 
-                query.push_bind(field.1);
-                query.push(")");
+                
 
-            }
+
+            //     query.push_bind(field.1);
+            //     query.push(")");
+
+            // }
 
             for field in search.facets {
 
@@ -250,8 +250,15 @@ impl ComponentClassServices for DB {
                 query.push_bind(field.0);
                 query.push(" = ANY(");
 
+                match field.1 {
+                    SearchValues::String(v) => query.push_bind(v),
+                    SearchValues::Integer(v) => query.push_bind(v),
+                    SearchValues::Float(v) => query.push_bind(v),
+                    SearchValues::Bool(v) => query.push_bind(v),
+                };
 
-                query.push_bind(field.1);
+
+                //query.push_bind(field.1);
                 query.push(")");
 
             }
