@@ -8,7 +8,8 @@ pub enum JsonErrors {
     ClassAttributesMalformed(String),
     GenSchema,
     ComponentClassAttributesMalformed(String),
-    GenValidator
+    GenValidator,
+    IncorrectFieldsFound
 
 }
 
@@ -24,6 +25,7 @@ impl Display for JsonErrors{
             JsonErrors::GenSchema => write!(f, "[ERROR] GenSchema - Could not generate schema"),
             JsonErrors::ComponentClassAttributesMalformed(error) => write!(f, "[ERROR] ComponentClassAttributesMalformed - Could not evaluate attributes for component: {}", error),
             JsonErrors::GenValidator => write!(f, "[ERROR] GenValidator - Could not generate validator from schema"),
+            JsonErrors::IncorrectFieldsFound => write!(f, "[ERROR] IncorrectFieldsFound - Incorrect fields of class found")
         }
     }
 }

@@ -132,7 +132,6 @@ impl ClassInstanceServices for DB {
         let result: Vec<ClassInstance> = sqlx::query_as("
 
             WITH RECURSIVE ancestors AS (
-                -- Base case: start with the requested node
                 SELECT
                     class_instance_id,
                     class_id,
@@ -143,7 +142,6 @@ impl ClassInstanceServices for DB {
 
                 UNION ALL
 
-                -- Recursive step: find the parent of the current row
                 SELECT
                     ci.class_instance_id,
                     ci.class_id,

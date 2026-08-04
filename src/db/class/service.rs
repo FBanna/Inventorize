@@ -17,6 +17,8 @@ pub trait ClassServices {
     async fn remove_class(&self, class_id: Uuid) -> Result<(), AppError>;
     async fn get_class(&self, class_id: Uuid) -> Result<Class, AppError>;
     async fn get_all_classes(&self) -> Result<Vec<Class>, AppError>;
+
+    async fn get_class_from_class_instance(&self, class_instance_id: Uuid) -> Result<Class, AppError>;
     
 }
 
@@ -70,6 +72,30 @@ impl ClassServices for DB {
 
         Ok(result)
 
+    }
+
+    async fn get_class_from_class_instance(&self, class_instance_id: Uuid) -> Result<Class, AppError> {
+
+        // SELECT
+        //             ci.class_instance_id,
+        //             ci.class_id,
+        //             ci.parent,
+        //             a.depth + 1
+        //         FROM class_instance ci
+        //         JOIN ancestors a
+        //             ON ci.class_instance_id = a.parent
+
+        let result: Class = sqlx::query_as("
+            SELECT c.* FROM class c
+                JOIN class_instance cl
+                ON c.class_id = cl.class_id
+                WHERE cl.class_instance_id = $1
+        ")
+        .bind(class_instance_id)
+        .fetch_one(&*self.pool)
+        .await?;
+
+        Ok(result)
     }
     
     

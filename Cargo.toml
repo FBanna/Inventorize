@@ -33,7 +33,7 @@ typst = "0.14.2"
 typst-kit = "0.14.2"
 
 # db
-sqlx = { version = "0.8.3", features = ["runtime-tokio-native-tls", "postgres", "uuid"] }
+sqlx = { version = "0.9.0", features = ["runtime-tokio", "postgres", "uuid", "json"] }
 
 # cli
 clap = { version = "4.5.32", features = ["derive", "cargo"]}

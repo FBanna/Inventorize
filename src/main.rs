@@ -1,10 +1,11 @@
 
 use std::{collections::HashMap, io::Error, println, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}}};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::ComponentClassSearch, service::ComponentClassServices}}};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
+use serde_json::Value as Json;
 
 // use tokio::signal;
 
@@ -29,6 +30,13 @@ async fn main() -> Result<(), Error> {
     let pool_clone = Arc::clone(&component_db.pool);
 
 
+
+
+    // MOVE TO UNIT TEST!
+
+
+
+    // Define classes
     let passive_class = TransportClass {
         name: "passives".to_owned(),
         fields: json!({
@@ -38,8 +46,8 @@ async fn main() -> Result<(), Error> {
 
     let resistor_class = TransportClass {
         name: "resistor".to_owned(),
-        fields: json!({
-            "attributes": [
+        fields: json!(
+            [
                 {
                     "name": "resistance",
                     "object_type": "integer",
@@ -51,27 +59,33 @@ async fn main() -> Result<(), Error> {
                     "unit": ""
                 }
             ]
-        }) 
+        ) 
     };
 
+    // add classes
     let passive_class_id = component_db.add_transport_class(passive_class).await.unwrap();
     let resistor_class_id = component_db.add_transport_class(resistor_class).await.unwrap();
 
+    // define class instance
     let passive_class_instance = TransportClassInstance {
         class_id: passive_class_id,
         parent: None
     };
 
-
+    // add
     let passive_class_instance_id = component_db.add_transport_class_instance(passive_class_instance).await.unwrap();
 
+    // define class instance
     let resistor_class_instance = TransportClassInstance {
         class_id: resistor_class_id,
         parent: Some(passive_class_instance_id)
     };
 
+    // add
     let resistor_class_instance_id = component_db.add_transport_class_instance(resistor_class_instance).await.unwrap();
 
+
+    // components
     let component1 = TransportComponent {
         class_instance_id: passive_class_instance_id,
         name: "test".to_owned(),
@@ -108,6 +122,28 @@ async fn main() -> Result<(), Error> {
 
     let result = component_db.add_transport_component(&component1).await.unwrap();
     let result = component_db.add_transport_component(&component2).await.unwrap();
+
+
+    // search
+
+    let json = json!({"resistor": 60});
+
+    json.
+
+    let search = ComponentClassSearch {
+        class_instance_id: resistor_class_instance_id,
+        facets: HashMap::from([
+            (
+                "resistance".to_owned(),
+                Vec::from([json!([60])])
+            ),
+        ])
+    };
+
+    let search_result = component_db.search_components_on_component_class(Vec::from([search])).await.unwrap();
+
+
+    println!("{:#?}", search_result.get(0).unwrap());
 
 
 

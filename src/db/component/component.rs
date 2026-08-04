@@ -48,3 +48,21 @@ impl Component{
     }
 
 }
+
+
+impl ComponentWithAttributes{
+
+    pub fn fmt(&self) -> String {
+
+        return format!(
+            "id: {}\nname: {}\nstock: {}\nmanufacturer: {}\nlabel: {}\nattributes: {:#}",
+            self.component_id,
+            self.name,
+            self.stock,
+            self.manufacturer.clone().unwrap_or_default(),
+            self.label.clone().unwrap_or_default(),
+            self.attributes
+        );
+    }
+
+}

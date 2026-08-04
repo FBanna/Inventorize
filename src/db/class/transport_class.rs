@@ -109,7 +109,8 @@ impl TransportClass {
         map_schema.insert("type".to_owned(), Json::String("object".to_owned()));
 
 
-        let array = self.fields["attributes"].as_array().ok_or(JsonErrors::GenSchema)?;
+        //let array = self.fields["attributes"].as_array().ok_or(JsonErrors::GenSchema)?;
+        let array = self.fields.as_array().ok_or(JsonErrors::GenSchema)?;
 
         // let required: Vec<String> = Vec::new();
 

@@ -1,22 +1,21 @@
 {
     "type": "object",
-    "required": ["attributes"],
+
     "properties": {
-        "attributes": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": [ "name", "object_type", "unit" ],
-                "properties": {
 
-                    "name": { "type": "string" },
-                    "object_type": { "type": "string" },
-                    "unit": { "type": "string" }
+        "type": "array",
+        "items": {
+            "type": "object",
+            "required": [ "name", "object_type", "unit" ],
+            "properties": {
 
-                }
-                
+                "name": { "type": "string" },
+                "object_type": { "type": "string" },
+                "unit": { "type": "string" }
+
             }
             
         }
+
     }
 }
