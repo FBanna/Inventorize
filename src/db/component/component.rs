@@ -1,4 +1,4 @@
-use std::{fs, io::Cursor, path::{Path, PathBuf}};
+use std::{collections::HashMap, fs, io::Cursor, path::{Path, PathBuf}};
 
 use image::{imageops::FilterType, GenericImageView, ImageDecoder, ImageReader};
 use serde::{Deserialize, Serialize};
@@ -20,6 +20,7 @@ pub struct Component{
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
 pub struct ComponentWithAttributes{
     pub component_id: Uuid,
+    pub class_instance_id: Uuid,
 
     pub name: String,
     pub stock: i32, // should this be i32?
@@ -55,7 +56,7 @@ impl ComponentWithAttributes{
     pub fn fmt(&self) -> String {
 
         return format!(
-            "id: {}\nname: {}\nstock: {}\nmanufacturer: {}\nlabel: {}\nattributes: {:#}",
+            "id: {}\nname: {}\nstock: {}\nmanufacturer: {}\nlabel: {}\nattributes: {:#?}",
             self.component_id,
             self.name,
             self.stock,

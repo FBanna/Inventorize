@@ -138,10 +138,19 @@ async fn main() -> Result<(), Error> {
         ])
     };
 
-    let search_result = component_db.search_components_on_component_class(Vec::from([search])).await.unwrap();
+    let search_result = component_db.search_components_with_attributes_on_component_class(
+        resistor_class_instance_id, 
+        Vec::from([search])
+    ).await;
+
+    if let Err(e) = search_result {
+        println!("BIG ERROR {:#}", e);
+    } else {
+        println!("{:#?}", search_result.unwrap());
+    }
 
 
-    println!("{:#?}", search_result);
+    
 
 
 

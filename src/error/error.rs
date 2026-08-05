@@ -29,7 +29,17 @@ impl std::error::Error for AppError{}
 impl Display for AppError{
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            AppError::DBError(err) => write!(f, "[ERROR] DB Error - {}", err.to_string()),
+            AppError::DBError(err) => {
+
+                let db_err_op = err.as_database_error();
+
+                if let Some(db_err) = db_err_op {
+
+                    return write!(f, "[ERROR] DB Error - {}", db_err.message());
+                }
+
+                write!(f, "[ERROR] DB Error - {}", err)
+            },
             AppError::LabelError(err) => err.fmt(f),
             AppError::JsonError(err) => err.fmt(f),
             AppError::TypeError(err) => err.fmt(f),

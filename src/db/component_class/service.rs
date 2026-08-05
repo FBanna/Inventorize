@@ -20,6 +20,7 @@ pub trait ComponentClassServices {
     async fn remove_component_class(&self, component_id: Uuid, class_instance_id: Uuid) -> Result<(), AppError>;
 
     async fn search_components_on_component_class(&self, searches: Vec<ComponentClassSearch>) -> Result<Vec<Component>, AppError>;
+    async fn search_components_with_attributes_on_component_class(&self, root: Uuid, searches: Vec<ComponentClassSearch>) -> Result<Vec<ComponentWithAttributes>, AppError>;
 
     async fn update_component_class(&self, component_class: ComponentClass) -> Result<(), AppError>;
 
@@ -151,7 +152,7 @@ impl ComponentClassServices for DB {
     /// 
     /// ```
     /// 
-    /// and returns a list of ComponentWithAttributes
+    /// and returns a list of Component
     async fn search_components_on_component_class(&self, searches: Vec<ComponentClassSearch>) -> Result<Vec<Component>, AppError> {
 
 
@@ -203,6 +204,8 @@ impl ComponentClassServices for DB {
             
         }
 
+        println!("{}", query.build().sql().as_str());
+
 
 
         let result: Vec<Component> = query.build_query_as().fetch_all(&*self.pool).await?;
@@ -214,6 +217,133 @@ impl ComponentClassServices for DB {
 
         Ok(result)
     }
+
+
+
+    
+
+    /// takes in a json search query eg
+    /// 
+    /// ```no_run
+    /// 
+    ///     [
+    ///         {
+    ///             class_instance_id: UUID,
+    ///             fields: {
+    ///                 "resistance": [60, 120],
+    ///                 "package": ["0402"]
+    ///             }
+    ///         },
+    ///         {
+    ///             ...
+    ///         }
+    /// 
+    ///     ]
+    /// 
+    /// 
+    /// ```
+    /// 
+    /// and returns a list of Component
+    async fn search_components_with_attributes_on_component_class(&self, root: Uuid, searches: Vec<ComponentClassSearch>) -> Result<Vec<ComponentWithAttributes>, AppError> {
+
+
+        let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
+"SELECT 
+    c.*,
+    component_classes.attributes
+FROM component c
+
+CROSS JOIN LATERAL (
+    SELECT jsonb_agg(
+        jsonb_build_object(
+            'class_instance_id', cc.class_instance_id,
+            'attributes', cc.attributes
+        )
+    ) AS attributes
+    FROM component_class cc
+    WHERE cc.component_id = c.component_id
+) component_classes
+
+WHERE EXISTS (
+    SELECT 1 FROM component_class cc
+    WHERE cc.component_id = c.component_id 
+    AND cc.class_instance_id = "
+        );
+
+        query.push_bind(root);
+        query.push(")");
+
+        for search in searches {
+
+
+            // BUILD EXIST STATEMENT
+
+            query.push("\nAND EXISTS (SELECT 1 FROM component_class cc WHERE cc.component_id = c.component_id AND cc.class_instance_id = ");
+            
+            query.push_bind(search.class_instance_id);
+
+            // BUILD SELECT STATEMENT
+
+            for field in search.facets {
+
+                query.push(" AND cc.attributes->");
+                query.push_bind(field.0);
+
+                query.push(" = ANY(");
+                query.push_bind(field.1);
+                query.push(")");
+
+            }
+
+
+            query.push(")");
+
+
+            
+        }
+
+        
+        let result: Vec<ComponentWithAttributes> = query.build_query_as().fetch_all(&*self.pool).await?;
+
+
+        Ok(result)
+
+        
+    }
+
+
+
+// SELECT 
+// 	c.*,
+// 	attributes.component_classes
+// FROM component C
+// CROSS JOIN LATERAL (
+//     SELECT jsonb_agg(
+//         jsonb_build_object(
+//             'class_instance_id', cc.class_instance_id,
+//             'attributes', cc.attributes
+//         )
+//     ) AS component_classes
+//     FROM component_class cc
+//     WHERE cc.component_id = c.component_id
+// ) attributes
+// WHERE EXISTS (
+// 	SELECT 1 FROM component_class cc
+// 	WHERE cc.component_id = c.component_id 
+// 	AND cc.class_instance_id = '019fb504-da13-750e-a676-255480b07fdc' -- root of search
+// )
+
+
+// AND EXISTS (
+// 	SELECT 1 FROM component_class cc
+// 	WHERE cc.component_id = c.component_id 
+// 	AND cc.class_instance_id = '019fb504-da15-7f27-a167-be1231641349' 
+// 	AND cc.attributes->'resistance' = ANY(ARRAY[TO_JSONB(60)]) 
+// )
+
+
+
+
     
     
 }

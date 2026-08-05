@@ -15,9 +15,6 @@ pub struct ComponentClass {
 
 
 
-
-
-
 ///     [
 ///         {
 ///             class_instance_id: UUID,
@@ -34,16 +31,5 @@ pub struct ComponentClass {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ComponentClassSearch {
     pub class_instance_id: Uuid,
-
-    /// key: field name -- value: list of values
-    //pub facets: HashMap<String, SearchValues>
     pub facets: HashMap<String, Vec<Json>>
 }
-
-// #[derive(Serialize, Deserialize, Clone, Debug)]
-// pub enum SearchValues {
-//     String(Vec<String>),
-//     Integer(Vec<i64>),
-//     Float(Vec<f64>),
-//     Bool(Vec<bool>),
-// }
