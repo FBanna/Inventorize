@@ -13,7 +13,7 @@ pub async fn post_search_get_component_with_attributes(
 
     State(shared_state): State<Arc<ServerState>>,
     Json(q): Json<Vec<ComponentClassSearch>>
-) -> Result<Json<Vec<ComponentWithAttributes>>, AppError> {
+) -> Result<Json<Vec<Component>>, AppError> {
 
     //let result = shared_state.db.search(c).await?;
 

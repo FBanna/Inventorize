@@ -4,7 +4,7 @@ use sqlx::{Execute, PgExecutor, Postgres, QueryBuilder};
 use uuid::Uuid;
 use serde_json::Value as Json;
 
-use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, ComponentClassSearch, SearchValues}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
+use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, ComponentClassSearch}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
 
 
 
@@ -19,7 +19,7 @@ pub trait ComponentClassServices {
     async fn get_class_instances_from_component(&self, component_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
     async fn remove_component_class(&self, component_id: Uuid, class_instance_id: Uuid) -> Result<(), AppError>;
 
-    async fn search_components_on_component_class(&self, searches: Vec<ComponentClassSearch>) -> Result<Vec<ComponentWithAttributes>, AppError>;
+    async fn search_components_on_component_class(&self, searches: Vec<ComponentClassSearch>) -> Result<Vec<Component>, AppError>;
 
     async fn update_component_class(&self, component_class: ComponentClass) -> Result<(), AppError>;
 
@@ -152,30 +152,7 @@ impl ComponentClassServices for DB {
     /// ```
     /// 
     /// and returns a list of ComponentWithAttributes
-    async fn search_components_on_component_class(&self, searches: Vec<ComponentClassSearch>) -> Result<Vec<ComponentWithAttributes>, AppError> {
-
-        // let result: Vec<ComponentWithAttributes> = sqlx::query_as("
-        //     SELECT
-        //         cc.component_id,
-
-        //         cl.name,
-        //         cl.stock,
-        //         cl.manufacturer,
-        //         cl.label,
-
-        //         cc.attributes
-                
-        //     FROM component_class cc
-        //     JOIN component cl
-        //         ON cl.component_id = cc.component_id
-
-        //     WHERE cc.class_instance_id = ($1)
-        //     AND attributes @> ($2)
-        // ")
-        // .bind(class_instance_id)
-        // .bind(search)
-        // .fetch_all(&*self.pool)
-        // .await?;
+    async fn search_components_on_component_class(&self, searches: Vec<ComponentClassSearch>) -> Result<Vec<Component>, AppError> {
 
 
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new("SELECT * FROM component c ");
@@ -208,57 +185,13 @@ impl ComponentClassServices for DB {
 
             // BUILD SELECT STATEMENT
 
-
-
-            // let class = self.get_class_from_class_instance(search.class_instance_id).await?;
-
-            // for potential_field in class.fields.as_array().ok_or(JsonError(IncorrectFieldsFound))? {
-
-            //     let field_name = potential_field
-            //         .get("name")
-            //         .ok_or(JsonError(IncorrectFieldsFound))?
-            //         .to_string();
-
-            //     if !search.facets.contains_key(&field_name) {
-            //         break;
-            //     }
-
-                
-
-            //     query.push(" AND cc.attributes->>");
-            //     query.push_bind(field.0);
-            //     query.push(" = ANY(");
-
-                
-
-
-            //     query.push_bind(field.1);
-            //     query.push(")");
-
-            // }
-
             for field in search.facets {
 
-                // for value in field.1 {
-                    
-                //     class.fields.map
-
-                // }
-
-
-                query.push(" AND cc.attributes->>");
+                query.push(" AND cc.attributes->");
                 query.push_bind(field.0);
+
                 query.push(" = ANY(");
-
-                match field.1 {
-                    SearchValues::String(v) => query.push_bind(v),
-                    SearchValues::Integer(v) => query.push_bind(v),
-                    SearchValues::Float(v) => query.push_bind(v),
-                    SearchValues::Bool(v) => query.push_bind(v),
-                };
-
-
-                //query.push_bind(field.1);
+                query.push_bind(field.1);
                 query.push(")");
 
             }
@@ -270,14 +203,9 @@ impl ComponentClassServices for DB {
             
         }
 
-        //query.push(";");
-        
-        // let built: sqlx::query::QueryAs<'_, Postgres, Vec<ComponentWithAttributes>, sqlx::postgres::PgArguments> = query.build_query_as();
-
-        println!("query: \n\n{}", query.build().sql().as_str());
 
 
-        let result: Vec<ComponentWithAttributes> = query.build_query_as().fetch_all(&*self.pool).await?;
+        let result: Vec<Component> = query.build_query_as().fetch_all(&*self.pool).await?;
 
 
         //query.build().sql().into()
@@ -291,54 +219,27 @@ impl ComponentClassServices for DB {
 }
 
 
-// BUILD ACTUAL ATTRIBUTE SEARCHES
-fn build_select(search: HashMap<String, Vec<Json>>) -> String {
+// // BUILD ACTUAL ATTRIBUTE SEARCHES
+// fn build_select(search: HashMap<String, Vec<Json>>) -> String {
 
 
-    let mut query = QueryBuilder::default();
+//     let mut query = QueryBuilder::default();
 
-    for field in search {
+//     for field in search {
 
-        query.push(" AND cc.attributes->>");
-        query.push_bind(field.0);
-        query.push(" = ANY(");
-        query.push_bind(field.1);
-        query.push(")");
+//         query.push(" AND cc.attributes->>");
+//         query.push_bind(field.0);
+//         query.push(" = ANY(");
+//         query.push_bind(field.1);
+//         query.push(")");
 
-    }
+//     }
 
-    let result = query.build().sql().as_str().to_owned();
+//     let result = query.build().sql().as_str().to_owned();
 
-    println!("select: {}", result);
+//     println!("select: {}", result);
 
-    return result;
-
-
-}
-// SELECT c.*
-// FROM component c
-// WHERE
-//     EXISTS (
-//         SELECT 1
-//         FROM component_class cc
-//         WHERE cc.component_id = c.component_id
-//           AND cc.class_instance_id = $1
-//           AND cc.attributes @> $2
-//     )
-// AND EXISTS (
-//         SELECT 1
-//         FROM component_class cc
-//         WHERE cc.component_id = c.component_id
-//           AND cc.class_instance_id = $3
-//           AND cc.attributes @> $4
-//     );
+//     return result;
 
 
-// EXISTS (
-//     SELECT 1
-//     FROM component_class cc
-//     WHERE cc.component_id = c.component_id
-//       AND cc.class_instance_id = $1
-//       AND cc.attributes->>'package' = '0402'
-//       AND cc.attributes->>'resistance' IN ('60','120')
-// )
+// }

@@ -1,7 +1,7 @@
 
 use std::{collections::HashMap, io::Error, println, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::{ComponentClassSearch, SearchValues}, service::ComponentClassServices}}};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::{ComponentClassSearch}, service::ComponentClassServices}}};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
@@ -39,9 +39,7 @@ async fn main() -> Result<(), Error> {
     // Define classes
     let passive_class = TransportClass {
         name: "passives".to_owned(),
-        fields: json!({
-            "attributes": []
-        })
+        fields: json!([])
     };
 
     let resistor_class = TransportClass {
@@ -126,70 +124,25 @@ async fn main() -> Result<(), Error> {
 
     // search
 
-    let json = json!({"resistor": 60});
-
     let search = ComponentClassSearch {
         class_instance_id: resistor_class_instance_id,
         facets: HashMap::from([
             (
                 "resistance".to_owned(),
-                SearchValues::Integer(Vec::from([60]))
+                Vec::from([json!(60)])
             ),
+            (
+                "package".to_owned(),
+                Vec::from([json!("0402")])
+            )
         ])
     };
 
     let search_result = component_db.search_components_on_component_class(Vec::from([search])).await.unwrap();
 
 
-    println!("{:#?}", search_result.get(0).unwrap());
+    println!("{:#?}", search_result);
 
-
-
-
-    // let t_id = component_db.add_type(&test_type).await.unwrap();
-
-    // let test_component = Component { 
-    //     id: 0, 
-    //     name: "Boring Old Resistor".to_owned(), 
-    //     stock: 1000, 
-    //     price: Some(14.0), 
-    //     manufacturer: Some("lcsc".to_owned()), 
-    //     label: Some("vial".to_owned()), 
-    //     image: false, 
-    //     datasheet: false, 
-    //     //attribute_id: result.last_insert_rowid() as i32, 
-    //     // attributes: json!({
-
-    //     //     "attributes": [
-    //     //         {
-    //     //             "id": result.last_insert_rowid() as i32,
-    //     //             "values": {
-
-    //     //                 "resistance": 60,
-    //     //                 "package": "0402"
-
-    //     //             }
-    //     //         },
-    //     //     ]
-            
-
-    //     // })
-    // };
-
-    // let c_id = component_db.add(&test_component).await.unwrap();
-
-    // let test_component_type = ComponentTypeValue {
-    //     component_id: c_id,
-    //     type_id: t_id,
-    //     attributes: json!({
-    //         "resistor": 20,
-    //         "package": "0402"
-    //     })
-
-
-    // };
-
-    // let result2 = component_db.add_component_type_value(test_component_type).await.unwrap();
 
 
 
