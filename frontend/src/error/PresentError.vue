@@ -33,7 +33,7 @@
 
 <style scoped lang="scss">
 
-@use "/public/import";
+@use "@/style/import";
 
 .error_box {
     background-color: import.$primary;

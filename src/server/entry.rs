@@ -54,7 +54,8 @@ pub async fn start_server(config: Config, db: DB) -> tokio::task::JoinHandle<()>
     #[cfg(debug_assertions)]
     let prot_frontend: Router<Arc<ServerState>> = Router::new()
         .nest_service("/login", ServeDir::new("../dist/login.html"))
-        .nest_service("/assets", ServeDir::new("../dist/assets"));
+        .nest_service("/assets", ServeDir::new("../dist/assets"))
+        .nest_service("/images", ServeDir::new("../dist/images"));
 
 
     
@@ -117,7 +118,7 @@ fn api() -> Router<Arc<ServerState>>{
         // COMPONENT
 
         .route("/post_component", post(post_component))
-        .route("/search_components_on_component_class", post(post_search_get_component_with_attributes))
+        .route("/post_search_get_component_with_attributes", post(post_search_get_component_with_attributes))
         
         // CLASS INSTANCE
         .route("/post_class_instance", post(post_class_instance))

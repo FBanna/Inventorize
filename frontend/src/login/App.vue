@@ -41,7 +41,7 @@ import { ref } from 'vue';
   <div class="login_content login_page">
 
     <div>
-      <img class="login_image" src="/logo.svg">
+      <img class="login_image" src="/images/logo.svg">
     </div>
     
     
@@ -51,7 +51,7 @@ import { ref } from 'vue';
 
     <br>
 
-    <div style="width: 350px;">
+    <div style="width: 350px;"> 
 
       <!-- :action=login_api  method="POST" -->
 
@@ -95,7 +95,7 @@ import { ref } from 'vue';
 
 <style scoped lang="scss">
 
-@use "/public/import.scss";
+@use "@/style/import.scss";
 
 .login_submit {
   width: calc(90% + 6px);

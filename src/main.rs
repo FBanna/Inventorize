@@ -141,7 +141,7 @@ async fn main() -> Result<(), Error> {
     let search_result = component_db.search_components_with_attributes_on_component_class(
 
         ComponentSearch {
-            root: resistor_class_instance_id,
+            root: Some(resistor_class_instance_id),
             units: Vec::from([search])
         }
         

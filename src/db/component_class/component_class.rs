@@ -37,6 +37,6 @@ pub struct UnitComponentClassSearch {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ComponentSearch {
-    pub root: Uuid,
+    pub root: Option<Uuid>,
     pub units: Vec<UnitComponentClassSearch>
 }

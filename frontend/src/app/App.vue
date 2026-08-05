@@ -8,46 +8,53 @@ import Error_controller from '@/error/error_controller.vue';
 
 <template>    
 
-    <header>
-      <div class="nav">
-        <nav>
+  <header>
+    <div class="nav">
+      <nav>
 
-          
+        
 
-          <RouterLink class="logo_button" to="/"><img class="image" src="/public/logo.svg"></RouterLink>
-          <!-- <RouterLink class="nav_buttons" to="/addcomponent">Add</RouterLink> -->
-          <!-- <RouterLink class="nav_buttons" to="/component/1">build</RouterLink> -->
-
-
+        <RouterLink class="logo_button" to="/"><img class="image" src="/images/logo.svg"></RouterLink>
+        <!-- <RouterLink class="nav_buttons" to="/addcomponent">Add</RouterLink> -->
+        <!-- <RouterLink class="nav_buttons" to="/component/1">build</RouterLink> -->
 
 
 
-          <div class="right_side">
 
-            <a class="nav_buttons" href="/logout">Logout</a>
 
-          </div>
+        <div class="right_side">
 
-          
+          <a class="nav_buttons" href="/logout">Logout</a>
 
-        </nav>
-      </div>
-    </header>
+        </div>
 
-  <ClassInstanceTreeSidebar />
+        
 
-  <RouterView />
+      </nav>
+    </div>
+  </header>
 
-  <Popup_controller class="popup" />
 
-  <Error_controller />
+  <div class="screen">
+
+    <ClassInstanceTreeSidebar />
+
+    <RouterView />
+
+    <Popup_controller class="popup" />
+
+    <Error_controller />
+
+  </div>
+
+  
   
 
 </template>
 
 <style scoped lang="scss">
 
-    @use "/public/import.scss";
+  @use "@/style/import";
 
   .nav {
     margin: 0;
@@ -64,6 +71,13 @@ import Error_controller from '@/error/error_controller.vue';
     box-shadow: 0 0 5px rgb(88, 88, 88);
     margin-bottom: 0px;
     
+  }
+
+  .screen {
+    display: flex;
+    height: calc(100vh - 50px);
+    
+    margin-top: 50px;
   }
 
   .popup {

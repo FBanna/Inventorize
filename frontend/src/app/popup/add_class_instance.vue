@@ -85,7 +85,7 @@ import { clearActivePopup, opts, onSuccess } from './popup_state';
 
 <style lang="scss" scoped>
 
-    @use "/public/import";
+    @use "@/style/import";
 
     .menu{
         width: 300px;

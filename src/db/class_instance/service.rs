@@ -102,8 +102,6 @@ impl ClassInstanceServices for DB {
         .fetch_all(&*self.pool)
         .await?;
 
-        println!("result size is: {}", result.len());
-
         return Ok(ClassInstanceTree::to_tree(result));
     }
 

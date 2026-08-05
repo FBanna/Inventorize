@@ -171,16 +171,22 @@ CROSS JOIN LATERAL (
     ) AS attributes
     FROM component_class cc
     WHERE cc.component_id = c.component_id
-) component_classes
-
-WHERE EXISTS (
-    SELECT 1 FROM component_class cc
-    WHERE cc.component_id = c.component_id 
-    AND cc.class_instance_id = "
+) component_classes"
         );
 
-        query.push_bind(search.root);
-        query.push(")");
+        if let Some(root) = search.root {
+            query.push(
+            "\nWHERE EXISTS (
+                SELECT 1 FROM component_class cc
+                WHERE cc.component_id = c.component_id 
+                AND cc.class_instance_id = "
+            );
+
+            query.push_bind(root);
+            query.push(")");
+        }
+
+        
 
         for unit in search.units {
 

@@ -2,11 +2,11 @@
 <template>
 
     <li class="node" :style="{'paddingLeft': get_depth()}">
-        <img v-if="props.node.children.length != 0" class="drop_down" :isdropped="dropped" @click="drop()" src="/public/drop_down.svg">
+        <img v-if="props.node.children.length != 0" class="drop_down" :isdropped="dropped" @click="drop()" src="/images/drop_down.svg">
         <div class="text" @click="drop()">
             {{props.node.name}}
         </div>
-        <img class="add add_hide" @click="add" src="/public/add.svg">
+        <img class="add add_hide" @click="add" src="/images/add.svg">
     </li>
 
     <tree-element ref="children" v-if="dropped" v-for="child_node in props.node.children" :node="child_node" :depth="props.depth+1" :onSuccess="props.onSuccess" />
@@ -23,7 +23,7 @@ import { ref } from 'vue';
     const children = ref();
 
     function get_depth() {
-        return ((props.depth * 20).toString() + "px")
+        return ((props.depth * 20).toString() + "px") 
     }
 
     function drop() {
@@ -74,7 +74,7 @@ import { ref } from 'vue';
 
 <style lang="scss" scoped>
 
-@use "/public/import";
+@use "@/style/import";
 
 
 .text {

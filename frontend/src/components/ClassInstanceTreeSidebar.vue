@@ -8,7 +8,7 @@
 
             <TreeElement ref="children" v-for="root in tree" :node="root" :depth=0 :onSuccess="setup" />
 
-            <li class="end_add"><img class="add_img" @click="end_add" src="/public/add.svg"></li>
+            <li class="end_add"><img class="add_img" @click="end_add" src="/images/add.svg"></li>
 
         </ol>
 
@@ -88,23 +88,17 @@
 
 <style lang="scss" scoped>
 
-@use "/public/import";
+@use "@/style/import";
 
 .sidebar {
     background-color: import.$white;
-    position: fixed;
-    top: 50px;
-    bottom: 0px;
-    left: 0px;
-    width: 150px;
+
     display: flex;
+
+    width: 150px;
+    height: 100%;
+
     flex-direction: column;
-
-    
-    
-    //margin-bottom: 100px;
-
-    // overflow-clip-margin: 10px;
 }
 
 ol {
