@@ -29,7 +29,14 @@ pub struct ComponentClass {
 /// 
 ///     ]
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct ComponentClassSearch {
+pub struct UnitComponentClassSearch {
     pub class_instance_id: Uuid,
     pub facets: HashMap<String, Vec<Json>>
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ComponentSearch {
+    pub root: Uuid,
+    pub units: Vec<UnitComponentClassSearch>
 }

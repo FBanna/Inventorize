@@ -1,7 +1,7 @@
 
 use std::{collections::HashMap, io::Error, println, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::{ComponentClassSearch}, service::ComponentClassServices}}};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::{ComponentSearch, UnitComponentClassSearch}, service::ComponentClassServices}}};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
@@ -124,7 +124,7 @@ async fn main() -> Result<(), Error> {
 
     // search
 
-    let search = ComponentClassSearch {
+    let search = UnitComponentClassSearch {
         class_instance_id: resistor_class_instance_id,
         facets: HashMap::from([
             (
@@ -139,8 +139,12 @@ async fn main() -> Result<(), Error> {
     };
 
     let search_result = component_db.search_components_with_attributes_on_component_class(
-        resistor_class_instance_id, 
-        Vec::from([search])
+
+        ComponentSearch {
+            root: resistor_class_instance_id,
+            units: Vec::from([search])
+        }
+        
     ).await;
 
     if let Err(e) = search_result {

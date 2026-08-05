@@ -4,7 +4,7 @@ use sqlx::{Execute, PgExecutor, Postgres, QueryBuilder};
 use uuid::Uuid;
 use serde_json::Value as Json;
 
-use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, ComponentClassSearch}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
+use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, ComponentSearch}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
 
 
 
@@ -18,8 +18,8 @@ pub trait ComponentClassServices {
     async fn get_components_from_class_instance(&self, class_instance_id: Uuid) -> Result<Vec<Component>, AppError>;
     async fn get_class_instances_from_component(&self, component_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
     async fn remove_component_class(&self, component_id: Uuid, class_instance_id: Uuid) -> Result<(), AppError>;
-    
-    async fn search_components_with_attributes_on_component_class(&self, root: Uuid, searches: Vec<ComponentClassSearch>) -> Result<Vec<ComponentWithAttributes>, AppError>;
+
+    async fn search_components_with_attributes_on_component_class(&self, search: ComponentSearch) -> Result<Vec<ComponentWithAttributes>, AppError>;
 
     async fn update_component_class(&self, component_class: ComponentClass) -> Result<(), AppError>;
 
@@ -153,7 +153,7 @@ impl ComponentClassServices for DB {
     /// ```
     /// 
     /// and returns a list of Component
-    async fn search_components_with_attributes_on_component_class(&self, root: Uuid, searches: Vec<ComponentClassSearch>) -> Result<Vec<ComponentWithAttributes>, AppError> {
+    async fn search_components_with_attributes_on_component_class(&self, search: ComponentSearch) -> Result<Vec<ComponentWithAttributes>, AppError> {
 
 
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
@@ -179,21 +179,21 @@ WHERE EXISTS (
     AND cc.class_instance_id = "
         );
 
-        query.push_bind(root);
+        query.push_bind(search.root);
         query.push(")");
 
-        for search in searches {
+        for unit in search.units {
 
 
             // BUILD EXIST STATEMENT
 
             query.push("\nAND EXISTS (SELECT 1 FROM component_class cc WHERE cc.component_id = c.component_id AND cc.class_instance_id = ");
             
-            query.push_bind(search.class_instance_id);
+            query.push_bind(unit.class_instance_id);
 
             // BUILD SELECT STATEMENT
 
-            for field in search.facets {
+            for field in unit.facets {
 
                 query.push(" AND cc.attributes->");
                 query.push_bind(field.0);
