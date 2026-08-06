@@ -5,7 +5,7 @@ import ComponentSearch from '../views/ComponentSearch.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {path: "/", component: ComponentSearch},
+    {path: "/:uuid", component: ComponentSearch, props: true},
     {path: "/classes", component: Classes}
   ],
 })

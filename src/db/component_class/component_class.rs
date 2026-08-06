@@ -40,3 +40,8 @@ pub struct ComponentSearch {
     pub root: Option<Uuid>,
     pub units: Vec<UnitComponentClassSearch>
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SearchFacets {
+    pub facets: HashMap<String, Vec<Json>>
+}

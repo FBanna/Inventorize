@@ -4,7 +4,7 @@ use sqlx::{Execute, PgExecutor, Postgres, QueryBuilder};
 use uuid::Uuid;
 use serde_json::Value as Json;
 
-use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, ComponentSearch}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
+use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, ComponentSearch, SearchFacets}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
 
 
 
@@ -20,6 +20,7 @@ pub trait ComponentClassServices {
     async fn remove_component_class(&self, component_id: Uuid, class_instance_id: Uuid) -> Result<(), AppError>;
 
     async fn search_components_with_attributes_on_component_class(&self, search: ComponentSearch) -> Result<Vec<ComponentWithAttributes>, AppError>;
+    async fn get_facets_from_search_on_component_class(&self, search: ComponentSearch) -> Result<Vec<SearchFacets>, AppError>;
 
     async fn update_component_class(&self, component_class: ComponentClass) -> Result<(), AppError>;
 
@@ -174,6 +175,8 @@ CROSS JOIN LATERAL (
 ) component_classes"
         );
 
+
+        // Only select components of a certain type
         if let Some(root) = search.root {
             query.push(
             "\nWHERE EXISTS (
@@ -187,7 +190,7 @@ CROSS JOIN LATERAL (
         }
 
         
-
+        // build filtering for reach class instance
         for unit in search.units {
 
 
@@ -224,6 +227,10 @@ CROSS JOIN LATERAL (
         Ok(result)
 
         
+    }
+    
+    async fn get_facets_from_search_on_component_class(&self, search: ComponentSearch) -> Result<Vec<SearchFacets>, AppError> {
+        todo!()
     }
 
 
