@@ -20,7 +20,7 @@ pub trait ComponentClassServices {
     async fn remove_component_class(&self, component_id: Uuid, class_instance_id: Uuid) -> Result<(), AppError>;
 
     async fn search_components_with_attributes_on_component_class(&self, search: ComponentSearch) -> Result<Vec<ComponentWithAttributes>, AppError>;
-    async fn get_facets_from_search_on_component_class(&self, search: ComponentSearch) -> Result<Vec<SearchFacets>, AppError>;
+    async fn get_facets_from_search_on_component_class(&self, search: ComponentSearch) -> Result<SearchFacets, AppError>;
 
     async fn update_component_class(&self, component_class: ComponentClass) -> Result<(), AppError>;
 
@@ -179,46 +179,18 @@ CROSS JOIN LATERAL (
         // Only select components of a certain type
         if let Some(root) = search.root {
             query.push(
-            "\nWHERE EXISTS (
-                SELECT 1 FROM component_class cc
-                WHERE cc.component_id = c.component_id 
-                AND cc.class_instance_id = "
+            "\nJOIN component_class root
+                ON root.component_id = c.component_id
+                AND root.class_instance_id ="
             );
 
             query.push_bind(root);
-            query.push(")");
+            //query.push(")");
         }
 
-        
-        // build filtering for reach class instance
-        for unit in search.units {
+        build_select(search, &mut query);
 
-
-            // BUILD EXIST STATEMENT
-
-            query.push("\nAND EXISTS (SELECT 1 FROM component_class cc WHERE cc.component_id = c.component_id AND cc.class_instance_id = ");
-            
-            query.push_bind(unit.class_instance_id);
-
-            // BUILD SELECT STATEMENT
-
-            for field in unit.facets {
-
-                query.push(" AND cc.attributes->");
-                query.push_bind(field.0);
-
-                query.push(" = ANY(");
-                query.push_bind(field.1);
-                query.push(")");
-
-            }
-
-
-            query.push(")");
-
-
-            
-        }
+        // println!("{}", query.build().sql().as_str());
 
 
         let result: Vec<ComponentWithAttributes> = query.build_query_as().fetch_all(&*self.pool).await?;
@@ -229,8 +201,88 @@ CROSS JOIN LATERAL (
         
     }
     
-    async fn get_facets_from_search_on_component_class(&self, search: ComponentSearch) -> Result<Vec<SearchFacets>, AppError> {
-        todo!()
+    async fn get_facets_from_search_on_component_class(&self, search: ComponentSearch) -> Result<SearchFacets, AppError> {
+        
+        let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
+            "
+WITH facets AS (
+    SELECT
+        cc.class_instance_id,
+        f.key,
+        f.value,
+        COUNT(*) AS cnt
+    FROM component c");
+
+        // Only select components of a certain type
+        if let Some(root) = search.root {
+            query.push(
+            "\nJOIN component_class root
+                ON root.component_id = c.component_id
+                AND root.class_instance_id ="
+            );
+
+            query.push_bind(root);
+            //query.push(")");
+        }
+
+        query.push(
+            "\nJOIN component_class cc
+                ON cc.component_id = c.component_id
+
+            CROSS JOIN LATERAL jsonb_each(cc.attributes) AS f(key, value)");
+
+
+        build_select(search, &mut query);
+
+        query.push(
+"GROUP BY
+    cc.class_instance_id,
+    f.key,
+    f.value
+),
+
+facet_values AS (
+    SELECT
+        class_instance_id,
+        key,
+        jsonb_agg(
+            jsonb_build_object(
+                'value', value,
+                'count', cnt
+            )
+            ORDER BY cnt DESC
+        ) AS values_json
+    FROM facets
+    GROUP BY
+        class_instance_id,
+        key
+),
+
+class_facets AS (
+    SELECT
+        class_instance_id,
+        jsonb_object_agg(key, values_json) AS facets
+    FROM facet_values
+    GROUP BY class_instance_id
+)
+
+SELECT jsonb_agg(
+    jsonb_build_object(
+        'class_instance_id', class_instance_id,
+        'facets', facets
+    )
+    ORDER BY class_instance_id
+)
+FROM class_facets;");
+
+        
+
+        let result: SearchFacets = query.build_query_as().fetch_one(&*self.pool).await?;
+
+
+        Ok(result)
+        
+
     }
 
 
@@ -271,27 +323,50 @@ CROSS JOIN LATERAL (
 }
 
 
-// // BUILD ACTUAL ATTRIBUTE SEARCHES
-// fn build_select(search: HashMap<String, Vec<Json>>) -> String {
 
 
-//     let mut query = QueryBuilder::default();
-
-//     for field in search {
-
-//         query.push(" AND cc.attributes->>");
-//         query.push_bind(field.0);
-//         query.push(" = ANY(");
-//         query.push_bind(field.1);
-//         query.push(")");
-
-//     }
-
-//     let result = query.build().sql().as_str().to_owned();
-
-//     println!("select: {}", result);
-
-//     return result;
+// BUILD ACTUAL ATTRIBUTE SEARCHES
+fn build_select(search: ComponentSearch, q: &mut QueryBuilder<Postgres>) {
 
 
-// }
+    let mut first = true;
+
+    // build filtering for reach class instance
+    for unit in search.units {
+
+        // MANAGE AND
+
+        if first {
+            q.push("\nWHERE ");
+            first = false;
+        } else {
+            q.push("\nAND ");
+        }
+
+
+        // BUILD EXIST STATEMENT
+
+        q.push("EXISTS (SELECT 1 FROM component_class cc WHERE cc.component_id = c.component_id AND cc.class_instance_id = ");
+        
+        q.push_bind(unit.class_instance_id);
+
+        // BUILD SELECT STATEMENT
+
+        for field in unit.facets {
+
+            q.push(" AND cc.attributes->");
+            q.push_bind(field.0);
+
+            q.push(" = ANY(");
+            q.push_bind(field.1);
+            q.push(")");
+
+        }
+
+
+        q.push(")");
+        
+    }
+
+
+}

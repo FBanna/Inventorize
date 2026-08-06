@@ -124,7 +124,7 @@ async fn main() -> Result<(), Error> {
 
     // search
 
-    let search = UnitComponentClassSearch {
+    let search_unit = UnitComponentClassSearch {
         class_instance_id: resistor_class_instance_id,
         facets: HashMap::from([
             (
@@ -138,12 +138,16 @@ async fn main() -> Result<(), Error> {
         ])
     };
 
+    let search = ComponentSearch {
+            root: Some(resistor_class_instance_id),
+            units: Vec::from([search_unit])
+        };
+
+
+
     let search_result = component_db.search_components_with_attributes_on_component_class(
 
-        ComponentSearch {
-            root: Some(resistor_class_instance_id),
-            units: Vec::from([search])
-        }
+        search.clone()
         
     ).await;
 
@@ -151,6 +155,18 @@ async fn main() -> Result<(), Error> {
         println!("BIG ERROR {:#}", e);
     } else {
         println!("{:#?}", search_result.unwrap());
+    }
+
+    let facets = component_db.get_facets_from_search_on_component_class(
+
+        search
+
+    ).await;
+
+    if let Err(e) = facets {
+        println!("BIG ERROR {:#}", e);
+    } else {
+        println!("{:#?}", facets.unwrap());
     }
 
 

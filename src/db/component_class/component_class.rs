@@ -41,7 +41,32 @@ pub struct ComponentSearch {
     pub units: Vec<UnitComponentClassSearch>
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+// pub struct UnitComponentClassFacet {
+//     pub class_instance_id: Uuid,
+//     pub facets: HashMap<String, Vec<Json>> 
+// }
+
+// [
+// 
+//     {
+//         class_instance_id: UUID,
+//         facets: {
+//             "resistance": [
+//                 {"value": ..., "count": ...},
+//                 {...}
+//             ]
+//         }
+//     },
+//     {
+//         ...
+//     }
+// 
+// ]
+// #[derive(Serialize, Deserialize, Clone, Debug)]
+// pub struct SearchFacets {
+//     pub facets: Json
+// }
+#[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
 pub struct SearchFacets {
-    pub facets: HashMap<String, Vec<Json>>
+    pub jsonb_agg: Json
 }
