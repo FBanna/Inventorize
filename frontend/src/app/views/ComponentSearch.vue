@@ -113,11 +113,29 @@
             
         </span>
 
-        <span class="search-container">
+        <span class="facet-container">
 
-        <span class="search-field" v-for="(prompt, index) of prompts">
+        <span class="facet-unit" v-for="unit of prompts">
 
-            {{ prompt.name }}
+          <!-- {{ prompt.class_instance_id }} -->
+
+          <span class="facet" v-for="(facets, key) in unit.facets">
+
+            {{ key }}
+
+            <!-- <input type="text"> -->
+
+            <select multiple class="results">
+                <option class="result" v-for="facet in facets">
+                  {{ facet.value }} - {{ facet.count }}
+                </option>
+              </select>
+
+            <br>
+
+          </span>
+
+            <!-- {{ prompt.name }}
 
             <br>
             <input type="text" v-model="prompt_search[index]" placeholder="Search" class="search">
@@ -127,7 +145,7 @@
                 <option class="result" v-for="result in prompt.prompts" v-show="(result[0].toLowerCase()).includes(prompt_search[index].toLowerCase())">
                 {{ result[0] }}
                 </option>
-            </select>
+            </select> -->
 
             
 
@@ -146,13 +164,14 @@
 
 
 <script setup lang="ts">
-import { post_search_get_component_with_attributes } from '@/api/search';
+import { post_search_get_component_with_attributes, post_search_get_facets } from '@/api/search';
 import { pushAppError } from '@/error/error_state';
 import { ref } from 'vue';
 
     const props = defineProps(["uuid"])
 
     const results = ref()
+    const prompts = ref()
 
 
 
@@ -165,7 +184,13 @@ import { ref } from 'vue';
                 []
             )
 
+            let rest = await post_search_get_facets(
+                props.uuid,
+                []
+            )
+
             results.value = res
+            prompts.value = rest
         } catch(e) {
             pushAppError(e)
         }
