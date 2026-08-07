@@ -97,7 +97,13 @@
 
     <div class="window">
 
-        <span class="search-tools">
+        
+
+        <div class="search-container">
+
+
+
+          <span class="search-tools">
 
             <button class="button search-button" @click="search_components">Search</button>
 
@@ -109,49 +115,62 @@
 
             <input @click="selected = []" class="selector" type="checkbox" v-model="selecting" id="select_check">
             <label for="select_check"></label> -->
-
-            
-        </span>
-
-        <span class="facet-container">
-
-        <span class="facet-unit" v-for="unit of prompts">
-
-          <!-- {{ prompt.class_instance_id }} -->
-
-          <span class="facet" v-for="(facets, key) in unit.facets">
-
-            {{ key }}
-
-            <!-- <input type="text"> -->
-
-            <select multiple class="results">
-                <option class="result" v-for="facet in facets">
-                  {{ facet.value }} - {{ facet.count }}
-                </option>
-              </select>
-
-            <br>
-
+              
           </span>
 
-            <!-- {{ prompt.name }}
+          <span class="facet-container">
 
-            <br>
-            <input type="text" v-model="prompt_search[index]" placeholder="Search" class="search">
-            <br>
+            <span class="facet-unit" v-for="unit of prompts">
 
-            <select v-model="prompt_selected[index]" multiple="multiple" class="results">
-                <option class="result" v-for="result in prompt.prompts" v-show="(result[0].toLowerCase()).includes(prompt_search[index].toLowerCase())">
-                {{ result[0] }}
-                </option>
-            </select> -->
+            <!-- {{ prompt.class_instance_id }} -->
+
+              {{ unit.name }}
+
+              <div class="facets">
+                
+                <span class="facet" v-for="(facets, key) in unit.facets">
+
+                  {{ key }}
+
+                  <!-- <input type="text"> -->
+
+                  <select multiple class="results">
+                      <option class="result" v-for="facet in facets">
+                        {{ facet.value }} - {{ facet.count }}
+                      </option>
+                    </select>
+
+                  <br>
+
+                </span>
+              </div>
+
+              
+
+              <!-- {{ prompt.name }}
+
+              <br>
+              <input type="text" v-model="prompt_search[index]" placeholder="Search" class="search">
+              <br>
+
+              <select v-model="prompt_selected[index]" multiple="multiple" class="results">
+                  <option class="result" v-for="result in prompt.prompts" v-show="(result[0].toLowerCase()).includes(prompt_search[index].toLowerCase())">
+                  {{ result[0] }}
+                  </option>
+              </select> -->
 
             
 
             </span>
 
-        </span>
+
+
+          </span>
+
+
+
+          
+          </div>
         
         
 
@@ -211,9 +230,126 @@ import { ref } from 'vue';
     @use "@/style/import";
 
     .window {
-        background-color: import.$primary;
+        background-color: rgba(255, 0, 0, 0.068);
         width: 100%;
         height: 100%;
+        min-width: 0;
+    }
+
+    .search-container {
+      width: 100%;
+      height: 200px;
+      display: flex;
+      flex-direction: row;
+      flex-shrink: 0;
+
+      background-color: import.$white;
+
+    }
+
+    .facet-container {
+
+      height: 100%;
+      flex: 1;
+      min-width: 0;
+
+      //background-color: import.$secondary;
+      box-sizing: border-box;
+      //display: block;
+      padding: 5px;
+
+      white-space: nowrap;
+      overflow-y: hidden;
+      overflow-x: auto;
+    }
+
+    .facet-unit {
+
+      background-color: import.$secondary;
+
+      height: 100%;
+      box-sizing: border-box;
+      display: inline-block;
+      padding: 5px;
+      //width: 200px;
+      width: fit-content;
+      //background-color: white;
+      margin-right: 5px;
+
+      font-weight: bolder;
+
+      border: 1px black solid;
+
+
+
+    }
+
+    // .facets {
+    //   border: 1px red solid;
+    //   // height: 100vh;
+    // }
+
+    .facet {
+
+
+
+      height: 100%;
+      box-sizing: border-box;
+      display: inline-block;
+      padding: 5px;
+      width: 200px;
+      //background-color: white;
+      margin: 0 2px 0 2px;
+      
+
+      font-weight: 500;
+
+      text-align: center;
+
+
+      border: 1px black solid;
+      border-radius: 3px;
+
+
+    }
+
+    .results {
+
+
+
+      margin-top: 3px;
+      margin-bottom: 3px;
+      width: 100%;
+      height: calc(100% - 45px);
+      box-sizing: border-box;
+      display: block;
+      border: none;
+      outline: none;
+
+      white-space: nowrap;
+      overflow-y: auto;
+      overflow-x: hidden;
+      
+      
+    }
+
+
+    .search-tools {
+      //position: relative;
+      //float: left;
+
+
+
+      box-sizing: border-box;
+      //display: inline-block;
+      padding: 5px;
+      width: 200px;
+      height: 100%;
+      background-color: import.$white;
+      margin: 0;
+
+      font-weight: bolder;
+      
     }
 
 </style>

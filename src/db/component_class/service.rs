@@ -208,6 +208,7 @@ CROSS JOIN LATERAL (
 WITH facets AS (
     SELECT
         cc.class_instance_id,
+        cl.name,
         f.key,
         f.value,
         COUNT(*) AS cnt
@@ -229,6 +230,12 @@ WITH facets AS (
             "\nJOIN component_class cc
                 ON cc.component_id = c.component_id
 
+            JOIN class_instance ci
+                ON ci.class_instance_id = cc.class_instance_id
+
+            JOIN class cl
+                ON cl.class_id = ci.class_id
+
             CROSS JOIN LATERAL jsonb_each(cc.attributes) AS f(key, value)");
 
 
@@ -237,6 +244,7 @@ WITH facets AS (
         query.push(
 "GROUP BY
     cc.class_instance_id,
+    cl.name,
     f.key,
     f.value
 ),
@@ -244,6 +252,7 @@ WITH facets AS (
 facet_values AS (
     SELECT
         class_instance_id,
+        name,
         key,
         jsonb_agg(
             jsonb_build_object(
@@ -255,20 +264,23 @@ facet_values AS (
     FROM facets
     GROUP BY
         class_instance_id,
+        name,
         key
 ),
 
 class_facets AS (
     SELECT
         class_instance_id,
+        name,
         jsonb_object_agg(key, values_json) AS facets
     FROM facet_values
-    GROUP BY class_instance_id
+    GROUP BY class_instance_id, name
 )
 
 SELECT jsonb_agg(
     jsonb_build_object(
         'class_instance_id', class_instance_id,
+        'name', name,
         'facets', facets
     )
     ORDER BY class_instance_id

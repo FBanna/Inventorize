@@ -91,10 +91,12 @@
 @use "@/style/import";
 
 .sidebar {
-    background-color: import.$white;
+    background-color: import.$light_grey;
 
     display: flex;
+    flex-shrink: 0;
 
+    flex: 0 0 150px;
     width: 150px;
     height: 100%;
 

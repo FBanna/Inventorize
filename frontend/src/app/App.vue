@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ClassInstanceTreeSidebar from '@/components/ClassInstanceTreeSidebar.vue';
+import ClassInstanceTreeSidebar from '@/app/components/ClassInstanceTreeSidebar.vue';
 import Popup_controller from './popup/popup_controller.vue';
 import Error_controller from '@/error/error_controller.vue';
 
