@@ -9,6 +9,10 @@ export async function post_search_get_component_with_attributes(
     units: any
     
 ) {
+
+    if (root == null) {
+        root = null
+    }
     
     let res = await fetchJSON("api/post_search_get_component_with_attributes", {
         method: "POST",

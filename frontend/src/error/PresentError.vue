@@ -1,8 +1,21 @@
 <script setup lang="ts">
     import type { StatusError } from '@/api/util';
     import { ref } from 'vue';
+import { errors } from './error_state';
 
-  const props = defineProps(["error"])
+    const props = defineProps(["error"])
+
+    // const hover = ref(false)
+
+    
+    // function kill() {
+
+    //   while (hover.value) {}
+
+    //   errors.value.
+
+    // }
+
 
 
     // function showError(error: StatusError) {
@@ -26,6 +39,7 @@
   <div class="error_box">
     <!-- <button class="close" @click="show = false">&#10006</button> -->
     {{ props.error.error.message }}
+
   </div>
 
 

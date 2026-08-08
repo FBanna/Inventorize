@@ -1,4 +1,4 @@
-use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::get_all_classes::get_all_classes, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance}, component::{post_component::{self, post_component}, post_search_get_component_with_attributes::post_search_get_component_with_attributes, post_search_get_facets::post_search_get_facets}}, label_api::post_build_label}};
+use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::{get_all_classes::get_all_classes, post_class_instance_id_get_class::post_class_instance_id_get_class}, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance}, component::{post_component::{self, post_component}, post_search_get_component_with_attributes::post_search_get_component_with_attributes, post_search_get_facets::post_search_get_facets}}, label_api::post_build_label}};
 
 // mod login_api;
 // pub mod login_api;
@@ -128,7 +128,8 @@ fn api() -> Router<Arc<ServerState>>{
 
 
         // CLASS
-        .route("/get_all_classes", get(get_all_classes));
+        .route("/get_all_classes", get(get_all_classes))
+        .route("/post_class_instance_id_get_class", post(post_class_instance_id_get_class));
 
         // .route("/post_update_component", post(post_update_component::post_update_component))
         // .route("/post_build_label", post(post_build_label::post_build_label))

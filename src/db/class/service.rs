@@ -76,14 +76,11 @@ impl ClassServices for DB {
 
     async fn get_class_from_class_instance(&self, class_instance_id: Uuid) -> Result<Class, AppError> {
 
-        // SELECT
-        //             ci.class_instance_id,
-        //             ci.class_id,
-        //             ci.parent,
-        //             a.depth + 1
-        //         FROM class_instance ci
-        //         JOIN ancestors a
-        //             ON ci.class_instance_id = a.parent
+
+        // NEED TO RE-EVALUATE THIS
+        // CURRENTLY OK... I GUESS. MAY NEED A DIFFERENT FUNCTION: eg.
+        //
+        // NEED TO GET THE FIELDS FOR FRONTEND, SO HAVE TO ADD "STANDARD" FIELDS ON AS WELL AS ORIGIN ETC. -> need a new function!
 
         let result: Class = sqlx::query_as("
             SELECT c.* FROM class c

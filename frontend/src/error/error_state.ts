@@ -22,7 +22,7 @@ export function pushAppError(new_error: any) {
         id: next
     });
 
-    setTimeout(() => removeError(id), 5000);
+    setTimeout(() => removeError(id), 10000);
 }
 
 export function removeError(id: number) {

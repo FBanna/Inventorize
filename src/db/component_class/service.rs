@@ -346,6 +346,19 @@ fn build_select(search: ComponentSearch, q: &mut QueryBuilder<Postgres>) {
     // build filtering for reach class instance
     for unit in search.units {
 
+
+        // check if they are all empty - THIS IS REALLY BAD. FIX THIS
+        let mut is_empty = true;
+        for (key, values) in unit.facets.clone() {
+            if !values.is_empty() {
+                is_empty = false;
+            }
+        }
+
+        if is_empty {
+            continue;
+        }
+
         // MANAGE AND
 
         if first {
@@ -364,13 +377,19 @@ fn build_select(search: ComponentSearch, q: &mut QueryBuilder<Postgres>) {
 
         // BUILD SELECT STATEMENT
 
-        for field in unit.facets {
+        for (key, values) in unit.facets {
+
+
+            // CHECK IF EMPTY AND SKIP
+            if values.is_empty() {
+                continue;
+            }
 
             q.push(" AND cc.attributes->");
-            q.push_bind(field.0);
+            q.push_bind(key);
 
             q.push(" = ANY(");
-            q.push_bind(field.1);
+            q.push_bind(values);
             q.push(")");
 
         }

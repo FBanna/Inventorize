@@ -11,9 +11,11 @@ pub async fn post_search_get_facets(
 
     State(shared_state): State<Arc<ServerState>>,
     Json(search): Json<ComponentSearch>
-) -> Result<Json<Value>, AppError> {
+) -> Result<Json<Option<Value>>, AppError> {
 
     let result = shared_state.db.get_facets_from_search_on_component_class(search).await?;
+
+
 
     Ok(Json(result.jsonb_agg))
 

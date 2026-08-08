@@ -136,6 +136,16 @@ async fn main() -> Result<(), Error> {
                 Vec::from([json!("0402")])
             )
         ])
+        // facets: Vec::from([
+        //     SearchFacet {
+        //         key: "resistance".to_owned(),
+        //         values: Vec::from([json!(60)])
+        //     },
+        //     SearchFacet {
+        //         key: "package".to_owned(),
+        //         values: Vec::from([json!("0402")])
+        //     }
+        // ])
     };
 
     let search = ComponentSearch {
