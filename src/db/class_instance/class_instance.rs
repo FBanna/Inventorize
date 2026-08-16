@@ -16,6 +16,11 @@ pub struct ClassInstance {
 }
 
 
+// pub struct InstanceField {
+//     pub class_instance_id: Uuid,
+//     pub fields: Json
+// }
+
 // ASSOCIATED
 
 #[derive(Clone, Debug, FromRow)]

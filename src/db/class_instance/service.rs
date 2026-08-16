@@ -22,6 +22,8 @@ pub trait ClassInstanceServices {
 
     async fn get_class_ancestors_from_instance(&self, class_instance_id: Uuid) -> Result<Vec<ClassClassInstance>, AppError>;
 
+    //async fn get_facets_from_instance(&self, class_instance_id: Option<Uuid>) -> Result<>
+
     // async fn update_class_instance(&self, class_instance_id: Uuid, class_instance: ClassInstance) -> Result<Uuid, AppError>;
 
 }

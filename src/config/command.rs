@@ -5,13 +5,6 @@ use std::{fs, path::{Path, PathBuf}, process::exit};
 use clap::{arg, command, value_parser, Command};
 use config::{Config, read_config, DEFAULT_CONFIG_FILE};
 
-
-
-
-
-
-
-
 pub async fn get_config() -> Config{
     let mut config: Config = Config::new();
 
@@ -71,6 +64,8 @@ pub async fn get_config() -> Config{
 
         DB::create(&config.db_location).await;
 
+        
+
         let label = Path::new(&config.label_location);
 
         if !label.exists(){
@@ -82,7 +77,7 @@ pub async fn get_config() -> Config{
         let asset = Path::new(&config.asset_location);
 
         if !asset.exists(){
-            fs::create_dir(asset).expect("Could not create label directory!");
+            fs::create_dir(asset).expect("Could not create asset directory!");
         } else {
             println!("Asset directory already exists");
         }

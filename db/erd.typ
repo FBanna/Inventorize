@@ -40,7 +40,8 @@
         ("name", "text"),
         ("stock", "int"),
         ("manufacturer*", "text"),
-        ("label*", "text"),        
+        ("label", "uuid")
+        
       )
 
     )
@@ -60,7 +61,7 @@
     )
   ),
 
-  node((1,0), name: <origin>,
+  node((1,0.099999), name: <origin>,
     erd_table(
       name: "Origin",
       key: (
@@ -68,7 +69,8 @@
       ),
       rows: (
         ("name", "text"),
-        ("url", "text")
+        ("url", "text"),
+        ("hurl", "path")
       )
     )
   
@@ -90,7 +92,7 @@
     )
   ), 
 
-  node((1,2), name: <file>,
+  node((1,1.7), name: <file>,
 
     erd_table(
       name: "component_file",
@@ -106,7 +108,7 @@
     )
   
   ),
-  node((2,2.4), name: <image>,
+  node((1,2.4), name: <image>,
 
     erd_table(
       name: "component_image",
@@ -117,6 +119,20 @@
         ("full", "bytea"),
         ("thumb", "bytea")
         
+      )
+    )
+  
+  ),
+  node((2,2), name: <label>,
+
+    erd_table(
+      name: "label",
+      key: (
+        ("label_id", "uuid"),
+      ),
+      rows: (
+        ("name", "text"),
+        ("path", "path"),
       )
     )
   
@@ -179,7 +195,7 @@
     )
   ),
 
-  node((1,3), name: <error>,
+  node((0,3), name: <error>,
     erd_table(
       name: "error",
       key: (("component_id", "uuid"),),
@@ -245,14 +261,15 @@
   edge(<class_instance>, <component_class>, "-n!"),
   edge(<class>, <class_instance>, "-n?"),
   edge(<component>, <component_origin>, "-n?"),
-  edge(<component>, (1.7,1), (1.7,2), <file>, "-n?"), 
-  edge(<component>, <image>, "-1?"),
+  edge(<component>, (1.5,1), (1.5,1.7), <file>, "-n?"), 
+  edge(<component>, (1.53,1), (1.53,2.4), <image>, "-1?"),
   edge(<origin>, (1,0.1), <component_origin>, "-n?"),
   // edge(<component>, (1.5,0.75),(1.5,0), <smd>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,1), <resistor>, "-1?"),
   //edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-n?"),
   //edge(<class>, <class_attributes>, "-1?"),
-  edge(<component>, (1.6,1.2), (1.5,1.2), (1.5,1), <component_class>, "-n!")
+  edge(<component>, <component_class>, "-n!"),
+  edge(<label>, <component>, "-n?")
 
   //fletcher.edge(<class.south>, (0,0.5), <component.west>, "-n")
 

@@ -58,7 +58,6 @@ impl TransportClass {
     /// 
     fn verify_attributes(&self, attributes: &Json) -> Result<(), AppError> {
 
-
         let attribute_schema_str = include_str!("./attribute_schema.json");
 
         let schema: Json = serde_json::from_str(attribute_schema_str).unwrap();
