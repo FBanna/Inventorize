@@ -34,7 +34,8 @@
     .screen {
         width: 100%;
         height: 100%;
-        position: fixed;
+        top: 0;
+        position: absolute;
         background-color: rgba(175, 175, 175, 0.301);
 
         display: flex;

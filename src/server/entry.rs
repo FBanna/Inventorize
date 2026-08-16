@@ -1,4 +1,4 @@
-use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::{get_all_classes::get_all_classes, post_class_instance_id_get_class::post_class_instance_id_get_class}, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance}, component::{post_component::{self, post_component}, post_search_get_component_with_attributes::post_search_get_component_with_attributes, post_search_get_facets::post_search_get_facets}}, embedded_dir::embedded_dir, label_api::post_build_label}};
+use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::{get_all_classes::get_all_classes, post_class_instance_id_get_class::post_class_instance_id_get_class}, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance}, component::{post_component::{self, post_component}, post_search_get_component_with_attributes::post_search_get_component_with_attributes, post_search_get_facets::post_search_get_facets}}, embedded_dir::{self}, label_api::post_build_label}};
 
 // mod login_api;
 // pub mod login_api;
@@ -18,6 +18,18 @@ use super::server_state::ServerState;
 use typst::foundations::ops::pos;
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::{cors::{Any, CorsLayer}, services::{ServeDir, ServeFile}};
+
+
+static LOGIN: &str = include_str!("../../target/dist/login.html");
+static MAIN: &str = include_str!("../../target/dist/index.html");
+
+#[derive(Embed)]
+#[folder = "./target/dist/assets"]
+struct Assets;
+
+#[derive(Embed)]
+#[folder = "./target/dist/images"]
+struct Images;
 
 
 pub async fn start_server(config: Config, db: DB) -> tokio::task::JoinHandle<()> {
@@ -44,32 +56,25 @@ pub async fn start_server(config: Config, db: DB) -> tokio::task::JoinHandle<()>
     //static ASSETS: Dir = include_dir!("$CARGO_MANIFEST_DIR");
     // static IMAGES: Dir = include_dir!("$CARGO_TARGET_DIR/dist/images");
 
-    let prot_frontend: Router<Arc<ServerState>>;
+    let public_frontend: Router<Arc<ServerState>>;
 
 
 
 
     // RELEASE BUILD
-    //#[cfg(not(debug_assertions))]
+    #[cfg(not(debug_assertions))]
     {
 
-        #[derive(Embed)]
-        #[folder = "./target/dist/assets"]
-        struct Assets;
-
-        #[derive(Embed)]
-        #[folder = "./target/dist/images"]
-        struct Images;
-
-        let LOGIN = include_str!("../../target/dist/login.html");
+        
         // static ASSETS: Dir = include_dir!("../dist/assets");
         // static IMAGES: Dir = include_dir!("../dist/images");
 
-        prot_frontend = Router::new()
-            .route("/login", get(|| async {
-                Html(LOGIN).into_response()
-            }))
-            .nest_service("/assets", embedded_dir::<Assets>());
+        public_frontend = Router::new()
+            .route("/login", get( || async { Html(LOGIN).into_response() }))
+            .route("/images/{*path}", get(embedded_dir::handle_dir::<Images>))
+            
+            .route("/assets/{*path}", get(embedded_dir::handle_dir::<Assets>));
+            // .nest_service("/assets", );
             // .nest_service("/login", ServeDir::new("./dist/login.html"))
             // .nest_service("/assets", ServeDir::new("./dist/assets"))
             // .nest_service("/images", ServeDir::new("./dist/images"));
@@ -80,9 +85,10 @@ pub async fn start_server(config: Config, db: DB) -> tokio::task::JoinHandle<()>
     // DEBUG BUILD
     #[cfg(debug_assertions)]
     {
-        prot_frontend = Router::new()
+        public_frontend = Router::new()
         .nest_service("/login", ServeDir::new("../dist/login.html"))
         .nest_service("/assets", ServeDir::new("../dist/assets"))
+    
         //.nest_service("/test", Se)
         .nest_service("/images", ServeDir::new("../dist/images"));
 
@@ -92,13 +98,15 @@ pub async fn start_server(config: Config, db: DB) -> tokio::task::JoinHandle<()>
 
     let app = Router::new()
 
-        .merge(protected())
+        
 
+        
+
+        .merge(public_frontend)
+        //.nest_service("/data", ServeDir::new("./data"))
         .route("/login_api", post(handler::login))
 
-        .merge(prot_frontend)
-        .nest_service("/data", ServeDir::new("./data"))
-
+        .merge(protected())
         .route("/logout", get(handler::logout))
         
         .layer(auth_layer)
@@ -177,21 +185,38 @@ fn api() -> Router<Arc<ServerState>>{
 
 fn protected() -> Router<Arc<ServerState>>{
 
+    let mut protected = Router::new().nest("/api", api());
+
+    // #[cfg(not(debug_assertions))]
+    // let service = ServeFile::new("./dist/index.html");
+    // #[cfg(debug_assertions)]
+    // let service = ServeFile::new("../dist/index.html");
+
     #[cfg(not(debug_assertions))]
-    let service = ServeFile::new("./dist/index.html");
+    {
+        protected = protected
+            //.fallback(get( || async { Html(MAIN).into_response() }))
+            .route("/", get(|| async {
+                Html(MAIN).into_response()
+            }))
+            .route("/{*path}", get(|| async {
+                Html(MAIN).into_response()
+            }))
+            .route_layer(login_required!(Backend, login_url = "/login"));
+    }
     #[cfg(debug_assertions)]
-    let service = ServeFile::new("../dist/index.html");
+    {
+        protected = protected.fallback_service(ServeFile::new("../dist/index.html"));
+    }
 
 
-    let protected = Router::new()
-        .route_service("/", service.clone())
-        .route_service("/addcomponent", service.clone())
-        .route_service("/component/{id}", service.clone())
-        .route_service("/component/{id}/update", service)
-        .nest("/api", api());
-    
-    #[cfg(not(debug_assertions))]
-    let protected = protected.route_layer(login_required!(Backend, login_url = "/login"));
+    // let protected = Router::new()
+    //     .route_service("/", service.clone())
+    //     .route_service("/addcomponent", service.clone())
+    //     .route_service("/component/{id}", service.clone())
+    //     .route_service("/component/{id}/update", service)
+    //     .nest("/api", api());
+
 
 
     return protected;

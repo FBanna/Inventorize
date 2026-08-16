@@ -268,8 +268,10 @@ import { ref } from 'vue';
     async function setup() {
         await search_components()
         await get_facets()
-        await get_class()
         initialiseSearch()
+        
+        await get_class()
+        
     }
 
     function initialiseSearch() {

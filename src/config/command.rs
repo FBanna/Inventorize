@@ -62,7 +62,7 @@ pub async fn get_config() -> Config{
 
         Config::write(&Config::new());
 
-        DB::create(&config.db_location).await;
+        
 
         
 
@@ -81,6 +81,8 @@ pub async fn get_config() -> Config{
         } else {
             println!("Asset directory already exists");
         }
+
+        DB::create(&config.db_location).await;
 
         println!("INTITAILIZED DIRECTORY!");
 

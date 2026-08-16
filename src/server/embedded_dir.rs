@@ -8,31 +8,28 @@ use crate::error::error::AppError;
 
 
 
-pub fn embedded_dir<E>() -> impl Service<
-    Request<Body>,
-    Response = Response<Body>,
-    Error = Infallible,
-> + Send + Clone
-where
-    E: Embed + Send + Sync + 'static,
-{
-    service_fn(|req: Request<Body>| handle::<E>(req))
-}
+// pub fn embedded_dir<E>() -> impl Service<
+//     Request<Body>,
+//     Response = Response<Body>,
+//     Error = Infallible,
+// > + Clone
+// where
+//     E: Embed + Send + Sync + 'static,
+// {
+//     service_fn(|req: Request<Body>| handle::<E>(req))
+// }
 
 
-
-
-
-async fn handle<E>(req: Request<Body>) -> Result<Response<Body>, Infallible>
+pub async fn handle_dir<E>(axum::extract::Path(path): axum::extract::Path<String>,) -> Response<Body>
 where
     E: Embed
 {
-    let path = req.uri().path();
+    //let path = req.uri().path();
 
         // `nest_service` strips the mounted prefix, but "/" remains "/".
-        let path = path.trim_start_matches('/');
+        //let path = path.trim_start_matches('/');
 
-        let response = match E::get(path) {
+        let response = match E::get(&path) {
             Some(file) => {
 
                 let mime = mime_guess::from_path(path)
@@ -45,10 +42,7 @@ where
                     .status(StatusCode::OK)
                     .header(header::CONTENT_TYPE, mime.as_ref())
                     .header(header::CONTENT_LENGTH, data.len())
-                    .body(match *req.method() {
-                        axum::http::Method::HEAD => Body::empty(),
-                        _ => Body::from(data),
-                    })
+                    .body(Body::from(data))
                     .unwrap()
             }
 
@@ -58,5 +52,5 @@ where
                 .unwrap(),
         };
 
-        Ok(response)
+        response
 }

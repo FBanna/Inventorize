@@ -1,6 +1,6 @@
 use std::{any::Any, collections::HashMap, fmt::Display, todo};
 
-use sqlx::{Execute, PgExecutor, Postgres, QueryBuilder};
+use sqlx::{Execute, PgExecutor, Postgres, QueryBuilder, query};
 use uuid::Uuid;
 use serde_json::Value as Json;
 
@@ -200,137 +200,106 @@ CROSS JOIN LATERAL (
 
         
     }
-    
+
+
+
     async fn get_facets_from_search_on_component_class(&self, search: ComponentSearch) -> Result<SearchFacets, AppError> {
+
+        let mut query: QueryBuilder<Postgres> = QueryBuilder::new("
+            WITH RECURSIVE ancestors AS (
+                SELECT
+                    class_instance_id,
+                    class_id,
+                    parent,
+                    0 AS depth
+                FROM class_instance
+                WHERE class_instance_id IS NOT DISTINCT FROM ");
         
-        let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
-            "
-WITH facets AS (
-    SELECT
-        cc.class_instance_id,
-        cl.name,
-        f.key,
-        f.value,
-        COUNT(*) AS cnt
-    FROM component c");
+        query.push_bind(search.root);
 
-        // Only select components of a certain type
-        if let Some(root) = search.root {
-            query.push(
-            "\nJOIN component_class root
-                ON root.component_id = c.component_id
-                AND root.class_instance_id ="
-            );
+        query.push("\nUNION ALL
 
-            query.push_bind(root);
-            //query.push(")");
-        }
+                SELECT
+                    ci.class_instance_id,
+                    ci.class_id,
+                    ci.parent,
+                    a.depth + 1
+                FROM class_instance ci
+                JOIN ancestors a
+                    ON ci.class_instance_id = a.parent
+            ),
+                    
+            facets AS (
+                SELECT
+                    a.class_instance_id,
+                    a.depth,
+                    cl.name,
+                    f.key,
+                    f.value,
+                    COUNT(*) AS cnt
+                FROM ancestors a 
+                
+                JOIN class cl
+                    ON cl.class_id = a.class_id
+                    
+                JOIN component_class cc
+                    ON cc.class_instance_id = a.class_instance_id
 
-        query.push(
-            "\nJOIN component_class cc
-                ON cc.component_id = c.component_id
+                CROSS JOIN LATERAL jsonb_each(cc.attributes) AS f(key, value)");
 
-            JOIN class_instance ci
-                ON ci.class_instance_id = cc.class_instance_id
+        build_select_facets(search, &mut query);
 
-            JOIN class cl
-                ON cl.class_id = ci.class_id
-
-            CROSS JOIN LATERAL jsonb_each(cc.attributes) AS f(key, value)");
-
-
-        build_select(search, &mut query);
-
-        query.push(
-"GROUP BY
-    cc.class_instance_id,
-    cl.name,
-    f.key,
-    f.value
-),
-
-facet_values AS (
-    SELECT
-        class_instance_id,
-        name,
-        key,
-        jsonb_agg(
-            jsonb_build_object(
-                'value', value,
-                'count', cnt
+        query.push("\nGROUP BY
+                a.class_instance_id, cl.name, f.key, f.value, a.depth
+        
+            ),
+            facet_values AS (
+                SELECT
+                    class_instance_id,
+                    depth,
+                    name,
+                    KEY, 
+                    jsonb_agg(
+                        jsonb_build_object(
+                            'value', value,
+                            'count', cnt
+                        )
+                        ORDER BY cnt DESC
+                    ) AS values_json
+                FROM facets
+                GROUP BY
+                    class_instance_id,
+                    DEPTH,
+                    name,
+                    KEY,
+                    name
+            ),
+            class_facets AS (
+                SELECT
+                    class_instance_id,
+                    DEPTH,
+                    name,
+                    jsonb_object_agg(key, values_json) AS facets
+                FROM facet_values
+                GROUP BY class_instance_id, DEPTH, NAME
             )
-            ORDER BY cnt DESC
-        ) AS values_json
-    FROM facets
-    GROUP BY
-        class_instance_id,
-        name,
-        key
-),
+            SELECT jsonb_agg(
+                jsonb_build_object(
+                    'class_instance_id', class_instance_id,
+                    'name', name,
+                    'facets', facets
+                )
+                ORDER BY DEPTH, class_instance_id
+            )
+            FROM class_facets;");
 
-class_facets AS (
-    SELECT
-        class_instance_id,
-        name,
-        jsonb_object_agg(key, values_json) AS facets
-    FROM facet_values
-    GROUP BY class_instance_id, name
-)
-
-SELECT jsonb_agg(
-    jsonb_build_object(
-        'class_instance_id', class_instance_id,
-        'name', name,
-        'facets', facets
-    )
-    ORDER BY class_instance_id
-)
-FROM class_facets;");
-
-        
 
         let result: SearchFacets = query.build_query_as().fetch_one(&*self.pool).await?;
-
-
         Ok(result)
         
 
     }
-
-
-
-// SELECT 
-// 	c.*,
-// 	attributes.component_classes
-// FROM component C
-// CROSS JOIN LATERAL (
-//     SELECT jsonb_agg(
-//         jsonb_build_object(
-//             'class_instance_id', cc.class_instance_id,
-//             'attributes', cc.attributes
-//         )
-//     ) AS component_classes
-//     FROM component_class cc
-//     WHERE cc.component_id = c.component_id
-// ) attributes
-// WHERE EXISTS (
-// 	SELECT 1 FROM component_class cc
-// 	WHERE cc.component_id = c.component_id 
-// 	AND cc.class_instance_id = '019fb504-da13-750e-a676-255480b07fdc' -- root of search
-// )
-
-
-// AND EXISTS (
-// 	SELECT 1 FROM component_class cc
-// 	WHERE cc.component_id = c.component_id 
-// 	AND cc.class_instance_id = '019fb504-da15-7f27-a167-be1231641349' 
-// 	AND cc.attributes->'resistance' = ANY(ARRAY[TO_JSONB(60)]) 
-// )
-
-
-
-
-    
+        
     
 }
 
@@ -372,6 +341,73 @@ fn build_select(search: ComponentSearch, q: &mut QueryBuilder<Postgres>) {
         // BUILD EXIST STATEMENT
 
         q.push("EXISTS (SELECT 1 FROM component_class cc WHERE cc.component_id = c.component_id AND cc.class_instance_id = ");
+        
+        q.push_bind(unit.class_instance_id);
+
+        // BUILD SELECT STATEMENT
+
+        for (key, values) in unit.facets {
+
+
+            // CHECK IF EMPTY AND SKIP
+            if values.is_empty() {
+                continue;
+            }
+
+            q.push(" AND cc.attributes->");
+            q.push_bind(key);
+
+            q.push(" = ANY(");
+            q.push_bind(values);
+            q.push(")");
+
+        }
+
+
+        q.push(")");
+        
+    }
+
+
+}
+
+
+
+// BUILD ACTUAL ATTRIBUTE SEARCHES FOR FACETS
+fn build_select_facets(search: ComponentSearch, q: &mut QueryBuilder<Postgres>) {
+
+
+    let mut first = true;
+
+    // build filtering for reach class instance
+    for unit in search.units {
+
+
+        // check if they are all empty - THIS IS REALLY BAD. FIX THIS
+        let mut is_empty = true;
+        for (key, values) in unit.facets.clone() {
+            if !values.is_empty() {
+                is_empty = false;
+            }
+        }
+
+        if is_empty {
+            continue;
+        }
+
+        // MANAGE AND
+
+        if first {
+            q.push("\nWHERE ");
+            first = false;
+        } else {
+            q.push("\nAND ");
+        }
+
+
+        // BUILD EXIST STATEMENT
+
+        q.push("EXISTS (SELECT 1 FROM component_class cc WHERE cc.class_instance_id = a.class_instance_id AND cc.class_instance_id = ");
         
         q.push_bind(unit.class_instance_id);
 
