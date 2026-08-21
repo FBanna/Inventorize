@@ -10,13 +10,7 @@ pub async fn post_class(
     Json(tc): Json<TransportClass>
 ) -> Result<impl IntoResponse, AppError> {
 
-    println!("Tying hard to add your class");
-
     let result = shared_state.db.add_transport_class(tc).await?;
-
-    //let result = shared_state.db.add_type(&tc).await;
-
-    // TODO
 
     Ok(StatusCode::OK.into_response())
 

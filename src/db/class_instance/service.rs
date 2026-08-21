@@ -3,9 +3,9 @@ use std::{println, todo};
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
-use serde_json::Value as Json;
+use serde_json::{Map, Value as Json};
 
-use crate::{db::{class::class::Class, class_instance::{class_instance::{ClassClassInstance, ClassInstance, ClassInstanceTree, ClassInstanceTreeLeaf}, transport_class_instance::TransportClassInstance}, db::DB}, error::error::AppError};
+use crate::{db::{class::class::Class, class_instance::{class_instance::{ClassClassInstance, ClassInstance, ClassInstanceTree, ClassInstanceTreeLeaf}, transport_class_instance::TransportClassInstance}, component::component::CORE_ATTRIBUTES, db::DB}, error::{class::ClassErrors, error::AppError}};
 
 
 
@@ -20,7 +20,10 @@ pub trait ClassInstanceServices {
     async fn get_class_instance_descendants_child(&self, class_instance_id: Option<Uuid>) -> Result<Vec<ClassInstance>, AppError>;
     async fn get_class_instance_ancestors(&self, class_instance_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
 
-    async fn get_class_ancestors_from_instance(&self, class_instance_id: Uuid) -> Result<Vec<ClassClassInstance>, AppError>;
+    async fn get_class_ancestors_from_instance(&self, class_instance_id: Option<Uuid>) -> Result<Vec<ClassClassInstance>, AppError>;
+
+
+    async fn build_facet_list_for_instance(&self, class_instance_id: Option<Uuid>) -> Result<Json, AppError>;
 
     //async fn get_facets_from_instance(&self, class_instance_id: Option<Uuid>) -> Result<>
 
@@ -168,7 +171,7 @@ impl ClassInstanceServices for DB {
         Ok(result)
     }
 
-    async fn get_class_ancestors_from_instance(&self, class_instance_id: Uuid) -> Result<Vec<ClassClassInstance>, AppError> {
+    async fn get_class_ancestors_from_instance(&self, class_instance_id: Option<Uuid>) -> Result<Vec<ClassClassInstance>, AppError> {
         
         let result: Vec<ClassClassInstance> = sqlx::query_as("
 
@@ -179,7 +182,7 @@ impl ClassInstanceServices for DB {
                     parent,
                     0 AS depth
                 FROM class_instance
-                WHERE class_instance_id = ($1)
+                WHERE class_instance_id IS NOT DISTINCT FROM ($1)
 
                 UNION ALL
 
@@ -209,6 +212,51 @@ impl ClassInstanceServices for DB {
 
         Ok(result)
 
+    }
+    
+
+    /// {
+    ///     core: ["name", "stock", "manufacturer"],
+    ///     attributes: [
+    ///         {
+    ///             uuid: .....,
+    ///             fields: [....]
+    ///         },
+    /// 
+    ///     ]
+    /// }
+    async fn build_facet_list_for_instance(&self, class_instance_id: Option<Uuid>) -> Result<Json, AppError> {
+        
+
+        let result = self.get_class_ancestors_from_instance(class_instance_id).await?;
+
+        
+
+        let mut json: Map<String, Json> = Map::new();
+
+        json.insert("core".to_string(), Json::from(CORE_ATTRIBUTES));
+
+        let mut attributes: Vec<Json> = Vec::new();
+
+        for class in result {
+
+            let mut json_attribute = Map::new();
+
+            json_attribute.insert("class_instance_id".to_owned(), class.class_instance_id.hyphenated().to_string().into());
+
+            json_attribute.insert(
+                "fields".to_owned(), 
+                class.fields
+                );
+
+            attributes.push(
+                Json::Object(json_attribute)
+            );
+        }
+
+        json.insert("attributes".to_owned(), attributes.into());
+
+        Ok(Json::Object(json))
     }
     
     

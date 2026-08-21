@@ -1,5 +1,5 @@
 
-import { fetchJSON } from "./util";
+import { fetchJSON, fetchURL } from "./util";
 
 
 
@@ -26,4 +26,18 @@ export async function post_class_instance_id_get_class(id: any) {
 
     return res
 
+}
+
+
+export async function post_class(name: String, fields: Array<any>) {
+
+    await fetchURL("api/post_class", {
+        method: "POST",
+
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            name: name,
+            fields: fields
+        })
+    })
 }

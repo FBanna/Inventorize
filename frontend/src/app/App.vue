@@ -15,7 +15,8 @@ import Error_controller from '@/error/error_controller.vue';
         
 
         <RouterLink class="logo_button" to="/"><img class="image" src="/images/logo.svg"></RouterLink>
-        <!-- <RouterLink class="nav_buttons" to="/addcomponent">Add</RouterLink> -->
+
+        <RouterLink class="nav_buttons" to="/classes">Classes</RouterLink>
         <!-- <RouterLink class="nav_buttons" to="/component/1">build</RouterLink> -->
 
 

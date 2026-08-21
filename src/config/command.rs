@@ -60,11 +60,9 @@ pub async fn get_config() -> Config{
     // INIT
     if let Some(matches) = matches.subcommand_matches("init") {
 
-        Config::write(&Config::new());
-
-        
-
-        
+        if read_config(PathBuf::from(DEFAULT_CONFIG_FILE)).is_err() {
+            Config::write(&Config::new());
+        }
 
         let label = Path::new(&config.label_location);
 
@@ -94,8 +92,8 @@ pub async fn get_config() -> Config{
     // GET CONFIG FILE
     if let Some(config_path) = matches.get_one::<PathBuf>("config"){
 
-        if config_path.is_file() && config_path.try_exists().is_ok(){
-            config = read_config(config_path.to_path_buf());
+        if config_path.is_file() && config_path.exists(){
+            config = read_config(config_path.to_path_buf()).unwrap(); // purposefully fail to stop program running with incorrect config
             println!("read config file")
         } else {
             eprintln!("config file does not exist!");
@@ -105,7 +103,7 @@ pub async fn get_config() -> Config{
     } else {
         let file: PathBuf = PathBuf::from(DEFAULT_CONFIG_FILE);
         if file.is_file() && file.exists(){
-            config = read_config(file);
+            config = read_config(file).unwrap();
             println!("read config file")
         } else {
             println!("no config file given");

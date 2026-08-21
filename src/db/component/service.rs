@@ -75,8 +75,7 @@ impl ComponentServices for DB{
                 stock = ($2),
                 manufacturer = ($3),
                 label = ($4),
-
-
+                
             WHERE
                 component_id = ($5)
             ")
@@ -115,7 +114,7 @@ impl ComponentServices for DB{
     async fn add_transport_component(&self, c: &TransportComponent) -> Result<Uuid, AppError> {
         
         // retrieve class + class instance object
-        let ancestors = self.get_class_ancestors_from_instance(c.class_instance_id).await?;
+        let ancestors = self.get_class_ancestors_from_instance(Some(c.class_instance_id)).await?;
 
         // start transaction
         let mut tx = self.pool.begin().await?;
@@ -156,7 +155,7 @@ impl ComponentServices for DB{
         tx.commit().await?;
 
 
-        // handle other elements
+        // handle other elements!!!
 
         Ok(id)
     }

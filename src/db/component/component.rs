@@ -6,6 +6,8 @@ use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migr
 use uuid::Uuid;
 use serde_json::Value as Json;
 
+pub static CORE_ATTRIBUTES: [&str; 3] = ["name", "stock", "manufacturer"];
+
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
 pub struct Component{
     pub component_id: Uuid,

@@ -4,7 +4,7 @@ use axum::{extract::multipart::MultipartError, http::{StatusCode, response}, res
 use jsonschema::ValidationError;
 use serde::de::value;
 
-use crate::error::{file::{FileErrors}, json::JsonErrors, label::LabelErrors, class::ClassErrors};
+use crate::error::{class::ClassErrors, config::ConfigErrors, file::FileErrors, json::JsonErrors, label::LabelErrors};
 
 // helped greatly by - https://github.com/tokio-rs/axum/blob/main/examples/error-handling/src/main.rs
 
@@ -19,7 +19,9 @@ pub enum AppError{
 
     TypeError(ClassErrors),
 
-    FileError(FileErrors)
+    FileError(FileErrors),
+    
+    ConfigError(ConfigErrors)
 
 }
 
@@ -44,6 +46,7 @@ impl Display for AppError{
             AppError::JsonError(err) => err.fmt(f),
             AppError::TypeError(err) => err.fmt(f),
             AppError::FileError(err) => err.fmt(f),
+            AppError::ConfigError(err) => err.fmt(f),
             _ => write!(f, "[ERROR] Unknown Error")
         }
     }

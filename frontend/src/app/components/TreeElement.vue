@@ -3,7 +3,7 @@
 
     <li class="node" :style="{'paddingLeft': get_depth()}">
         <img v-if="props.node.children.length != 0" class="drop_down" :isdropped="dropped" @click="drop()" src="/images/drop_down.svg">
-        <div class="text" @click="drop()">
+        <div class="text" @click="follow_uuid()">
             {{props.node.name}}
         </div>
         <img class="add add_hide" @click="add" src="/images/add.svg">
@@ -17,6 +17,8 @@
 import Add_class_instance from '@/app/popup/add_class_instance.vue';
 import { Popups, setActivePopup } from '@/app/popup/popup_state';
 import { ref } from 'vue';
+import router from '../router';
+import { useRouter } from 'vue-router';
 
     const props = defineProps(["node", "depth", "onSuccess"])
     const dropped = ref<boolean>(true)
@@ -32,6 +34,12 @@ import { ref } from 'vue';
 
     function should_drop() {
         return dropped.value && (props.node.children.length != 0)
+    }
+
+    function follow_uuid() {
+    
+        router.push(props.node.class_instance_id)
+        
     }
 
     function add() {

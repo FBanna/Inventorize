@@ -105,7 +105,7 @@
 
       <span class="search-tools">
 
-        <button class="button search-button" @click="search_components">Search</button>
+        <button class="button search-button" @click="table?.search">Search</button>
 
         <!-- <button v-if="selecting" class="button search-button" @click="build_label_zip">BUILD</button>
 
@@ -134,7 +134,7 @@
 
               <!-- <input type="text"> -->
 
-            <select v-model=search[unit.class_instance_id].facets[key] @change="get_facets" multiple class="facet-selector">
+            <select v-model=search[unit.class_instance_id].facets[key] @change="get_facets_and_update" multiple class="facet-selector">
                   <option class="result" :value="facet.value" v-for="facet in facets">
                     {{ facet.value }} - {{ facet.count }}
                   </option>
@@ -148,6 +148,12 @@
 
       </span>
 
+
+    </div>
+
+    <div class="results-container">
+
+      <ComponentTable ref="table" :uuid="props.uuid" :search="search" />
 
     </div>
 
@@ -205,33 +211,26 @@
 
 <script setup lang="ts">
 import { post_class_instance_id_get_class } from '@/api/class';
+import { get_fields_from_class_instance } from '@/api/class_instance';
 import { post_search_get_component_with_attributes, post_search_get_facets } from '@/api/search';
 import { pushAppError } from '@/error/error_state';
-import { ref } from 'vue';
+import { onBeforeMount, ref, useTemplateRef } from 'vue';
+import ComponentTable from '../components/componentTable/ComponentTable.vue';
 
     const props = defineProps(["uuid"])
 
-    const results = ref()
-    const prompts = ref()
-    const search = ref<any>({})
-    const class_ = ref()
+    //const results = ref()         // components found
+    const prompts = ref<any>([])  // prompts found that populate facets
+    const search = ref<any>({})   // the users searched request
 
 
+    const fields = ref<any>({})
 
-    async function search_components() {
+    const table = useTemplateRef("table");
 
-        try {
-            let res = await post_search_get_component_with_attributes(
-                props.uuid,
-                Object.values(search.value)
-            )
 
-            results.value = res
-
-        } catch(e) {
-            pushAppError(e)
-        }
-    }
+    
+    
 
     async function get_facets() {
 
@@ -242,40 +241,65 @@ import { ref } from 'vue';
               Object.values(search.value)
           )
 
-          prompts.value = res
+          return res
       } catch(e) {
           pushAppError(e)
       }
 
     }
 
-    async function get_class() {
+    async function get_facets_and_update() {
 
-      try {
-        let res = await post_class_instance_id_get_class(
-          props.uuid
-        )
+      let res = await get_facets()
 
-        class_.value = res
-      } catch(e) {
-          pushAppError(e)
+      if (res == null) {
+        prompts.value = []
+      } else {
+        prompts.value = res
       }
+
     }
+
+    // async function get_class() {
+
+    //   try {
+    //     let res = await post_class_instance_id_get_class(
+    //       props.uuid
+    //     )
+
+    //     class_.value = res
+    //   } catch(e) {
+    //       pushAppError(e)
+    //   }
+    // }
+
+    
 
 
 
     
     async function setup() {
-        await search_components()
-        await get_facets()
-        initialiseSearch()
+        //await search_components()
         
-        await get_class()
+        get_facets().then((res) => {
+
+          if (res == null) {
+            res = []
+          }
+
+          initialiseSearch(res)
+
+
+          prompts.value = res
+        })
+      
+        table.value?.reset()
         
     }
 
-    function initialiseSearch() {
-      for (const unit of prompts.value) {
+    function initialiseSearch(prompts: any) {
+
+      for (const unit of prompts) {
 
         search.value[unit.class_instance_id] = {
           class_instance_id: unit.class_instance_id,
@@ -288,7 +312,6 @@ import { ref } from 'vue';
       }
     }
 
-
     setup()
 
 </script>
@@ -298,10 +321,12 @@ import { ref } from 'vue';
     @use "@/style/import";
 
     .window {
-        background-color: rgba(255, 0, 0, 0.068);
+        //background-color: rgba(255, 0, 0, 0.068);
         width: 100%;
         height: 100%;
         min-width: 0;
+        display: flex;
+        flex-direction: column;
     }
 
     .search-container {
@@ -419,6 +444,15 @@ import { ref } from 'vue';
       font-weight: bolder;
       
     }
+
+    .results-container {
+      overflow-y: scroll;
+      overflow-x: hidden;
+      flex: 1;
+
+    }
+
+    
 
     
 

@@ -1,10 +1,4 @@
-use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::{get_all_classes::get_all_classes, post_class_instance_id_get_class::post_class_instance_id_get_class}, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance}, component::{post_component::{self, post_component}, post_search_get_component_with_attributes::post_search_get_component_with_attributes, post_search_get_facets::post_search_get_facets}}, embedded_dir::{self}, label_api::post_build_label}};
-
-// mod login_api;
-// pub mod login_api;
-// pub mod db_api;
-// pub mod server_state;
-
+use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::{get_all_classes::get_all_classes, post_class::post_class, post_class_instance_id_get_class::post_class_instance_id_get_class}, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance, post_class_instance_id_get_fields::post_class_instance_id_get_fields}, component::{post_component::{self, post_component}, post_search_get_component_with_attributes::post_search_get_component_with_attributes, post_search_get_facets::post_search_get_facets}}, embedded_dir::{self}, label_api::post_build_label}};
 
 use axum::{
     Form, Json, Router, extract::{DefaultBodyLimit, Query}, http::{HeaderValue, Method, StatusCode, Uri, header::CONTENT_TYPE}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}
@@ -167,7 +161,9 @@ fn api() -> Router<Arc<ServerState>>{
 
         // CLASS
         .route("/get_all_classes", get(get_all_classes))
-        .route("/post_class_instance_id_get_class", post(post_class_instance_id_get_class));
+        .route("/post_class_instance_id_get_fields", post(post_class_instance_id_get_fields))
+        .route("/post_class", post(post_class));
+        // .route("/post_class_instance_id_get_class", post(post_class_instance_id_get_class));
 
         // .route("/post_update_component", post(post_update_component::post_update_component))
         // .route("/post_build_label", post(post_build_label::post_build_label))

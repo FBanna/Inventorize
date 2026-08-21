@@ -4,7 +4,8 @@
 
          <div v-on:click.stop> <!-- click stopper -->
 
-            <Add_class_instance v-if="active == Popups.AddClassInstance" :opts="opts" />
+            <Add_class_instance v-if="active == Popups.AddClassInstance" />
+            <Add_class v-if="active == Popups.AddClass" />
 
         </div>
 
@@ -20,6 +21,7 @@
     import Add_class_instance from './add_class_instance.vue';
     import { ref } from "vue";
     import {active, Popups, opts, clearActivePopup} from "@/app/popup/popup_state.ts";
+import Add_class from './add_class.vue';
 
     function clear() {
         clearActivePopup()

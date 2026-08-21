@@ -20,6 +20,23 @@ export async function get_class_instance_descendants(
 
 }
 
+export async function get_fields_from_class_instance(
+    id: any
+) {
+
+    let res = await fetchJSON("api/post_class_instance_id_get_fields", {
+        method: "POST",
+
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            class_instance_id: id
+        })
+    })
+
+    return res // catch this!
+
+}
+
 export async function post_class_instance(
     class_id: any,
     parent: any

@@ -1,7 +1,8 @@
 import { ref } from "vue";
 
 export enum Popups {
-  AddClassInstance
+  AddClassInstance,
+  AddClass
 }
 
 

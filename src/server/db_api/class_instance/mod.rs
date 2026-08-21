@@ -1,3 +1,4 @@
 pub mod post_class_instance;
 
 pub mod get_class_instance_descendants;
+pub mod post_class_instance_id_get_fields;

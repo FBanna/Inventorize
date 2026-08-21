@@ -2,6 +2,8 @@ use std::{fs::{self, File}, io::Read, path::PathBuf};
 // use log::{info,debug,log_enabled,Level};
 use serde::{Deserialize, Serialize};
 
+use crate::error::{config::ConfigErrors, error::AppError::{self, ConfigError}};
+
 
 pub const DEFAULT_CONFIG_FILE: &str = "./config.yaml";
 
@@ -72,9 +74,10 @@ impl Config{
     }
 }
 
-pub fn read_config(path: PathBuf) -> Config{
-    let data = fs::read_to_string(path).expect("Unable to read File!");
+pub fn read_config(path: PathBuf) -> Result<Config, AppError>{
 
-    serde_yaml::from_str(&data).expect("Unable to Deserialize!")
+    let data = fs::read_to_string(path).map_err(|_| {ConfigError(ConfigErrors::MissingConfig)})?;
+
+    serde_yaml::from_str(&data).map_err(|_| {ConfigError(ConfigErrors::Deserialisation)})
 }
 
