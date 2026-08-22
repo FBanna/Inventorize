@@ -153,7 +153,17 @@
 
     <div class="results-container">
 
-      <ComponentTable ref="table" :uuid="props.uuid" :search="search" />
+      <!-- <ComponentTable ref="table" :uuid="props.uuid" :search="search" /> -->
+
+      <Table
+      :get_search="search_function"
+      :transform_row_data="transform_function"
+      :get_column_groups="column_function"
+      :row_click="row_click_function"
+      :get_id="id_function"
+      
+      
+      ref="table"></Table>
 
     </div>
 
@@ -218,6 +228,7 @@ import { onBeforeMount, ref, useTemplateRef, watch } from 'vue';
 import ComponentTable from '../components/componentTable/ComponentTable.vue';
 import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 import router from '../router/index.ts';
+import Table, { type TableState } from '../components/table/Table.vue';
 
   const route = useRoute();
 
@@ -280,6 +291,23 @@ import router from '../router/index.ts';
 
 
     
+    
+
+    function initialiseSearch(prompts: any) {
+
+      for (const unit of prompts) {
+
+        search.value[unit.class_instance_id] = {
+          class_instance_id: unit.class_instance_id,
+          facets: {}
+        }
+
+        for (const key of Object.keys(unit.facets)) {
+          search.value[unit.class_instance_id].facets[key] = []
+        }
+      }
+    }
+
     async function setup() {
         //await search_components()
 
@@ -301,26 +329,72 @@ import router from '../router/index.ts';
         
     }
 
-    function initialiseSearch(prompts: any) {
+    let raw_fields = {}
 
-      for (const unit of prompts) {
+    async function search_function(state: TableState): Promise<Array<any>> {
 
-        search.value[unit.class_instance_id] = {
-          class_instance_id: unit.class_instance_id,
-          facets: {}
-        }
+        let res: any = await post_search_get_component_with_attributes(
+            props.uuid,
+            Object.values(search.value)
+        )
+        return res
 
-        for (const key of Object.keys(unit.facets)) {
-          search.value[unit.class_instance_id].facets[key] = []
-        }
-      }
     }
 
-    // onBeforeRouteUpdate(() => {
+    function transform_function(row: any): Array<any> {
 
-    // })
+      console.log(raw_fields)
 
-    //watch(() => route.params.id, setup, {immediate: true})
+      return["IMAGE"]
+    }
+
+    async function column_function(): Promise<Array<any>> {
+      let res: any = await get_fields_from_class_instance(
+        props.uuid
+      )
+
+      raw_fields = res
+
+      let processed: Array<any> = [];
+
+      let core = []
+
+      for (let field of res.core) {
+        core.push(field)
+      }
+
+      processed.push(core)
+
+      console.log(res.attributes)
+
+      for (let class_ of res.attributes) {
+
+        // if (!(class_ instanceof Array)){
+        //   break
+        // }
+
+        let class_group = []
+
+        for (let field of class_.fields) {
+          class_group.push(field.name)
+        }
+
+        processed.push(class_group)
+
+      }
+
+      return processed
+    }
+    
+    function id_function(row: any): any {
+      return row.component_id
+    }
+
+    function row_click_function(row: any) {
+      console.log("click")
+    }
+
+
 
     setup()
 

@@ -11,7 +11,12 @@
 
         <div class="table">
 
-            <ClassTable ref="table" />
+            <!-- <ClassTable ref="table" /> -->
+
+            <Table 
+            :transform_row_data="transform_function"
+            :row_click="row_click" 
+            :get_id="get_id" :get_column_groups="column_function" :get_search="search_function" ref="table"/>
 
         </div>
 
@@ -22,10 +27,11 @@
 </template>
 
 <script setup lang="ts">
-import { post_class } from '@/api/class.ts';
+import { get_all_classes, post_class } from '@/api/class.ts';
 import ClassTable from '../components/classTable/ClassTable.vue';
 import { Popups, setActivePopup } from '../popup/popup_state.ts';
 import { useTemplateRef } from 'vue';
+import Table, { type TableState } from '../components/table/Table.vue';
 
 const table = useTemplateRef("table")
 
@@ -35,6 +41,42 @@ function add_class() {
     })
 }
 
+
+// Table Functionality
+
+let raw_field_data = null
+
+async function search_function(state: TableState): Promise<Array<any>> {
+
+    let res: any = await get_all_classes()
+
+    return res
+
+}
+
+function transform_function(row: any): Array<any> {
+
+    let attributes = ""
+
+    let fields: Array<any> = row['fields']
+    
+
+    for( var field of fields) {
+        attributes = attributes + field.name + " "
+    }
+
+    return [row.name, attributes]
+}
+
+async function column_function(): Promise<Array<any>> {
+    return [["name", "Attributes"]]
+}
+
+function get_id(row: any): any {
+    return row.class_id
+}
+
+function row_click(row:any) {}
 
 </script>
 
