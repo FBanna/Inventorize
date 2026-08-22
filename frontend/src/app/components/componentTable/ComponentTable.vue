@@ -37,7 +37,7 @@ import { get_fields_from_class_instance } from '@/api/class_instance.ts';
 
 
 
-const data: any = ref()
+const data: any = ref([])
 const fields: any = ref({})
 const props = defineProps(["search", "uuid"])
 defineExpose({
@@ -102,7 +102,6 @@ async function get_fields() {
     let res = await get_fields_from_class_instance(
       props.uuid
     )
-    console.log(res)
     fields.value = res
 
   } catch(e) {
@@ -112,9 +111,12 @@ async function get_fields() {
 
 async function reset() {
 
+  // data.value = []
+  // fields.value = {}
+  
   await get_fields()
   await search()
-  state.value = defaultState
+  state.value = structuredClone(defaultState)
 }
 
 

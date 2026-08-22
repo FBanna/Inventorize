@@ -214,8 +214,12 @@ import { post_class_instance_id_get_class } from '@/api/class';
 import { get_fields_from_class_instance } from '@/api/class_instance';
 import { post_search_get_component_with_attributes, post_search_get_facets } from '@/api/search';
 import { pushAppError } from '@/error/error_state';
-import { onBeforeMount, ref, useTemplateRef } from 'vue';
+import { onBeforeMount, ref, useTemplateRef, watch } from 'vue';
 import ComponentTable from '../components/componentTable/ComponentTable.vue';
+import { onBeforeRouteUpdate, useRoute } from 'vue-router';
+import router from '../router/index.ts';
+
+  const route = useRoute();
 
     const props = defineProps(["uuid"])
 
@@ -223,8 +227,6 @@ import ComponentTable from '../components/componentTable/ComponentTable.vue';
     const prompts = ref<any>([])  // prompts found that populate facets
     const search = ref<any>({})   // the users searched request
 
-
-    const fields = ref<any>({})
 
     const table = useTemplateRef("table");
 
@@ -280,6 +282,10 @@ import ComponentTable from '../components/componentTable/ComponentTable.vue';
     
     async function setup() {
         //await search_components()
+
+
+
+        await table.value?.reset()
         
         get_facets().then((res) => {
 
@@ -292,8 +298,6 @@ import ComponentTable from '../components/componentTable/ComponentTable.vue';
 
           prompts.value = res
         })
-      
-        table.value?.reset()
         
     }
 
@@ -311,6 +315,12 @@ import ComponentTable from '../components/componentTable/ComponentTable.vue';
         }
       }
     }
+
+    // onBeforeRouteUpdate(() => {
+
+    // })
+
+    //watch(() => route.params.id, setup, {immediate: true})
 
     setup()
 

@@ -40,7 +40,7 @@ import Error_controller from '@/error/error_controller.vue';
 
     <ClassInstanceTreeSidebar />
 
-    <RouterView />
+    <RouterView :key="$route.fullPath" />
 
     <Popup_controller class="popup" />
 
