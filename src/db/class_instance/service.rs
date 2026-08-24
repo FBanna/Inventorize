@@ -5,7 +5,7 @@ use sqlx::prelude::FromRow;
 use uuid::Uuid;
 use serde_json::{Map, Value as Json};
 
-use crate::{db::{class::class::Class, class_instance::{class_instance::{ClassClassInstance, ClassInstance, ClassInstanceTree, ClassInstanceTreeLeaf}, transport_class_instance::TransportClassInstance}, component::component::CORE_ATTRIBUTES, db::DB}, error::{class::ClassErrors, error::AppError}};
+use crate::{db::{class::{class::Class, transport_class::AttributeType}, class_instance::{class_instance::{ClassClassInstance, ClassInstance, ClassInstanceTree, ClassInstanceTreeLeaf}, transport_class_instance::TransportClassInstance}, component::component::CORE_ATTRIBUTES, db::DB}, error::{class::ClassErrors, error::AppError::{self, JsonError}, json::JsonErrors::ComponentClassAttributesMalformed}};
 
 
 
@@ -24,6 +24,8 @@ pub trait ClassInstanceServices {
 
 
     async fn build_facet_list_for_instance(&self, class_instance_id: Option<Uuid>) -> Result<Json, AppError>;
+
+    async fn build_facet_list_for_instance_for_html(&self, class_instance_id: Option<Uuid>) -> Result<Json, AppError>;
 
     //async fn get_facets_from_instance(&self, class_instance_id: Option<Uuid>) -> Result<>
 
@@ -141,7 +143,7 @@ impl ClassInstanceServices for DB {
                     parent,
                     0 AS depth
                 FROM class_instance
-                WHERE class_instance_id = ($1)
+                WHERE class_instance_id IS NOT DISTINCT FROM ($1)
 
                 UNION ALL
 
@@ -244,6 +246,8 @@ impl ClassInstanceServices for DB {
 
             json_attribute.insert("class_instance_id".to_owned(), class.class_instance_id.hyphenated().to_string().into());
 
+            json_attribute.insert("name".to_owned(), class.name.into());
+
             json_attribute.insert(
                 "fields".to_owned(), 
                 class.fields
@@ -257,6 +261,68 @@ impl ClassInstanceServices for DB {
         json.insert("attributes".to_owned(), attributes.into());
 
         Ok(Json::Object(json))
+    }
+
+
+    
+    async fn build_facet_list_for_instance_for_html(&self, class_instance_id: Option<Uuid>) -> Result<Json, AppError> {
+        
+        let result = self.get_class_ancestors_from_instance(class_instance_id).await?;
+
+        
+
+        let mut json: Map<String, Json> = Map::new();
+
+        json.insert("core".to_string(), Json::from(CORE_ATTRIBUTES));
+
+        let mut attributes: Vec<Json> = Vec::new();
+
+        for class in result {
+
+            let mut json_attribute = Map::new();
+
+            json_attribute.insert("class_instance_id".to_owned(), class.class_instance_id.hyphenated().to_string().into());
+
+            json_attribute.insert("name".to_owned(), class.name.into());
+
+            // custom logic to change object_type
+
+            let mut fields = Vec::new();
+
+            for field in class.fields
+                .as_array()
+                .ok_or(JsonError(ComponentClassAttributesMalformed("Fields is not an array".to_owned())))? {
+
+                    let object_type = field.get("object_type")
+                        .ok_or(JsonError(ComponentClassAttributesMalformed("Could not find Object Type".to_owned())))?
+                        .as_str()
+                        .ok_or(JsonError(ComponentClassAttributesMalformed("Expected string".to_owned())))?;
+
+                    let converted_type = AttributeType::from_json(object_type)?;
+
+                    let mut out_field = field.as_object().ok_or(JsonError(ComponentClassAttributesMalformed("Could not find map".to_owned())))?.to_owned();
+
+
+                    out_field.insert("object_type".to_owned(), Json::String(converted_type.to_html().to_owned()));
+
+                    fields.push(Json::Object(out_field));
+
+            }
+
+            json_attribute.insert(
+                "fields".to_owned(), 
+                Json::Array(fields)
+                );
+
+            attributes.push(
+                Json::Object(json_attribute)
+            );
+        }
+
+        json.insert("attributes".to_owned(), attributes.into());
+
+        Ok(Json::Object(json))
+
     }
     
     

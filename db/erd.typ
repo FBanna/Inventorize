@@ -1,7 +1,7 @@
 #import "lib.typ": *
 #import "@preview/fletcher:0.5.8": diagram, node, edge
 
-#set page(height: 600pt, width: 1200pt)
+#set page(height: 600pt, width: 1400pt)
 
 #set block(spacing: 0pt)
 
@@ -39,8 +39,8 @@
       rows: (
         ("name", "text"),
         ("stock", "int"),
-        ("manufacturer*", "text"),
-        ("label", "uuid")
+        ("manufacturer_id", "uuid"),
+        ("label_id", "uuid")
         
       )
 
@@ -123,7 +123,7 @@
     )
   
   ),
-  node((2,2), name: <label>,
+  node((3,1), name: <label>,
 
     erd_table(
       name: "label",
@@ -132,11 +132,38 @@
       ),
       rows: (
         ("name", "text"),
-        ("path", "path"),
+        ("path", "text"),
       )
     )
   
   ),
+
+  node((2,2), name: <manufacturer>,
+
+    erd_table(
+      name: "manufacturer",
+      key: (
+        ("manufacturer_id", "uuid"),
+      ),
+      rows: (
+        ("name", "text"),
+        ("url", "text")
+      )
+    )
+  
+  
+  
+  ),
+
+  // node((2,2), name: <manufacturer>,
+
+  //   erd_table(
+  //     name: ""
+  //   )
+  
+  // ),
+
+  
 
 
   // node((1,0.5), name: <prompt>, 
@@ -264,6 +291,7 @@
   edge(<component>, (1.5,1), (1.5,1.7), <file>, "-n?"), 
   edge(<component>, (1.53,1), (1.53,2.4), <image>, "-1?"),
   edge(<origin>, (1,0.1), <component_origin>, "-n?"),
+  edge(<manufacturer>, <component>, "-n?"),
   // edge(<component>, (1.5,0.75),(1.5,0), <smd>, "-1?"),
   // edge(<component>, (1.5,0.75),(1.5,1), <resistor>, "-1?"),
   //edge(<component>, (1.45,0.75),(1.45,0.9), <attribute_example>, "-n?"),

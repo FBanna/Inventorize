@@ -37,6 +37,27 @@ export async function get_fields_from_class_instance(
 
 }
 
+export async function get_fields_from_class_instance_for_html(
+    id: any
+) {
+
+    if (id == null) {
+        id = null
+    }
+
+    let res = await fetchJSON("api/post_class_instance_id_get_fields_for_html", {
+        method: "POST",
+
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            class_instance_id: id
+        })
+    })
+
+    return res // catch this!
+
+}
+
 export async function post_class_instance(
     class_id: any,
     parent: any

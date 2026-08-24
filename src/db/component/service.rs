@@ -73,16 +73,16 @@ impl ComponentServices for DB{
             SET
                 name = ($1),
                 stock = ($2),
-                manufacturer = ($3),
-                label = ($4),
+                manufacturer_id = ($3),
+                label_id = ($4),
                 
             WHERE
                 component_id = ($5)
             ")
             .bind(&c.name)
             .bind(&c.stock)
-            .bind(&c.manufacturer)
-            .bind(&c.label)
+            .bind(&c.manufacturer_id)
+            .bind(&c.label_id)
             
             .bind(component_id)
             .execute(&*self.pool)
@@ -98,11 +98,11 @@ impl ComponentServices for DB{
 
         // component_type.veryify_attributes(&c.attributes)?;
 
-        let id: Uuid = sqlx::query_scalar("INSERT INTO component (name,stock,manufacturer,label) VALUES ($1,$2,$3,$4) RETURNING component_id")
+        let id: Uuid = sqlx::query_scalar("INSERT INTO component (name,stock,manufacturer_id,label_id) VALUES ($1,$2,$3,$4) RETURNING component_id")
             .bind(&c.name)
             .bind(&c.stock)
-            .bind(&c.manufacturer)
-            .bind(&c.label)
+            .bind(&c.manufacturer_id)
+            .bind(&c.label_id)
             .fetch_one(&*self.pool)
             .await?;
 
@@ -120,12 +120,12 @@ impl ComponentServices for DB{
         let mut tx = self.pool.begin().await?;
 
         // insert component
-        let id: Uuid = sqlx::query_scalar("INSERT INTO component (class_instance_id,name,stock,manufacturer,label) VALUES ($1,$2,$3,$4,$5) RETURNING component_id")
+        let id: Uuid = sqlx::query_scalar("INSERT INTO component (class_instance_id,name,stock,manufacturer_id,label_id) VALUES ($1,$2,$3,$4,$5) RETURNING component_id")
             .bind(&c.class_instance_id)
             .bind(&c.name)
             .bind(&c.stock)
-            .bind(&c.manufacturer)
-            .bind(&c.label)
+            .bind(&c.manufacturer_id)
+            .bind(&c.label_id)
 
             .fetch_one(&mut *tx)
             .await?;

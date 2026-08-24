@@ -30,6 +30,24 @@ CREATE TABLE IF NOT EXISTS origin
     url             TEXT            NOT NULL
 );
 
+-- Label
+
+CREATE TABLE IF NOT EXISTS label
+(
+    label_id        uuid DEFAULT uuidv7() PRIMARY KEY,
+    name            TEXT    NOT NULL,
+    path            TEXT    NOT NULL
+);
+
+-- Manufacturer
+
+CREATE TABLE IF NOT EXISTS manufacturer
+(
+    manufacturer_id uuid DEFAULT uuidv7() PRIMARY KEY,
+    name            TEXT    NOT NULL,
+    url             TEXT
+);
+
 -- Components
 CREATE TABLE IF NOT EXISTS component
 (
@@ -38,10 +56,12 @@ CREATE TABLE IF NOT EXISTS component
 
     name            TEXT            NOT NULL,
     stock           INTEGER         NOT NULL,
-    manufacturer    TEXT,
-    label           TEXT,
+    manufacturer_id uuid,
+    label_id        uuid,
 
-    FOREIGN KEY(class_instance_id)  REFERENCES class_instance(class_instance_id) ON DELETE CASCADE
+    FOREIGN KEY(class_instance_id)  REFERENCES class_instance(class_instance_id) ON DELETE CASCADE,
+    FOREIGN KEY(label_id) REFERENCES label(label_id) ON DELETE SET NULL,
+    FOREIGN KEY(manufacturer_id) REFERENCES manufacturer(manufacturer_id) ON DELETE SET NULL
 
 );
 
@@ -77,6 +97,8 @@ CREATE TABLE IF NOT EXISTS component_image
 
     FOREIGN KEY(component_id)       REFERENCES component(component_id)  ON DELETE CASCADE
 );
+
+
 
 
 -- Component <---> Classes

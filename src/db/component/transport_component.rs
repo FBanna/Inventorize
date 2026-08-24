@@ -16,14 +16,14 @@ pub struct TransportComponent {
 
     pub name: String,
     pub stock: i32,
-    pub manufacturer: Option<String>,
-    pub label: Option<String>,
+    pub manufacturer_id: Option<Uuid>,
+    pub label_id: Option<Uuid>,
 
 
     // class_id, Json
     pub attributes: HashMap<Uuid, Json>, // looks like "attributes: {"(uuid)": "...", "(uuid)": "..."}"
 
-    pub origins: Vec<EmbeddedComponentOrigin>
+    //pub origins: Vec<EmbeddedComponentOrigin>
 
 }
 // add image, files, origins

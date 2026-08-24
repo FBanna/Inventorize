@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::{body::Bytes, extract::State, response::IntoResponse, Json};
 use serde::Deserialize;
 use uuid::Uuid;
-use crate::{db::component::{component::Component, service::ComponentServices}, error::error::AppError, label::label::Label, server::server_state::ServerState};
+use crate::{db::component::{component::Component, service::ComponentServices}, error::error::AppError, label::label::{LabelImpl}, server::server_state::ServerState};
 
 
 #[derive(Deserialize)]
@@ -24,7 +24,7 @@ pub async fn post_build_label(
 
     println!("2");
 
-    let result = Component::build_pdf(list, &shared_state.config)?;
+    let result = Component::build_pdf(list, &shared_state.config, &shared_state.db).await?;
 
     let array = Bytes::from_owner(result);
 

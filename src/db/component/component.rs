@@ -6,7 +6,7 @@ use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migr
 use uuid::Uuid;
 use serde_json::Value as Json;
 
-pub static CORE_ATTRIBUTES: [&str; 3] = ["name", "stock", "manufacturer"];
+pub static CORE_ATTRIBUTES: [&str; 4] = ["name", "stock", "manufacturer", "label"];
 
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
 pub struct Component{
@@ -15,10 +15,12 @@ pub struct Component{
     
     pub name: String,
     pub stock: i32, // should this be i32?
-    pub manufacturer: Option<String>,
-    pub label: Option<String>,
+    pub manufacturer_id: Option<Uuid>,
+    pub label_id: Option<Uuid>,
 }
 
+
+/// Search Result Object
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
 pub struct ComponentWithAttributes{
     pub component_id: Uuid,
@@ -45,8 +47,8 @@ impl Component{
             self.component_id,
             self.name,
             self.stock,
-            self.manufacturer.clone().unwrap_or_default(),
-            self.label.clone().unwrap_or_default()
+            self.manufacturer_id.unwrap_or_default().hyphenated().to_string(),
+            self.label_id.unwrap_or_default().hyphenated().to_string()
         );
     }
 
@@ -58,12 +60,12 @@ impl ComponentWithAttributes{
     pub fn fmt(&self) -> String {
 
         return format!(
-            "id: {}\nname: {}\nstock: {}\nmanufacturer: {}\nlabel: {}\nattributes: {:#?}",
+            "id: {}\nname: {}\nstock: {}\nmanufacturer: {:#?}\nlabel: {:#?}\nattributes: {:#?}",
             self.component_id,
             self.name,
             self.stock,
-            self.manufacturer.clone().unwrap_or_default(),
-            self.label.clone().unwrap_or_default(),
+            self.manufacturer,
+            self.label,
             self.attributes
         );
     }

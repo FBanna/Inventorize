@@ -28,7 +28,6 @@
 
 <script setup lang="ts">
 import { get_all_classes, post_class } from '@/api/class.ts';
-import ClassTable from '../components/classTable/ClassTable.vue';
 import { Popups, setActivePopup } from '../popup/popup_state.ts';
 import { useTemplateRef } from 'vue';
 import Table, { type TableState } from '../components/table/Table.vue';

@@ -3,8 +3,9 @@ use std::{collections::HashMap, fmt::Debug, fs, path::PathBuf, sync::Arc};
 use typst::{Library, LibraryExt, diag::{SourceDiagnostic, SourceResult}, ecow::EcoVec, foundations::{Array, Dict, Str, Value}, layout::{Page, PagedDocument}};
 use typst_kit::fonts::{FontSearcher};
 use typst_pdf::PdfOptions;
+use uuid::Uuid;
 
-use crate::{config::config::Config, db::component::component::Component, error::{error::AppError, label::LabelErrors}};
+use crate::{config::config::Config, db::{self, component::component::Component, db::DB, label::{label::Label, service::LabelServices}}, error::{error::AppError, label::LabelErrors}};
 
 use super::typst_wrapper;
 
@@ -14,9 +15,9 @@ use serde_json::Value as JsonValue;
 
 
 
-pub trait Label {
+pub trait LabelImpl {
 
-    fn build_pdf(labels: Vec<Self>, config: &Config) -> Result<Vec<u8>, AppError> where Self:Sized;
+    async fn build_pdf(labels: Vec<Self>, config: &Config, db: &DB) -> Result<Vec<u8>, AppError> where Self:Sized;
 
     fn get_inputs(labels: Vec<Self>, config: &Config) -> Library where Self:Sized;
 
@@ -25,22 +26,37 @@ pub trait Label {
 
 
 
-impl Label for Component{
+impl LabelImpl for Component{
 
     /// takes vec of labels returns pdf bytes of all labels
-    fn build_pdf(labels: Vec<Self>, config: &Config) -> Result<Vec<u8>, AppError> {
+    async fn build_pdf(labels: Vec<Self>, config: &Config, db: &DB) -> Result<Vec<u8>, AppError> {
 
-        let mut label_types: HashMap<String, Vec<Self>> = HashMap::new();
+        //let mut label_types: HashMap<String, Vec<Self>> = HashMap::new();
 
-        for label in labels {
+        let mut label_types: HashMap<Uuid, Vec<Self>> = HashMap::new();
 
-            if label.label.is_none() {
-                continue;
+        let mut label_cache: HashMap<Uuid, Label> = HashMap::new();
+
+        for component in labels {
+
+            if let Some(label_id) = component.label_id {
+
+                if !label_cache.contains_key(&label_id) {
+                    let result = db.get_label(label_id).await;
+
+                    if let Ok(label) = result {
+                        label_cache.insert(label_id, label);
+                    } else {
+                        continue;
+                    }
+
+                }
+
+                label_types.entry(label_id)
+                    .or_default()
+                    .push(component);
+
             }
-
-            label_types.entry(label.label.clone().unwrap())
-                .or_default()
-                .push(label);
         }
 
         let location: &str = &config.label_location;
@@ -51,13 +67,15 @@ impl Label for Component{
         let mut pdfs = Vec::new();
         
 
-        for (label_type, label_group) in label_types{
+        for (label_id, component_group) in label_types{
 
-            let path = PathBuf::new().join(location).join(label_type.to_owned()+".typ");
+            let label = label_cache.get(&label_id).expect("Caching function failed").to_owned();
+
+            let path = PathBuf::new().join(location).join(&label.path);
 
             if !path.exists(){
 
-                return Err(AppError::LabelError(LabelErrors::MissingTemplate(label_type)));
+                return Err(AppError::LabelError(LabelErrors::MissingTemplate(label.path)));
             }
 
             let label_template = fs::read_to_string(path).expect("Unable to read File!");// VERY SLOW OPPERATION
@@ -68,7 +86,7 @@ impl Label for Component{
             let world = typst_wrapper::TypstWrapperWorld::new(
                 config.label_location.to_owned(), 
                 label_template, 
-                Component::get_inputs(label_group, config), 
+                Component::get_inputs(component_group, config), 
                 &fonts.book,
                 Arc::clone(&arc_font_slot)
             );
@@ -244,8 +262,8 @@ use super::*;
                 name: ("Resistor".to_string()),
                 stock: 5000,
 
-                manufacturer: None, 
-                label: Some("vial".to_string()),
+                manufacturer_id: None, 
+                label_id: None
 
                 //attribute_id: 10,
                 // attributes: serde_json::json!({"value": {"test1": "ok!", "test2": 1000, "hiisd": ["help", "please", "SOS", 1000]}})
@@ -280,15 +298,15 @@ use super::*;
         println!("building");
 
 
-        let result = Component::build_pdf(components, &config);
+        // let result = Component::build_pdf(components, &config);
 
 
-        let data = result.expect("failed to compile");
+        // let data = result.expect("failed to compile");
 
-        println!("done");
+        // println!("done");
 
 
-        fs::write("out.pdf", data).expect("failed to save");
+        // fs::write("out.pdf", data).expect("failed to save");
 
 
 

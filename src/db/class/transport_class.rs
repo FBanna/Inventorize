@@ -38,9 +38,30 @@ impl AttributeType {
             AttributeType::Integer => "integer",
             AttributeType::Float => "number",
             AttributeType::Boolean => "boolean",
-            AttributeType::DateTime => "date-time"
+            AttributeType::DateTime => "datetime"
         }
     }
+
+    pub fn from_json(json: &str) -> Result<Self, AppError> {
+        match json {
+            "string" => Ok(AttributeType::String),
+            "integer" => Ok(AttributeType::Integer),
+            "number" => Ok(AttributeType::Float),
+            "boolean" => Ok(AttributeType::Boolean),
+            "datetime" => Ok(AttributeType::DateTime),
+            _ => Err(JsonError(JsonErrors::IncorrectFieldsFound))
+        }
+    } 
+
+    pub fn to_html(&self) -> &str {
+        match self {
+            AttributeType::String => "text",
+            AttributeType::Integer => "number",
+            AttributeType::Float => "number",
+            AttributeType::Boolean => "checkbox",
+            AttributeType::DateTime => "date"
+        }
+    } 
 }
 
 impl TransportClass {

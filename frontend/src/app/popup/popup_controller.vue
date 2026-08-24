@@ -6,6 +6,7 @@
 
             <Add_class_instance v-if="active == Popups.AddClassInstance" />
             <Add_class v-if="active == Popups.AddClass" />
+            <Add_component v-if="active == Popups.AddComponent" />
 
         </div>
 
@@ -22,6 +23,7 @@
     import { ref } from "vue";
     import {active, Popups, opts, clearActivePopup} from "@/app/popup/popup_state.ts";
 import Add_class from './add_class.vue';
+import Add_component from './add_component.vue';
 
     function clear() {
         clearActivePopup()

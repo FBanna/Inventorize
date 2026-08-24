@@ -159,7 +159,12 @@ impl ComponentClassServices for DB {
 
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
 "SELECT 
-    c.*,
+    c.component_id,
+    c.class_instance_id,
+    c.name,
+    c.stock,
+    m.name manufacturer,
+    l.name label,    
     component_classes.attributes
 FROM component c
 
@@ -172,8 +177,13 @@ CROSS JOIN LATERAL (
     ) AS attributes
     FROM component_class cc
     WHERE cc.component_id = c.component_id
-) component_classes"
-        );
+) component_classes
+
+LEFT JOIN manufacturer m
+    ON m.manufacturer_id = c.manufacturer_id
+
+LEFT JOIN label l
+    ON l.label_id = c.label_id");
 
 
         // Only select components of a certain type
@@ -187,6 +197,7 @@ CROSS JOIN LATERAL (
             query.push_bind(root);
             //query.push(")");
         }
+
 
         build_select(search, &mut query);
 

@@ -1,7 +1,7 @@
 
 use std::{collections::HashMap, io::Error, println, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::{ComponentSearch, UnitComponentClassSearch}, service::ComponentClassServices}}};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::{ComponentSearch, UnitComponentClassSearch}, service::ComponentClassServices}, label::{service::LabelServices, transport_label::TransportLabel}, manufacturer::{self, service::ManufacturerServices, transport::TransportManufacturer}}};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
@@ -82,26 +82,44 @@ async fn main() -> Result<(), Error> {
     // add
     let resistor_class_instance_id = component_db.add_transport_class_instance(resistor_class_instance).await.unwrap();
 
+    // Label
+
+    let label = TransportLabel {
+        name: "new".to_owned(),
+        path: "test.typ".to_owned()
+    };
+
+    let label_id = component_db.add_transport_label(label).await.unwrap();
+
+    // Manufacturer
+
+    let manufacturer = TransportManufacturer {
+        name: "ST".to_owned(),
+        url: Some("stm.com".to_owned())
+    };
+
+    let man_id = component_db.add_transport_manufacturer(manufacturer).await.unwrap();
+
 
     // components
     let component1 = TransportComponent {
         class_instance_id: passive_class_instance_id,
         name: "test".to_owned(),
         stock: 5,
-        manufacturer: None,
-        label: Some("vial".to_owned()),
+        manufacturer_id: None,
+        label_id: None,
         attributes: HashMap::from([
             (passive_class_id, json!({}))
         ]),
-        origins: Vec::new()
+        //origins: Vec::new()
     };
 
     let component2 = TransportComponent {
         class_instance_id: resistor_class_instance_id,
         name: "some resistor".to_owned(),
         stock: 1000,
-        manufacturer: None,
-        label: None,
+        manufacturer_id: Some(man_id),
+        label_id: Some(label_id),
         attributes: HashMap::from([
             (
                 resistor_class_id, 
@@ -115,7 +133,7 @@ async fn main() -> Result<(), Error> {
                 json!({})
             )
         ]),
-        origins: Vec::new()
+        //origins: Vec::new()
     };
 
     let result = component_db.add_transport_component(&component1).await.unwrap();
@@ -162,7 +180,7 @@ async fn main() -> Result<(), Error> {
     ).await;
 
     if let Err(e) = search_result {
-        println!("BIG ERROR {:#}", e);
+        println!("BIG ERROR FROM SEARCH {:#}", e);
     } else {
         println!("{:#?}", search_result.unwrap());
     }

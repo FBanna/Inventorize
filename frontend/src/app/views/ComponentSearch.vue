@@ -106,6 +106,7 @@
       <span class="search-tools">
 
         <button class="button search-button" @click="table?.search">Search</button>
+        <button class="button search-button" @click="add_component">Add Component</button>
 
         <!-- <button v-if="selecting" class="button search-button" @click="build_label_zip">BUILD</button>
 
@@ -225,10 +226,10 @@ import { get_fields_from_class_instance } from '@/api/class_instance';
 import { post_search_get_component_with_attributes, post_search_get_facets } from '@/api/search';
 import { pushAppError } from '@/error/error_state';
 import { onBeforeMount, ref, useTemplateRef, watch } from 'vue';
-import ComponentTable from '../components/componentTable/ComponentTable.vue';
 import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 import router from '../router/index.ts';
 import Table, { type TableState } from '../components/table/Table.vue';
+import { Popups, setActivePopup } from '../popup/popup_state.ts';
 
   const route = useRoute();
 
@@ -287,7 +288,21 @@ import Table, { type TableState } from '../components/table/Table.vue';
     // }
 
     
+    async function add_component() {     
 
+       let opts = {
+            class_instance_id: props.uuid,
+        }
+
+        setActivePopup(
+            Popups.AddComponent,
+            opts,
+            async () => {
+                await table.value?.reset()
+            }
+        )
+
+    }
 
 
     
@@ -329,7 +344,7 @@ import Table, { type TableState } from '../components/table/Table.vue';
         
     }
 
-    let raw_fields = {}
+    let raw_fields: any;
 
     async function search_function(state: TableState): Promise<Array<any>> {
 
@@ -343,9 +358,23 @@ import Table, { type TableState } from '../components/table/Table.vue';
 
     function transform_function(row: any): Array<any> {
 
-      console.log(raw_fields)
+      let out = ["IMAGE"]
 
-      return["IMAGE"]
+      for (let field of raw_fields.core) {
+        out.push(row[field])
+      }
+
+      for (let class_ of raw_fields.attributes) {
+        for (let field of class_.fields) {
+          out.push(
+            row.attributes.find(
+              (a: any) => a.class_instance_id === class_.class_instance_id
+            ).attributes[field.name]
+          )
+        }
+      }
+
+      return out
     }
 
     async function column_function(): Promise<Array<any>> {
@@ -357,7 +386,7 @@ import Table, { type TableState } from '../components/table/Table.vue';
 
       let processed: Array<any> = [];
 
-      let core = []
+      let core = ["Image"]
 
       for (let field of res.core) {
         core.push(field)
@@ -365,13 +394,7 @@ import Table, { type TableState } from '../components/table/Table.vue';
 
       processed.push(core)
 
-      console.log(res.attributes)
-
       for (let class_ of res.attributes) {
-
-        // if (!(class_ instanceof Array)){
-        //   break
-        // }
 
         let class_group = []
 
