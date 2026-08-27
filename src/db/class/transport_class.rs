@@ -10,14 +10,13 @@ pub struct TransportClass {
     pub fields: Json
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
+#[derive(Debug)]
 pub enum AttributeType {
     String,
     Integer,
     Float,
     Boolean,
-    DateTime,
+    Date,
 }
 
 impl AttributeType {
@@ -28,7 +27,7 @@ impl AttributeType {
             AttributeType::Integer => "integer",
             AttributeType::Float => "number",
             AttributeType::Boolean => "boolean",
-            AttributeType::DateTime => "datetime"
+            AttributeType::Date => "date"
         }
     }
 
@@ -38,7 +37,7 @@ impl AttributeType {
             "integer" => Ok(AttributeType::Integer),
             "float" => Ok(AttributeType::Float),
             "boolean" => Ok(AttributeType::Boolean),
-            "datetime" => Ok(AttributeType::DateTime),
+            "date" => Ok(AttributeType::Date),
             _ => Err(JsonError(JsonErrors::IncorrectFieldsFound))
         }
     } 
@@ -49,7 +48,7 @@ impl AttributeType {
             AttributeType::Integer => "number",
             AttributeType::Float => "number",
             AttributeType::Boolean => "checkbox",
-            AttributeType::DateTime => "date"
+            AttributeType::Date => "date"
         }
     } 
 }
@@ -150,21 +149,34 @@ impl TransportClass {
 
                     let mut type_map = Map::new();
 
-                    type_map.insert(
-                        "type".to_owned(),
+                    let object_type = attribute.get("object_type")
+                        .ok_or(JsonErrors::GenSchema)?
+                        .as_str()
+                        .ok_or(JsonErrors::GenSchema)?
+                        .to_owned();
 
-                        {
+                    let a_type: AttributeType = AttributeType::from(&object_type)?;
 
-                            let object_type = attribute.get("object_type")
-                                .ok_or(JsonErrors::GenSchema)?
-                                .to_owned();
+                    match a_type {
+                        AttributeType::Date => {
+                            type_map.insert(
+                                "format".to_owned(),
+                                Json::String(a_type.to_json().to_owned())
+                            );
 
-                            let a_type: AttributeType = serde_json::from_value(object_type)?;
-
-                            Json::String(a_type.to_json().to_owned())
+                            type_map.insert(
+                                "type".to_owned(),
+                                Json::String(AttributeType::String.to_json().to_owned())
+                            );
+                        },
+                        _ => {
+                            type_map.insert(
+                                "type".to_owned(),
+                                Json::String(a_type.to_json().to_owned())
+                            );
                         }
-                        
-                    );
+                    }
+                    
 
                     type_map
 

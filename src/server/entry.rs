@@ -18,11 +18,11 @@ static LOGIN: &str = include_str!("../../target/dist/login.html");
 static MAIN: &str = include_str!("../../target/dist/index.html");
 
 #[derive(Embed)]
-#[folder = "./target/dist/assets"]
+#[folder = "target/dist/assets"]
 struct Assets;
 
 #[derive(Embed)]
-#[folder = "./target/dist/images"]
+#[folder = "target/dist/images"]
 struct Images;
 
 

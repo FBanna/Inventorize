@@ -4,7 +4,7 @@ use sqlx::{Execute, PgExecutor, Postgres, QueryBuilder, query};
 use uuid::Uuid;
 use serde_json::Value as Json;
 
-use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, FacetSearch, PagedComponentSearch, SearchFacets, UnitComponentClassSearch}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
+use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, FacetSearch, PagedComponentSearch, PagedComponentSearchResult, SearchFacets, UnitComponentClassSearch}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
 
 
 
@@ -19,7 +19,7 @@ pub trait ComponentClassServices {
     async fn get_class_instances_from_component(&self, component_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
     async fn remove_component_class(&self, component_id: Uuid, class_instance_id: Uuid) -> Result<(), AppError>;
 
-    async fn search_components_with_attributes_on_component_class(&self, search: PagedComponentSearch) -> Result<Vec<ComponentWithAttributes>, AppError>;
+    async fn search_components_with_attributes_on_component_class(&self, search: PagedComponentSearch) -> Result<PagedComponentSearchResult, AppError>;
     async fn get_facets_from_search_on_component_class(&self, search: FacetSearch) -> Result<SearchFacets, AppError>;
 
     async fn update_component_class(&self, component_class: ComponentClass) -> Result<(), AppError>;
@@ -154,7 +154,7 @@ impl ComponentClassServices for DB {
     /// ```
     /// 
     /// and returns a list of Component
-    async fn search_components_with_attributes_on_component_class(&self, search: PagedComponentSearch) -> Result<Vec<ComponentWithAttributes>, AppError> {
+    async fn search_components_with_attributes_on_component_class(&self, search: PagedComponentSearch) -> Result<PagedComponentSearchResult, AppError> {
 
 
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
@@ -204,15 +204,33 @@ LEFT JOIN label l
         query.push("\nORDER BY c.component_id DESC OFFSET ");
         query.push_bind(search.state.page_pos * search.state.page_size);
         query.push(" LIMIT ");
-        query.push_bind(search.state.page_size);
+        query.push_bind(search.state.page_size + 1);
 
 
-        let result: Vec<ComponentWithAttributes> = query
+        let mut result: Vec<ComponentWithAttributes> = query
             .build_query_as()
             .fetch_all(&*self.pool).await?;
 
 
-        Ok(result)
+        if result.len() as i32 != search.state.page_size + 1 {
+
+            return Ok(
+                PagedComponentSearchResult {
+                    has_next: false,
+                    results: result
+                }
+            )
+
+        }
+
+        assert!(result.len() as i32 == search.state.page_size + 1);
+
+        result.pop();
+
+        Ok(PagedComponentSearchResult { 
+            results: result, 
+            has_next: true
+        })
 
         
     }

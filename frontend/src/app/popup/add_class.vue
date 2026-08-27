@@ -89,7 +89,7 @@ import type { StatusError } from '@/api/util';
         object_type: ""
     }
     
-    const object_type_options = ["string", "integer", "float", "boolean", "datetime"]
+    const object_type_options = ["string", "integer", "float", "boolean", "date"]
 
     const name = ref()
     const fields: Ref<Array<any>> = ref([])

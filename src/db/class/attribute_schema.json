@@ -7,7 +7,7 @@
         "properties": {
 
             "name": { "type": "string" },
-            "object_type": { "enum": ["string", "integer", "float", "boolean", "datetime"] },
+            "object_type": { "enum": ["string", "integer", "float", "boolean", "date"] },
             "unit": { "type": "string" }
 
         }

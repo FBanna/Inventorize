@@ -136,10 +136,10 @@ async fn main() -> Result<(), Error> {
         //origins: Vec::new()
     };
 
-    println!("examples: {}", component2);
 
-    // for i in 0..100000 {
+    // for i in 0..50000 {
     //     println!("{}", i);
+    //     let result = component_db.add_transport_component(&component1).await.unwrap();
     //     let result = component_db.add_transport_component(&component2).await.unwrap();
     // }
 

@@ -41,8 +41,15 @@
   </table>
 
   <div v-if="props.limited_pages" class="page-controls-bottom">
+
       <div class="page-info">
-        Page size of {{ state.page.page_size }}
+        Page size of 
+        <select class="page-size-dropdown" v-model.number="state.page.page_size" @change="search" >
+          <option value=25>25</option>
+          <option value=50>50</option>
+          <option value=100>100</option>
+          <option value=200>200</option>
+        </select>
       </div>
 
       <div class="page-movements">
@@ -50,10 +57,9 @@
         <button class="page-button" @click="page_start"><<</button>
         <button class="page-button" @click="page_minus"><</button>
 
-        <button class="page-button" v-for="p_num in get_page_buttons()">{{ p_num + 1}}</button>
+        <button class="page-button" :class="{ 'page-button-selected': p_num == state.page.page_pos }" v-for="p_num in get_page_buttons()" @click="page_set(p_num)">{{ p_num + 1}}</button>
 
         <button class="page-button" @click="page_plus">></button>
-        <button class="page-button" @click="page_end">>></button>
 
       </div>
     </div>
@@ -61,7 +67,6 @@
 
 <script setup lang="ts">
 import { ref, type Ref } from 'vue'
-//import ComponentTableRow from './ComponentTableRow.vue';
 import { post_search_get_component_with_attributes } from '@/api/search.ts';
 import { pushAppError } from '@/error/error_state.ts';
 import { get_fields_from_class_instance } from '@/api/class_instance.ts';
@@ -70,10 +75,11 @@ import TableRow from './TableRow.vue';
 
 export type TableState = {
   page: TablePageQuery,
-  page_count: number,
+  has_next: boolean,
   select: Select
 
 }
+
 
 export type TablePageQuery = {
   page_pos: number,
@@ -86,8 +92,10 @@ type Select = {
   selecting: Boolean
 }
 
+let WINDOW_RADIUS = 1;
 
 
+// Function Defs
 type SearchFunction = (
   state: TableState
 ) => Promise<Array<any>>
@@ -101,6 +109,24 @@ export type IDGetterFunction = (row: any) => any
 type RowClickFunction = (row: any) => void
 
 
+
+// Data
+
+const defaultState: TableState = {
+    page: {
+      
+      page_pos: 0,
+      page_size: 50
+    },
+    has_next: false,
+    select: {
+      inverted: false,
+      selected: [],
+      selecting: false
+    }
+  }
+
+const state: Ref<TableState> = ref(defaultState)
 const column_groups: any = ref([])
 const rows: any = ref([])
 
@@ -115,33 +141,11 @@ const props = defineProps<{
   limited_pages?: Boolean
 }>()
 
-// const props = defineProps({
-//     get_search: Search,
-//     get_fields: String
-// })
-
 
 defineExpose({
   reset,
   search
 })
-
-
-const defaultState: TableState = {
-    page: {
-      
-      page_pos: 0,
-      page_size: 50
-    },
-    page_count: 2,
-    select: {
-      inverted: false,
-      selected: [],
-      selecting: false
-    }
-  }
-
-const state: Ref<TableState> = ref(defaultState)
 
 
 // Page functions
@@ -157,76 +161,54 @@ async function page_start() {
 
 async function page_minus() {
 
-  
+  if (state.value.page.page_pos != 0) {
+    state.value.page.page_pos -= 1
+    await search()
+  }
 
 }
 
-async function page_set(num: any) {
-
+async function page_set(num: number) {
+  state.value.page.page_pos = num
+  await search()
 }
 
 async function page_plus() {
 
+  if (state.value.has_next) {
+    state.value.page.page_pos += 1
+    await search()
+  }
+
 }
 
-async function page_end() {
-
-}
-
-async function get_page_buttons(): Array<number> {
-
-
-  let WINDOW_RADIUS = 2;
-
+function get_page_buttons(): Array<number> {
 
 
   let current = state.value.page.page_pos;
 
   let out: Array<number> = [];
 
-  
-    // If too small return
-  if (state.value.page_count < (WINDOW_RADIUS * 2 + 1)) {
-
-    for (let i = 0; i < state.value.page_count; i ++) {
-      out.push(i)
-    }
-
-    return out
-
-  }
-
 
   if (current - WINDOW_RADIUS < 0) {
     current = 0
   } else {
-    current = current - WINDOW_RADIUS;
+    current = current - WINDOW_RADIUS
   }
 
-  
-  
-
-  for (let i = 0; i < ((WINDOW_RADIUS * 2) + 1); i++) {
-    
-
-    if ( current == (state.value.page_count - 1)) {
-      break;
-    }
+  while (current <= state.value.page.page_pos) {
 
     out.push(current)
-  
-    current = current + 1;
+    current += 1
 
-  } 
+  }
 
-  console.log(out)
-
-
+  if (state.value.has_next) {
+    out.push(current)
+  }
 
   return out
   
-
-
 }
 
 // Click Function
@@ -257,6 +239,8 @@ function row_click(row: any) {
 
 
 async function search() {
+
+  console.log(state.value)
     
     try {
         let res = await props.get_search(state.value)
@@ -281,9 +265,7 @@ async function get_columns_from_function() {
 
 async function reset() {
 
-  // data.value = []
-  // fields.value = {}
-  
+
   await get_columns_from_function()
   await search()
   state.value = structuredClone(defaultState)
@@ -345,11 +327,17 @@ setup()
   height: 100%;
 }
 
+.page-button-selected {
+  background-color: import.$secondary;
+}
+
 .page-button {
   border: 0;
   margin: 1px;
   height: 30px;
   width: 30px;
 }
+
+
 
 </style>

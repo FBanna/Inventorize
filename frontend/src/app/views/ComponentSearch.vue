@@ -172,7 +172,6 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
 
     async function get_facets_and_update(id: any, facet: any) {
 
-      console.log(prompts.value)
 
       let saved: any = prompts.value.find((u: any) => u.class_instance_id == id).facets[facet]
 
@@ -184,28 +183,11 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
         prompts.value = res
       }
 
-      console.log(saved)
-
       let index = prompts.value.findIndex((u: any) => u.class_instance_id == id)
 
       prompts.value[index].facets[facet] = saved
 
-      console.log(prompts.value)
-
     }
-
-    // async function get_class() {
-
-    //   try {
-    //     let res = await post_class_instance_id_get_class(
-    //       props.uuid
-    //     )
-
-    //     class_.value = res
-    //   } catch(e) {
-    //       pushAppError(e)
-    //   }
-    // }
 
     
     async function add_component() {     
@@ -218,7 +200,7 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
             Popups.AddComponent,
             opts,
             async () => {
-                await table.value?.reset()
+              await setup()
             }
         )
 
@@ -276,7 +258,10 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
             state.page,
             Object.values(search.value),
         )
-        return res
+
+        state.has_next = res.has_next
+
+        return res.results
 
     }
 

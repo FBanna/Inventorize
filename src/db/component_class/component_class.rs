@@ -5,6 +5,8 @@ use sqlx::{Encode, prelude::{FromRow, Type}};
 use uuid::Uuid;
 use serde_json::Value as Json;
 
+use crate::db::component::component::ComponentWithAttributes;
+
 
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
 pub struct ComponentClass {
@@ -34,11 +36,6 @@ pub struct UnitComponentClassSearch {
     pub facets: HashMap<String, Vec<Json>>
 }
 
-// #[derive(Serialize, Deserialize, Clone, Debug)]
-// pub struct SearchFacet {
-//     pub key: String,
-//     pub values: Vec<Json>
-// }
 
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -62,10 +59,11 @@ pub struct TablePageQuery {
     pub page_size: i32
 }
 
-// pub struct UnitComponentClassFacet {
-//     pub class_instance_id: Uuid,
-//     pub facets: HashMap<String, Vec<Json>>
-// }
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct PagedComponentSearchResult {
+    pub results: Vec<ComponentWithAttributes>,
+    pub has_next: bool
+}
 
 // [
 //
