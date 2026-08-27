@@ -22,7 +22,7 @@ import { ref } from 'vue';
         password.value,
         next
       )
-    } catch (e) {
+    } catch (e: any) {
       pushAppError(e)
     }
     

@@ -1,7 +1,7 @@
 
 use std::{collections::HashMap, io::Error, println, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::{ComponentSearch, UnitComponentClassSearch}, service::ComponentClassServices}, label::{service::LabelServices, transport_label::TransportLabel}, manufacturer::{self, service::ManufacturerServices, transport::TransportManufacturer}}};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::{FacetSearch, PagedComponentSearch, TablePageQuery, UnitComponentClassSearch}, service::ComponentClassServices}, label::{service::LabelServices, transport_label::TransportLabel}, manufacturer::{self, service::ManufacturerServices, transport::TransportManufacturer}}};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
@@ -109,7 +109,7 @@ async fn main() -> Result<(), Error> {
         manufacturer_id: None,
         label_id: None,
         attributes: HashMap::from([
-            (passive_class_id, json!({}))
+            (passive_class_instance_id, json!({}))
         ]),
         //origins: Vec::new()
     };
@@ -122,19 +122,26 @@ async fn main() -> Result<(), Error> {
         label_id: Some(label_id),
         attributes: HashMap::from([
             (
-                resistor_class_id, 
+                resistor_class_instance_id, 
                 json!({
                     "resistance": 60,
                     "package": "0402"
                 })
             ),
             (
-                passive_class_id,
+                passive_class_instance_id,
                 json!({})
             )
         ]),
         //origins: Vec::new()
     };
+
+    println!("examples: {}", component2);
+
+    // for i in 0..100000 {
+    //     println!("{}", i);
+    //     let result = component_db.add_transport_component(&component2).await.unwrap();
+    // }
 
     let result = component_db.add_transport_component(&component1).await.unwrap();
     let result = component_db.add_transport_component(&component2).await.unwrap();
@@ -166,9 +173,15 @@ async fn main() -> Result<(), Error> {
         // ])
     };
 
-    let search = ComponentSearch {
+    let pageState = TablePageQuery {
+        page_pos: 0,
+        page_size: 50
+    };
+
+    let search = PagedComponentSearch {
             root: Some(resistor_class_instance_id),
-            units: Vec::from([search_unit])
+            units: Vec::from([search_unit]),
+            state: pageState
         };
 
 
@@ -179,23 +192,26 @@ async fn main() -> Result<(), Error> {
         
     ).await;
 
-    if let Err(e) = search_result {
-        println!("BIG ERROR FROM SEARCH {:#}", e);
-    } else {
-        println!("{:#?}", search_result.unwrap());
-    }
+    // if let Err(e) = search_result {
+    //     println!("BIG ERROR FROM SEARCH {:#}", e);
+    // } else {
+    //     println!("{:#?}", search_result.unwrap());
+    // }
 
     let facets = component_db.get_facets_from_search_on_component_class(
 
-        search
+        FacetSearch {
+            root: search.root,
+            units: search.units
+        }
 
     ).await;
 
-    if let Err(e) = facets {
-        println!("BIG ERROR {:#}", e);
-    } else {
-        println!("{:#?}", facets.unwrap());
-    }
+    // if let Err(e) = facets {
+    //     println!("BIG ERROR {:#}", e);
+    // } else {
+    //     println!("{:#?}", facets.unwrap());
+    // }
 
 
     

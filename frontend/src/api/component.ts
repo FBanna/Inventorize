@@ -18,8 +18,8 @@ export async function post_component(
             class_instance_id: class_instance_id,
             name: name,
             stock: stock,
-            manufacturer: manufacturer,
-            label: label_id,
+            manufacturer_id: manufacturer,
+            label_id: label_id,
             attributes: attributes
         })
     })

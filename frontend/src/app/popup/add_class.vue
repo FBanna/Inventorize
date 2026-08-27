@@ -81,6 +81,7 @@ import { post_class_instance } from '@/api/class_instance';
 import { pushAppError } from '@/error/error_state';
 import { ref, type Ref } from 'vue';
 import { clearActivePopup, opts, onSuccess } from './popup_state';
+import type { StatusError } from '@/api/util';
 
     const emptyField: Object = {
         name: "",
@@ -117,7 +118,7 @@ import { clearActivePopup, opts, onSuccess } from './popup_state';
 
             clearActivePopup()
 
-        } catch(e) {
+        } catch(e: any) {
             pushAppError(e)
         }
 

@@ -71,7 +71,7 @@
             let result = await get_class_instance_descendants(null)
             tree.value = result;
             
-        } catch (e) {
+        } catch (e: any) {
             pushAppError(e)
             //error.value.showError(e)
 

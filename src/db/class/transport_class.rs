@@ -22,16 +22,6 @@ pub enum AttributeType {
 
 impl AttributeType {
 
-    pub fn to_sql(&self) -> &str {
-        match self{
-            AttributeType::String => "TEXT",
-            AttributeType::Integer => "INTEGER",
-            AttributeType::Float => "FLOAT",
-            AttributeType::Boolean => "BOOLEAN",
-            AttributeType::DateTime => "DATETIME"
-        }
-    }
-
     pub fn to_json(&self) -> &str {
         match self {
             AttributeType::String => "string",
@@ -42,11 +32,11 @@ impl AttributeType {
         }
     }
 
-    pub fn from_json(json: &str) -> Result<Self, AppError> {
-        match json {
+    pub fn from(from: &str) -> Result<Self, AppError> {
+        match from {
             "string" => Ok(AttributeType::String),
             "integer" => Ok(AttributeType::Integer),
-            "number" => Ok(AttributeType::Float),
+            "float" => Ok(AttributeType::Float),
             "boolean" => Ok(AttributeType::Boolean),
             "datetime" => Ok(AttributeType::DateTime),
             _ => Err(JsonError(JsonErrors::IncorrectFieldsFound))

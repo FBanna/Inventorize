@@ -10,7 +10,9 @@ pub async fn post_component(
     Json(c): Json<TransportComponent>,
 ) -> Result<impl IntoResponse, AppError> {
 
-    let id = shared_state.db.add_transport_component(&c).await?; // must fix this method, only adds it to component table!
+    println!("component: {}", c);
+
+    let id = shared_state.db.add_transport_component(&c).await?;
 
     // old functions that should not be here!
     //let attributes = c.create_component_type_values(id);

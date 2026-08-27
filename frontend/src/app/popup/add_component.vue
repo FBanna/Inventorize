@@ -22,7 +22,28 @@
         <span>
             <input type="text" placeholder="name" v-model="name"/>
             <input type="number" placeholder="stock" v-model="stock"/>
-            <input type="text" placeholder="manufacturer" v-model="manufacturer"/>
+
+            <select v-model="manufacturer" multiple=false>
+
+                <option v-for="man in manufacturer_options" :value="man.manufacturer_id">
+
+                    {{man.name}}
+                    
+                </option>
+
+            </select>
+
+            <select v-model="label" multiple=false>
+
+                <option v-for="label in label_options" :value="label.label_id">
+
+                    {{label.name}}
+                    
+                </option>
+
+            </select>
+
+            
         </span>
 
 
@@ -30,7 +51,8 @@
         <span class="attribute-span">
             <div class="class-fields" v-for="class_fields in fields.attributes">
                 {{ class_fields.name }}
-                <input v-for="field in class_fields.fields" :type="field.object_type" :placeholder="field.name">
+                
+                <input v-model="attributes[class_fields.class_instance_id][field.name]" v-for="field in class_fields.fields" :type="field.object_type" :placeholder="field.name">
             </div>
         </span>
 
@@ -57,17 +79,22 @@ import { pushAppError } from '@/error/error_state';
 import { onBeforeMount, ref, type Ref } from 'vue';
 import { clearActivePopup, opts, onSuccess } from './popup_state';
 import { post_component } from '@/api/component';
+import { get_all_manufacturers } from '@/api/manufacturer';
+import { get_all_labels } from '@/api/label';
 
 
     const class_: any = ref({})
     const fields: any = ref({})
+    
+    const manufacturer_options: Ref<Array<any>> = ref([])
+    const label_options: Ref<Array<any>> = ref([])
 
     const name = ref()
     const stock = ref()
-    const manufacturer = ref()
-
-        
-
+    const manufacturer: Ref<Array<any>> = ref([])
+    const label: Ref<Array<any>> = ref([])
+    
+    const attributes: Ref<any> = ref({})
 
     async function confirm() {
 
@@ -84,14 +111,30 @@ import { post_component } from '@/api/component';
             //     fields.value
             // )
 
+            let manufacturer_out;
+            let label_out;
+
+
+            if (manufacturer.value.length == 0) {
+                manufacturer_out = null
+            } else {
+                manufacturer_out = manufacturer.value.at(0)
+            }
+
+            if (label.value.length == 0) {
+                label_out = null
+            } else {
+                label_out = label.value.at(0)
+            }
+
 
             await post_component(
                 opts.value.class_instance_id,
                 name.value,
                 stock.value,
-                manufacturer.value,
-                null,
-                {}
+                manufacturer_out,
+                label_out,
+                attributes.value
             )
 
             if (onSuccess != null) {
@@ -100,7 +143,7 @@ import { post_component } from '@/api/component';
 
             clearActivePopup()
 
-        } catch(e) {
+        } catch(e: any) {
             pushAppError(e)
         }
 
@@ -110,16 +153,32 @@ import { post_component } from '@/api/component';
     async function setup() {
 
 
-        console.log(opts.value.class_instance_id)
-
-
-
         try {
             class_.value = await post_class_instance_id_get_class(opts.value.class_instance_id)
-            fields.value = await get_fields_from_class_instance_for_html(opts.value.class_instance_id)
-            console.log(fields.value)
+            fields.value = await get_fields_from_class_instance_for_html(opts.value.class_instance_id).then((res: any) => {
+                
 
-        } catch (e) {
+                for (let attr of res.attributes) {
+                    console.log(attr)
+
+                    attributes.value[attr.class_instance_id] = {}
+
+                    for (let field of attr.fields) {
+                        attributes.value[attr.class_instance_id][field.name] = null
+                    }
+                }
+
+                console.log(attributes.value)
+
+
+                return res
+
+
+            })
+            manufacturer_options.value = await get_all_manufacturers()
+            label_options.value = await get_all_labels()
+
+        } catch (e: any) {
             pushAppError(e)
         }
 
@@ -161,12 +220,18 @@ import { post_component } from '@/api/component';
         
     }
 
+    select {
+        width: 100%;
+        margin-right: 5px;
+        box-sizing: border-box;
+    }
+
     .attribute-span {
         overflow-x: scroll;
     }
 
     .class-fields {
-        background-color: red;
+        background-color: import.$secondary;
         width: 150px;
         padding: 5px;
         border-radius: 5px;

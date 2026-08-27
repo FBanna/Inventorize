@@ -56,7 +56,7 @@ import { clearActivePopup, opts, onSuccess } from './popup_state';
 
             clearActivePopup()
 
-        } catch(e) {
+        } catch(e: any) {
             pushAppError(e)
         }
 
@@ -67,7 +67,7 @@ import { clearActivePopup, opts, onSuccess } from './popup_state';
         try {
             classes.value = await get_all_classes()
 
-        } catch(e) {
+        } catch(e: any) {
 
             pushAppError(e)
         }

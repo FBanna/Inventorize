@@ -47,10 +47,12 @@ impl Display for TransportComponent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // write!(f, "[ERROR] ClassError - AttributeParsing - Failed to parse class attributes: {}", template)
         return write!(f,
-            "name: {}\nstock: {}\nclass_instance: {}\nattributes: {:#?}",
+            "name: {}\nstock: {}\nclass_instance: {}\nlabel: {}\nmanufacturer: {}\nattributes: {:#?}",
             self.name,
             self.stock,
             self.class_instance_id.as_hyphenated().to_string(),
+            self.label_id.unwrap_or_default().as_hyphenated().to_string(),
+            self.manufacturer_id.unwrap_or_default().as_hyphenated().to_string(),
             self.attributes
             
         );

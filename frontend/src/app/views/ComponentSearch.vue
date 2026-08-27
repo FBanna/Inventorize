@@ -1,97 +1,3 @@
-<!-- 
-<template>
-
-
-  <span class="search-tools">
-
-    <button class="button search-button" @click="search_components">Search</button>
-
-    <button v-if="selecting" class="button search-button" @click="build_label_zip">BUILD</button>
-
-    <button v-if="selecting" class="button search-button" @click="remove_component">DELETE</button>
-
-    
-
-    <input @click="selected = []" class="selector" type="checkbox" v-model="selecting" id="select_check">
-    <label for="select_check"></label>
-
-    
-  </span>
-  
-  <span class="search-container">
-
-    <span class="search-field" v-for="(prompt, index) of prompts">
-
-      {{ prompt.name }}
-
-      <br>
-      <input type="text" v-model="prompt_search[index]" placeholder="Search" class="search">
-      <br>
-
-      <select v-model="prompt_selected[index]" multiple="multiple" class="results">
-        <option class="result" v-for="result in prompt.prompts" v-show="(result[0].toLowerCase()).includes(prompt_search[index].toLowerCase())">
-          {{ result[0] }}
-        </option>
-      </select>
-
-      
-
-    </span>
-
-  </span>
-
-  <div class="search-results-container">
-
-      <table>
-        <thead>
-          <tr>
-
-
-
-            <th table-heading>image</th>
-
-            
-            <th v-for="name in search_names" table-heading>
-              {{ name }}
-            </th>
-          </tr>
-        </thead>
-
-
-        <tbody v-for="c in components">
-          
-          <tr @click="row_click(c)" @mouseenter="row_enter(c)" v-bind:style="[selected.includes(c.id) ? {'background-color': 'rgba(0, 110, 255, 0.445)'} : {}]">
-
-
-
-              <td><img v-if="c.image" class="thumbnail" :src=get_image_src(c)></td>
-            
-              <td style="width: 80px;">{{ c.name }}</td>
-              <td style="width: 50px;">{{ c.size }}</td>
-              <td style="width: 80px;">{{ c.value }}</td>
-              <td style="width: 80px;">{{ c.info }}</td>
-              <td style="width: 50px;">{{ c.stock }}</td>
-              <td style="width: 80px;">{{ c.manufacturer }}</td>
-              <td style="width: 50px;">{{ c.label }}</td>
-          </tr>
-          
-          
-        </tbody>
-      </table>
-
-  </div>
-
-
-</template>
-
- -->
-
-
-
-
-
-
-
 
 <template>
 
@@ -135,7 +41,7 @@
 
               <!-- <input type="text"> -->
 
-            <select v-model=search[unit.class_instance_id].facets[key] @change="get_facets_and_update" multiple class="facet-selector">
+            <select v-model=search[unit.class_instance_id].facets[key] @change="get_facets_and_update(unit.class_instance_id, key)" multiple class="facet-selector">
                   <option class="result" :value="facet.value" v-for="facet in facets">
                     {{ facet.value }} - {{ facet.count }}
                   </option>
@@ -162,6 +68,7 @@
       :get_column_groups="column_function"
       :row_click="row_click_function"
       :get_id="id_function"
+      :limited_pages="true"
       
       
       ref="table"></Table>
@@ -223,9 +130,9 @@
 <script setup lang="ts">
 import { post_class_instance_id_get_class } from '@/api/class';
 import { get_fields_from_class_instance } from '@/api/class_instance';
-import { post_search_get_component_with_attributes, post_search_get_facets } from '@/api/search';
+import { post_search_get_component_with_attributes, post_search_get_component_with_attributes_paged, post_search_get_facets } from '@/api/search';
 import { pushAppError } from '@/error/error_state';
-import { onBeforeMount, ref, useTemplateRef, watch } from 'vue';
+import { onBeforeMount, ref, useTemplateRef, watch, type Ref } from 'vue';
 import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 import router from '../router/index.ts';
 import Table, { type TableState } from '../components/table/Table.vue';
@@ -236,7 +143,7 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
     const props = defineProps(["uuid"])
 
     //const results = ref()         // components found
-    const prompts = ref<any>([])  // prompts found that populate facets
+    const prompts: Ref<Array<any>> = ref<any>([])  // prompts found that populate facets
     const search = ref<any>({})   // the users searched request
 
 
@@ -256,21 +163,34 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
           )
 
           return res
-      } catch(e) {
+      } catch(e: any) {
           pushAppError(e)
       }
 
     }
 
-    async function get_facets_and_update() {
 
-      let res = await get_facets()
+    async function get_facets_and_update(id: any, facet: any) {
+
+      console.log(prompts.value)
+
+      let saved: any = prompts.value.find((u: any) => u.class_instance_id == id).facets[facet]
+
+      let res: any = await get_facets()
 
       if (res == null) {
         prompts.value = []
       } else {
         prompts.value = res
       }
+
+      console.log(saved)
+
+      let index = prompts.value.findIndex((u: any) => u.class_instance_id == id)
+
+      prompts.value[index].facets[facet] = saved
+
+      console.log(prompts.value)
 
     }
 
@@ -330,7 +250,7 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
 
         await table.value?.reset()
         
-        get_facets().then((res) => {
+        get_facets().then((res: any) => {
 
           if (res == null) {
             res = []
@@ -344,13 +264,17 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
         
     }
 
+
+    // TABLE FUNCTIONS
+
     let raw_fields: any;
 
     async function search_function(state: TableState): Promise<Array<any>> {
 
-        let res: any = await post_search_get_component_with_attributes(
+        let res: any = await post_search_get_component_with_attributes_paged(
             props.uuid,
-            Object.values(search.value)
+            state.page,
+            Object.values(search.value),
         )
         return res
 
@@ -399,7 +323,12 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
         let class_group = []
 
         for (let field of class_.fields) {
-          class_group.push(field.name)
+
+          if (field.unit == "" || field == null) {          
+            class_group.push(field.name)
+          } else {
+            class_group.push(field.name + " (" + field.unit + ")")
+          }
         }
 
         processed.push(class_group)

@@ -134,7 +134,7 @@ impl ComponentServices for DB{
         for ancestor in ancestors {
 
             let value = c.attributes
-                    .get(&ancestor.class_id)
+                    .get(&ancestor.class_instance_id)
                     .ok_or(JsonErrors::ComponentClassAttributesMalformed(format!("Does not have attribute for {}", ancestor.name)))?;
 
             // verify

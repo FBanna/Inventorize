@@ -1,44 +1,29 @@
 <script setup lang="ts">
     import type { StatusError } from '@/api/util';
     import { ref } from 'vue';
-import { errors } from './error_state';
+import { errors, type QueuedError } from './error_state';
 
-    const props = defineProps(["error"])
+    //const props = defineProps(["error"])
 
-    // const hover = ref(false)
-
-    
-    // function kill() {
-
-    //   while (hover.value) {}
-
-    //   errors.value.
-
-    // }
-
-
-
-    // function showError(error: StatusError) {
-
-    //   console.log("this is callec")
-
-    //   message.value = error
-
-    //   setTimeout(() => {message.value = null }, 5000)
-    // }
-
-
-    // defineExpose({
-    //   showError
-    // })
+    const props = defineProps<{
+        error: QueuedError
+    }>()
 
 </script>
 
 <template>
 
   <div class="error_box">
+
+    
     <!-- <button class="close" @click="show = false">&#10006</button> -->
-    {{ props.error.error.message }}
+
+    <div class="message">
+        {{ props.error.error.message }}
+    </div>
+
+
+    <div class="many" v-if="props.error.count != 1">x{{ props.error.count }}</div>
 
   </div>
 
@@ -64,10 +49,12 @@ import { errors } from './error_state';
 
     margin: 5px;
 
+    display: flex;
+    flex-direction: column;
+    //align-items: flex-end;
+
     // right: 10px;
     // bottom: 10px;
-
-    font-weight: bolder;
 
 
 }
@@ -76,9 +63,24 @@ import { errors } from './error_state';
     position: absolute;
     top: 5px;
     right: 5px;
+    
 
     background-color: rgba(255, 127, 80, 0);
     border: 0px;
+}
+
+.message {
+    width: 100%;
+    flex: 1;
+}
+
+.many {
+    width: min-content;
+    align-self: flex-end;
+
+    margin-right: 0;
+
+
 }
 
 

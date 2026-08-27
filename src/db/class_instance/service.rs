@@ -298,7 +298,7 @@ impl ClassInstanceServices for DB {
                         .as_str()
                         .ok_or(JsonError(ComponentClassAttributesMalformed("Expected string".to_owned())))?;
 
-                    let converted_type = AttributeType::from_json(object_type)?;
+                    let converted_type = AttributeType::from(object_type)?;
 
                     let mut out_field = field.as_object().ok_or(JsonError(ComponentClassAttributesMalformed("Could not find map".to_owned())))?.to_owned();
 

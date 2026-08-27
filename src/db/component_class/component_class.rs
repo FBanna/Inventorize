@@ -42,15 +42,23 @@ pub struct UnitComponentClassSearch {
 
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct ComponentSearch {
+pub struct PagedComponentSearch {
+    pub root: Option<Uuid>,
+    pub units: Vec<UnitComponentClassSearch>,
+    pub state: TablePageQuery
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct FacetSearch {
     pub root: Option<Uuid>,
     pub units: Vec<UnitComponentClassSearch>,
 }
 
 
-#[derive(Deserialize, Clone, Debug)]
-pub struct TablePageState {
-    pub page_num: i32,
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct TablePageQuery {
+    pub page_pos: i32,
     pub page_size: i32
 }
 

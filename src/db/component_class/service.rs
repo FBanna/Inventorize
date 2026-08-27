@@ -4,7 +4,7 @@ use sqlx::{Execute, PgExecutor, Postgres, QueryBuilder, query};
 use uuid::Uuid;
 use serde_json::Value as Json;
 
-use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, ComponentSearch, SearchFacets}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
+use crate::{db::{class::service::ClassServices, class_instance::class_instance::ClassInstance, component::component::{Component, ComponentWithAttributes}, component_class::component_class::{ComponentClass, FacetSearch, PagedComponentSearch, SearchFacets, UnitComponentClassSearch}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors::IncorrectFieldsFound}};
 
 
 
@@ -19,8 +19,8 @@ pub trait ComponentClassServices {
     async fn get_class_instances_from_component(&self, component_id: Uuid) -> Result<Vec<ClassInstance>, AppError>;
     async fn remove_component_class(&self, component_id: Uuid, class_instance_id: Uuid) -> Result<(), AppError>;
 
-    async fn search_components_with_attributes_on_component_class(&self, search: ComponentSearch) -> Result<Vec<ComponentWithAttributes>, AppError>;
-    async fn get_facets_from_search_on_component_class(&self, search: ComponentSearch) -> Result<SearchFacets, AppError>;
+    async fn search_components_with_attributes_on_component_class(&self, search: PagedComponentSearch) -> Result<Vec<ComponentWithAttributes>, AppError>;
+    async fn get_facets_from_search_on_component_class(&self, search: FacetSearch) -> Result<SearchFacets, AppError>;
 
     async fn update_component_class(&self, component_class: ComponentClass) -> Result<(), AppError>;
 
@@ -154,7 +154,7 @@ impl ComponentClassServices for DB {
     /// ```
     /// 
     /// and returns a list of Component
-    async fn search_components_with_attributes_on_component_class(&self, search: ComponentSearch) -> Result<Vec<ComponentWithAttributes>, AppError> {
+    async fn search_components_with_attributes_on_component_class(&self, search: PagedComponentSearch) -> Result<Vec<ComponentWithAttributes>, AppError> {
 
 
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new(
@@ -199,12 +199,17 @@ LEFT JOIN label l
         }
 
 
-        build_select(search, &mut query);
+        build_select(search.units, &mut query);
 
-        // println!("{}", query.build().sql().as_str());
+        query.push("\nORDER BY c.component_id DESC OFFSET ");
+        query.push_bind(search.state.page_pos * search.state.page_size);
+        query.push(" LIMIT ");
+        query.push_bind(search.state.page_size);
 
 
-        let result: Vec<ComponentWithAttributes> = query.build_query_as().fetch_all(&*self.pool).await?;
+        let result: Vec<ComponentWithAttributes> = query
+            .build_query_as()
+            .fetch_all(&*self.pool).await?;
 
 
         Ok(result)
@@ -214,7 +219,7 @@ LEFT JOIN label l
 
 
 
-    async fn get_facets_from_search_on_component_class(&self, search: ComponentSearch) -> Result<SearchFacets, AppError> {
+    async fn get_facets_from_search_on_component_class(&self, search: FacetSearch) -> Result<SearchFacets, AppError> {
 
         let mut query: QueryBuilder<Postgres> = QueryBuilder::new("
             WITH RECURSIVE ancestors AS (
@@ -239,8 +244,23 @@ LEFT JOIN label l
                 JOIN ancestors a
                     ON ci.class_instance_id = a.parent
             ),
-                    
+
+            components AS (
+            
+                SELECT
+                    c.component_id
+                FROM component c
+
+                JOIN component_class cc_root
+                    ON cc_root.component_id = c.component_id
+                    AND cc_root.class_instance_id = ($1)");
+
+        build_select(search.units, &mut query);
+
+        query.push(
+            "\n),
             facets AS (
+
                 SELECT
                     a.class_instance_id,
                     a.depth,
@@ -248,22 +268,29 @@ LEFT JOIN label l
                     f.key,
                     f.value,
                     COUNT(*) AS cnt
-                FROM ancestors a 
+                FROM components mc
                 
-                JOIN class cl
-                    ON cl.class_id = a.class_id
+                
                     
                 JOIN component_class cc
-                    ON cc.class_instance_id = a.class_instance_id
+                    ON cc.component_id = mc.component_id
 
-                CROSS JOIN LATERAL jsonb_each(cc.attributes) AS f(key, value)");
+                JOIN ancestors a
+                    ON a.class_instance_id = cc.class_instance_id
 
-        build_select_facets(search, &mut query);
+                JOIN class cl
+                    ON cl.class_id = a.class_id
 
-        query.push("\nGROUP BY
-                a.class_instance_id, cl.name, f.key, f.value, a.depth
-        
+                CROSS JOIN LATERAL jsonb_each(cc.attributes) AS f(key, value)
+
+                GROUP BY
+                    a.class_instance_id,
+                    a.depth,
+                    cl.name,
+                    f.key,
+                    f.value
             ),
+
             facet_values AS (
                 SELECT
                     class_instance_id,
@@ -302,10 +329,109 @@ LEFT JOIN label l
                 )
                 ORDER BY DEPTH, class_instance_id
             )
-            FROM class_facets;");
+            FROM class_facets;"
+        );
+
+        // let mut query: QueryBuilder<Postgres> = QueryBuilder::new("
+        //     WITH RECURSIVE ancestors AS (
+        //         SELECT
+        //             class_instance_id,
+        //             class_id,
+        //             parent,
+        //             0 AS depth
+        //         FROM class_instance
+        //         WHERE class_instance_id IS NOT DISTINCT FROM ");
+        
+        // query.push_bind(search.root);
+
+        // query.push("\nUNION ALL
+
+        //         SELECT
+        //             ci.class_instance_id,
+        //             ci.class_id,
+        //             ci.parent,
+        //             a.depth + 1
+        //         FROM class_instance ci
+        //         JOIN ancestors a
+        //             ON ci.class_instance_id = a.parent
+        //     ),
+                    
+        //     facets AS (
+        //         SELECT
+        //             a.class_instance_id,
+        //             a.depth,
+        //             cl.name,
+        //             f.key,
+        //             f.value,
+        //             COUNT(*) AS cnt
+        //         FROM ancestors a 
+                
+        //         JOIN class cl
+        //             ON cl.class_id = a.class_id
+                    
+        //         JOIN component_class cc
+        //             ON cc.class_instance_id = a.class_instance_id
+
+        //         CROSS JOIN LATERAL jsonb_each(cc.attributes) AS f(key, value)");
 
 
-        let result: SearchFacets = query.build_query_as().fetch_one(&*self.pool).await?;
+        // query.push("\nWHERE EXISTS (SELECT 1 FROM component_class ccsearch WHERE ccsearch.component_id = cc.component_id AND ccsearch.class_instance_id = ");
+        
+        // query.push_bind(search.root);
+
+        // query.push(")");
+
+        // // ADDS filtered facets BROKEN
+        // //build_select_facets(search, &mut query);
+
+        // query.push("\nGROUP BY
+        //         a.class_instance_id, cl.name, f.key, f.value, a.depth
+        
+        //     ),
+        //     facet_values AS (
+        //         SELECT
+        //             class_instance_id,
+        //             depth,
+        //             name,
+        //             KEY, 
+        //             jsonb_agg(
+        //                 jsonb_build_object(
+        //                     'value', value,
+        //                     'count', cnt
+        //                 )
+        //                 ORDER BY cnt DESC
+        //             ) AS values_json
+        //         FROM facets
+        //         GROUP BY
+        //             class_instance_id,
+        //             DEPTH,
+        //             name,
+        //             KEY,
+        //             name
+        //     ),
+        //     class_facets AS (
+        //         SELECT
+        //             class_instance_id,
+        //             DEPTH,
+        //             name,
+        //             jsonb_object_agg(key, values_json) AS facets
+        //         FROM facet_values
+        //         GROUP BY class_instance_id, DEPTH, NAME
+        //     )
+        //     SELECT jsonb_agg(
+        //         jsonb_build_object(
+        //             'class_instance_id', class_instance_id,
+        //             'name', name,
+        //             'facets', facets
+        //         )
+        //         ORDER BY DEPTH, class_instance_id
+        //     )
+        //     FROM class_facets;");
+
+
+        println!("{}", query.sql().as_str());
+        let result: SearchFacets = query.build_query_as().bind(search.root).fetch_one(&*self.pool).await?;
+
         Ok(result)
         
 
@@ -318,13 +444,13 @@ LEFT JOIN label l
 
 
 // BUILD ACTUAL ATTRIBUTE SEARCHES
-fn build_select(search: ComponentSearch, q: &mut QueryBuilder<Postgres>) {
+fn build_select(units: Vec<UnitComponentClassSearch>, q: &mut QueryBuilder<Postgres>) {
 
 
     let mut first = true;
 
     // build filtering for reach class instance
-    for unit in search.units {
+    for unit in &units {
 
 
         // check if they are all empty - THIS IS REALLY BAD. FIX THIS
@@ -357,7 +483,7 @@ fn build_select(search: ComponentSearch, q: &mut QueryBuilder<Postgres>) {
 
         // BUILD SELECT STATEMENT
 
-        for (key, values) in unit.facets {
+        for (key, values) in &unit.facets {
 
 
             // CHECK IF EMPTY AND SKIP
@@ -385,13 +511,13 @@ fn build_select(search: ComponentSearch, q: &mut QueryBuilder<Postgres>) {
 
 
 // BUILD ACTUAL ATTRIBUTE SEARCHES FOR FACETS
-fn build_select_facets(search: ComponentSearch, q: &mut QueryBuilder<Postgres>) {
+fn build_select_facets(search: &FacetSearch, q: &mut QueryBuilder<Postgres>) {
 
 
     let mut first = true;
 
     // build filtering for reach class instance
-    for unit in search.units {
+    for unit in &search.units {
 
 
         // check if they are all empty - THIS IS REALLY BAD. FIX THIS
@@ -424,7 +550,7 @@ fn build_select_facets(search: ComponentSearch, q: &mut QueryBuilder<Postgres>) 
 
         // BUILD SELECT STATEMENT
 
-        for (key, values) in unit.facets {
+        for (key, values) in &unit.facets {
 
 
             // CHECK IF EMPTY AND SKIP

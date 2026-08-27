@@ -1,5 +1,5 @@
 
-import { fetchJSON, fetchURL } from "./util";
+import { fetchJSON, fetchURL, StatusError } from "./util";
 
 
 

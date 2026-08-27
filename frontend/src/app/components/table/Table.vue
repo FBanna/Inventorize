@@ -1,6 +1,8 @@
 <template>
   
   <table class="table">
+
+    <thead>
     
       <tr>
 
@@ -30,9 +32,31 @@
 
       </tr>
 
+    </thead>
 
-      <TableRow @click="row_click(entry)" :transform_row_data="props.transform_row_data" :row_data="entry" :get_id="props.get_id" :state="state" v-for="entry in rows"/>
+
+    <TableRow @click="row_click(entry)" :transform_row_data="props.transform_row_data" :row_data="entry" :get_id="props.get_id" :state="state" v-for="entry in rows"/>
+
+    
   </table>
+
+  <div v-if="props.limited_pages" class="page-controls-bottom">
+      <div class="page-info">
+        Page size of {{ state.page.page_size }}
+      </div>
+
+      <div class="page-movements">
+
+        <button class="page-button" @click="page_start"><<</button>
+        <button class="page-button" @click="page_minus"><</button>
+
+        <button class="page-button" v-for="p_num in get_page_buttons()">{{ p_num + 1}}</button>
+
+        <button class="page-button" @click="page_plus">></button>
+        <button class="page-button" @click="page_end">>></button>
+
+      </div>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -45,10 +69,15 @@ import TableRow from './TableRow.vue';
 
 
 export type TableState = {
-  pageNum: Number,
-  pageSize: Number,
+  page: TablePageQuery,
+  page_count: number,
   select: Select
 
+}
+
+export type TablePageQuery = {
+  page_pos: number,
+  page_size: number,
 }
 
 type Select = {
@@ -82,7 +111,8 @@ const props = defineProps<{
   transform_row_data: TransformRowDataFunction,
   get_column_groups: ColumnFunction,
   get_id: IDGetterFunction,
-  row_click: RowClickFunction
+  row_click: RowClickFunction,
+  limited_pages?: Boolean
 }>()
 
 // const props = defineProps({
@@ -98,8 +128,12 @@ defineExpose({
 
 
 const defaultState: TableState = {
-    pageNum: 0,
-    pageSize: 5,
+    page: {
+      
+      page_pos: 0,
+      page_size: 50
+    },
+    page_count: 2,
     select: {
       inverted: false,
       selected: [],
@@ -108,6 +142,94 @@ const defaultState: TableState = {
   }
 
 const state: Ref<TableState> = ref(defaultState)
+
+
+// Page functions
+
+
+async function page_start() {
+
+  state.value.page.page_pos = 0
+  await search()
+  
+
+}
+
+async function page_minus() {
+
+  
+
+}
+
+async function page_set(num: any) {
+
+}
+
+async function page_plus() {
+
+}
+
+async function page_end() {
+
+}
+
+async function get_page_buttons(): Array<number> {
+
+
+  let WINDOW_RADIUS = 2;
+
+
+
+  let current = state.value.page.page_pos;
+
+  let out: Array<number> = [];
+
+  
+    // If too small return
+  if (state.value.page_count < (WINDOW_RADIUS * 2 + 1)) {
+
+    for (let i = 0; i < state.value.page_count; i ++) {
+      out.push(i)
+    }
+
+    return out
+
+  }
+
+
+  if (current - WINDOW_RADIUS < 0) {
+    current = 0
+  } else {
+    current = current - WINDOW_RADIUS;
+  }
+
+  
+  
+
+  for (let i = 0; i < ((WINDOW_RADIUS * 2) + 1); i++) {
+    
+
+    if ( current == (state.value.page_count - 1)) {
+      break;
+    }
+
+    out.push(current)
+  
+    current = current + 1;
+
+  } 
+
+  console.log(out)
+
+
+
+  return out
+  
+
+
+}
+
+// Click Function
 
 
 function row_click(row: any) {
@@ -140,20 +262,10 @@ async function search() {
         let res = await props.get_search(state.value)
 
         rows.value = res
-    } catch(e) {
+    } catch(e: any) {
         pushAppError(e)
     }
 
-    // try {
-    //     let res = await post_search_get_component_with_attributes(
-    //         props.uuid,
-    //         Object.values(props.search)
-    //     )
-    //     data.value = res
-
-    // } catch(e) {
-    //     pushAppError(e)
-    // }
 }
 
 async function get_columns_from_function() {
@@ -162,7 +274,7 @@ async function get_columns_from_function() {
     let res = await props.get_column_groups()
     column_groups.value = res
 
-  } catch(e) {
+  } catch(e: any) {
       pushAppError(e)
   }
 }
@@ -195,6 +307,7 @@ setup()
 .table{
   border-collapse: collapse;
   margin: 5px;
+  width: 100%;
 }
 
 .head{
@@ -217,14 +330,26 @@ setup()
 }
 
 
+.page-controls-bottom {
+  width: 100%;
+  height: 30px;
+}
 
-// div[loop]{
-//   border: 0px;
-//   padding: 0px;
-//   margin: 0px;
-//   height: 35px;
-//   background-color: antiquewhite;
+.page-info {
+  float: left;
+  height: 100%;
+}
 
-// }
+.page-movements {
+  float: right;
+  height: 100%;
+}
+
+.page-button {
+  border: 0;
+  margin: 1px;
+  height: 30px;
+  width: 30px;
+}
 
 </style>
