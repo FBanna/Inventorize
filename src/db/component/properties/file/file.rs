@@ -14,65 +14,34 @@ pub struct ComponentFile {
     pub mime: String
 }
 
-
 impl ComponentFile {
 
     pub fn new(file: DownloadedFile, config: &Config) -> Result<Self, AppError> {
-        let option_mime = infer::get_from_path(&file.file_path).map_err(|_| FileErrors::WriteUpload)?;
-
-        let mime = option_mime.ok_or(FileErrors::WriteUpload)?;
 
 
-        let final_path = Path::new(&config.asset_location)
-            .join(file.component_id.as_hyphenated().to_string())
-            .join({
-                
-                format!("{}.{}", &file.temp_uuid.as_hyphenated().to_string(), &mime.extension())
 
-            });
-        
+        let option_mime = infer::get_from_path(file.file_field.contents.path()).map_err(|_| FileErrors::MimeUpload)?;
 
-        fs::rename(file.file_path, final_path)?;
+        let mime = option_mime.ok_or(FileErrors::MimeUpload)?;
+
+        let file_id = Uuid::now_v7();
+
+        let out_dir = Path::new(&config.asset_location).join(file_id.as_hyphenated().to_string());
+
+        file.file_field.contents.persist(out_dir).map_err(|_| FileErrors::Upload(
+            format!("Could not find new file location, check {} dir exists!", config.asset_location)
+        ))?;
+
 
         
 
         Ok(Self {
-            file_id: file.temp_uuid,
+            file_id: file_id,
             component_id: file.component_id,
-            name: file.name,
+            name: file.file_field.metadata.file_name.unwrap_or("document".to_string()),
             mime: mime.mime_type().to_owned()
         })
     }
-
-    // pub fn add_from_temp_file(c_id: Uuid, uuid: Uuid, temp_path: PathBuf, file_name: String, config: &Config) -> Result<Self, AppError> {
-
-    //     let option_mime = infer::get_from_path(&temp_path).map_err(|_| FileError::WriteUpload)?;
-
-    //     let mime = option_mime.ok_or(FileError::WriteUpload)?;
-
-
-    //     let final_path = Path::new(&config.asset_location)
-    //         .join(c_id.to_string())
-    //         .join({
-                
-    //             format!("{}.{}", &uuid.as_hyphenated().to_string(), &mime.extension())
-
-    //         });
-        
-
-    //     fs::rename(temp_path, final_path)?;
-
-        
-
-    //     Ok(Self {
-    //         file_id: uuid,
-    //         component_id: c_id,
-    //         name: file_name,
-    //         mime: mime.mime_type().to_owned()
-    //     })
-        
-
-    // }
 
 }
 

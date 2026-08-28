@@ -5,13 +5,13 @@ use crate::{db::{component::properties::image::image::ComponentImage, db::DB}, e
 
 #[derive(FromRow)]
 struct FullBytes {
-    full: Vec<u8>
+    full_img: Vec<u8>
 }
 
 
 #[derive(FromRow)]
 struct ThumbBytes {
-    thumb: Vec<u8>
+    thumb_img: Vec<u8>
 }
 
 pub trait ComponentImageService {
@@ -71,7 +71,7 @@ impl ComponentImageService for DB {
             .fetch_one(&*self.pool)
             .await?;
 
-        Ok(output.full)
+        Ok(output.full_img)
 
     }
 
@@ -82,7 +82,7 @@ impl ComponentImageService for DB {
             .fetch_one(&*self.pool)
             .await?;
 
-        Ok(output.thumb)
+        Ok(output.thumb_img)
 
 
     }

@@ -20,10 +20,14 @@ pub const DEFAULT_CONFIG_FILE: &str = "./config.yaml";
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub struct Config{
     pub port: u16,
+
     pub user: String,
     pub password: String,
+
     pub host_address: String,
+
     pub db_location: String,
+    
     pub label_location: String,
     pub font_location: String,
     pub asset_location: String,

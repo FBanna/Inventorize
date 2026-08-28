@@ -1,8 +1,10 @@
 use std::{fmt::Display, io, sync::Arc};
 
 use axum::{extract::multipart::MultipartError, http::{StatusCode, response}, response::{IntoResponse, Response}};
+use image::ImageError;
 use jsonschema::ValidationError;
 use serde::de::value;
+use tempfile::PersistError;
 
 use crate::error::{class::ClassErrors, config::ConfigErrors, file::FileErrors, json::JsonErrors, label::LabelErrors};
 
@@ -21,7 +23,8 @@ pub enum AppError{
 
     FileError(FileErrors),
     
-    ConfigError(ConfigErrors)
+    ConfigError(ConfigErrors),
+
 
 }
 
@@ -72,7 +75,7 @@ impl IntoResponse for AppError {
             },
             AppError::TypeError(err) => {
                 (err.clone().into_response(), Some(self))
-            }
+            },
             _ => ((StatusCode::INTERNAL_SERVER_ERROR, "Unknown Inventorize error!").into_response(), None)
         };
 
@@ -129,11 +132,11 @@ impl From<sqlx::Error> for AppError {
     }
 }
 
-impl From<serde_json::Error> for AppError {
-    fn from(value: serde_json::Error) -> Self {
-        Self::JsonError(JsonErrors::GenSchema)
-    }
-}
+// impl From<serde_json::Error> for AppError {
+//     fn from(value: serde_json::Error) -> Self {
+//         Self::JsonError(JsonErrors::GenSchema)
+//     }
+// }
 
 impl From<MultipartError> for AppError {
     fn from(value: MultipartError) -> Self {
@@ -151,5 +154,19 @@ impl From<io::Error> for AppError {
 impl<'a> From<ValidationError<'a>> for AppError {
     fn from(value: ValidationError) -> Self {
         Self::JsonError(JsonErrors::GenValidator)
+    }
+}
+
+impl From<PersistError> for AppError {
+
+    fn from(value: PersistError) -> Self {
+        Self::FileError(FileErrors::Upload(value.to_string()))
+    }
+
+}
+
+impl From<ImageError> for AppError {
+    fn from(value: ImageError) -> Self {
+        Self::FileError(FileErrors::ManipulateImageUpload)
     }
 }

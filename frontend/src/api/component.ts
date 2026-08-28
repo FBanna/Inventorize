@@ -24,3 +24,42 @@ export async function post_component(
         })
     })
 }
+
+
+
+export async function post_component_with_files(
+    class_instance_id: any,
+    name: string,
+    stock: number,
+    manufacturer: string,
+    label_id: any,
+    attributes: any,
+    files: File[],
+    image: File | null
+) {
+
+    const form: FormData = new FormData();
+
+    form.append("component", JSON.stringify({
+        class_instance_id: class_instance_id,
+        name: name,
+        stock: stock,
+        manufacturer_id: manufacturer,
+        label_id: label_id,
+        attributes: attributes
+    }))
+
+    for (let file of files) {
+        form.append("file", file)
+    }
+
+    if (image != null) {
+        form.append("image", image)
+    }
+
+    await fetchURL("api/post_component_with_files", {
+        method: "POST",
+        //headers: { 'Content-Type': 'multipart/form-data' },
+        body: form
+    })
+}

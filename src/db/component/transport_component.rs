@@ -1,5 +1,9 @@
 use std::{collections::HashMap, fmt::Display, write};
 
+use async_trait::async_trait;
+use axum::body::Bytes;
+use axum_typed_multipart::{FieldMetadata, TryFromChunks, TryFromField, TryFromMultipart, TypedMultipartError};
+use futures::Stream;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use serde_json::Value as Json;
@@ -59,5 +63,21 @@ impl Display for TransportComponent {
     }
 }
 
+#[async_trait]
+impl TryFromChunks for TransportComponent {
 
+    async fn try_from_chunks(
+        mut chunks: impl 'async_trait
+            + Stream<Item = Result<Bytes, TypedMultipartError>>
+            + Send
+            + Sync
+            + Unpin,
+        metadata: FieldMetadata,
+    ) -> Result<Self, TypedMultipartError> {
+        let bytes = Bytes::try_from_chunks(chunks, metadata).await?;
+
+        serde_json::from_slice(&bytes).map_err(|e| TypedMultipartError::Other { source: e.into() })
+    }
+
+}
 

@@ -16,7 +16,8 @@
             :row_click="row_click" 
             :get_id="get_id" 
             :get_column_groups="column_function" 
-            :get_search="search_function" 
+            :get_search="search_function"
+            :slots="[]" 
             ref="table"/>
 
         </div>
@@ -31,8 +32,9 @@
 import { get_all_classes, post_class } from '@/api/class.ts';
 import { Popups, setActivePopup } from '../popup/popup_state.ts';
 import { useTemplateRef } from 'vue';
-import Table, { type TableState } from '../components/table/Table.vue';
 import { get_all_labels } from '@/api/label.ts';
+import Table from '../components/table/Table.vue';
+import type { TableState } from '../components/table/TableTypes.ts';
 
 const table = useTemplateRef("table")
 

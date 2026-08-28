@@ -56,8 +56,9 @@
             </div>
         </span>
 
-
-
+        Files
+        <FileUpload ref="img_uploader" text="Upload Image" accept="image/*" />
+        <FileUpload ref="file_uploader" text="Upload Files" multiple accept="*" />
 
 
 
@@ -76,11 +77,12 @@
 import { get_all_classes, post_class, post_class_instance_id_get_class } from '@/api/class';
 import { get_fields_from_class_instance, get_fields_from_class_instance_for_html, post_class_instance } from '@/api/class_instance';
 import { pushAppError } from '@/error/error_state';
-import { onBeforeMount, ref, type Ref } from 'vue';
+import { onBeforeMount, ref, useTemplateRef, type Ref } from 'vue';
 import { clearActivePopup, opts, onSuccess } from './popup_state';
-import { post_component } from '@/api/component';
+import { post_component, post_component_with_files } from '@/api/component';
 import { get_all_manufacturers } from '@/api/manufacturer';
 import { get_all_labels } from '@/api/label';
+import FileUpload from '../components/FileUpload.vue';
 
 
     const class_: any = ref({})
@@ -95,6 +97,9 @@ import { get_all_labels } from '@/api/label';
     const label: Ref<Array<any>> = ref([])
     
     const attributes: Ref<any> = ref({})
+
+    const file_uploader: Ref<any> = useTemplateRef("file_uploader") 
+    const img_uploader = useTemplateRef("img_uploader") 
 
     async function confirm() {
 
@@ -114,6 +119,8 @@ import { get_all_labels } from '@/api/label';
             let manufacturer_out;
             let label_out;
 
+            let img_out: File | null = null;
+
 
             if (manufacturer.value.length == 0) {
                 manufacturer_out = null
@@ -128,13 +135,24 @@ import { get_all_labels } from '@/api/label';
             }
 
 
-            await post_component(
+            const temp = img_uploader.value?.files.at(0)
+
+            if (temp != undefined) {
+                img_out = temp
+            } else {
+                img_out = null
+            }
+
+
+            await post_component_with_files(
                 opts.value.class_instance_id,
                 name.value,
                 stock.value,
                 manufacturer_out,
                 label_out,
-                attributes.value
+                attributes.value,
+                file_uploader.value.files,
+                img_out
             )
 
             if (onSuccess != null) {
@@ -199,7 +217,7 @@ import { get_all_labels } from '@/api/label';
 
     .menu{
         width: 600px;
-        height: 400px;
+        height: 700px;
 
         display: grid;
         overflow: hidden;

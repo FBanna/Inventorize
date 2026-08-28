@@ -69,9 +69,16 @@
       :row_click="row_click_function"
       :get_id="id_function"
       :limited_pages="true"
-      
-      
-      ref="table"></Table>
+      :slots="slots"
+      ref="table">
+
+        <template #image="slotted_props">
+          
+          <img :src="get_img" loading="lazy">
+
+        </template>
+    
+      </Table>
 
     </div>
 
@@ -135,8 +142,11 @@ import { pushAppError } from '@/error/error_state';
 import { onBeforeMount, ref, useTemplateRef, watch, type Ref } from 'vue';
 import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 import router from '../router/index.ts';
-import Table, { type TableState } from '../components/table/Table.vue';
 import { Popups, setActivePopup } from '../popup/popup_state.ts';
+import { post_component_id_get_image_thumb } from '@/api/image.ts';
+import { CellTypes, type CellData, type TableState } from '../components/table/TableTypes.ts';
+import Table from '../components/table/Table.vue';
+
 
   const route = useRoute();
 
@@ -148,6 +158,8 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
 
 
     const table = useTemplateRef("table");
+
+    const slots: string[] = ["image"]
 
 
     
@@ -204,6 +216,11 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
             }
         )
 
+    }
+
+
+    async function get_img() {
+      
     }
 
 
@@ -265,20 +282,24 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
 
     }
 
-    function transform_function(row: any): Array<any> {
+    function transform_function(row: any): CellData[] {
 
-      let out = ["IMAGE"]
+      let out: CellData[] = [{type: CellTypes.Slot, value: "image"}]
+
 
       for (let field of raw_fields.core) {
-        out.push(row[field])
+        out.push({type: CellTypes.String, value: row[field]})
       }
 
       for (let class_ of raw_fields.attributes) {
         for (let field of class_.fields) {
           out.push(
-            row.attributes.find(
-              (a: any) => a.class_instance_id === class_.class_instance_id
-            ).attributes[field.name]
+            {
+              type: CellTypes.String,
+              value: row.attributes.find(
+                      (a: any) => a.class_instance_id === class_.class_instance_id
+                    ).attributes[field.name]
+            }
           )
         }
       }
@@ -327,7 +348,11 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
       return row.component_id
     }
 
-    function row_click_function(row: any) {
+    async function row_click_function(row: any) {
+
+      await post_component_id_get_image_thumb(
+        row.component_id
+      )
       console.log("click")
     }
 

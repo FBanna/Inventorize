@@ -1,4 +1,6 @@
 pub mod post_component;
+pub mod post_component_with_files;
+
 pub mod post_id_get_component;
 pub mod post_id_remove_component;
 pub mod post_id_remove_list_component;

@@ -2,7 +2,15 @@
 
     <tr :class="{selected: props.state.select.selected.find((a: any) => a === props.get_id(props.row_data))}">
 
-      <td v-for="col in props.transform_row_data(props.row_data)">{{ col }}</td>
+      <td v-for="col in props.transform_row_data(props.row_data)" v-show="col.type == CellTypes.Slot">
+        <slot :name="col.value" :row="props.row_data">hello</slot>
+      </td>
+      <td v-for="col in props.transform_row_data(props.row_data)" v-show="col.type == CellTypes.String">{{ col.value }}</td>
+
+<!-- 
+      <template #[slot]="slotted_props" v-for="slot in props.slots">
+        <slot :name="slot" />
+      </template> -->
 
         <!-- <td>IMAGE</td>
 
@@ -27,13 +35,15 @@
 
 <script setup lang="ts">
 import type { active } from '@/app/popup/popup_state';
-import type { IDGetterFunction, TableState, TransformRowDataFunction } from './Table.vue';
+import { CellTypes, type CellData, type IDGetterFunction, type TableState, type TransformRowDataFunction } from './TableTypes.ts';
+
 
 const props = defineProps<{
-  row_data: any,
+  row_data: CellData[],
   state: TableState,
   get_id: IDGetterFunction,
   transform_row_data: TransformRowDataFunction,
+  slots: string[]
 }>()
 </script>
 

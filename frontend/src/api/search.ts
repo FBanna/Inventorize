@@ -1,5 +1,5 @@
 
-import type { TablePageQuery } from "@/app/components/table/Table.vue";
+import type { TablePageQuery } from "@/app/components/table/TableTypes";
 import { fetchJSON, fetchURL } from "./util";
 
 

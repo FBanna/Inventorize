@@ -35,7 +35,11 @@
     </thead>
 
 
-    <TableRow @click="row_click(entry)" :transform_row_data="props.transform_row_data" :row_data="entry" :get_id="props.get_id" :state="state" v-for="entry in rows"/>
+    <TableRow @click="row_click(entry)" :transform_row_data="props.transform_row_data" :row_data="entry" :get_id="props.get_id" :state="state" :slots="props.slots" v-for="entry in rows" >
+      <template #[slot]="slotted_props" v-for="slot in props.slots">
+        <slot :name="slot" :row="slotted_props.row"></slot>
+      </template>
+    </TableRow>
 
     
   </table>
@@ -71,42 +75,14 @@ import { post_search_get_component_with_attributes } from '@/api/search.ts';
 import { pushAppError } from '@/error/error_state.ts';
 import { get_fields_from_class_instance } from '@/api/class_instance.ts';
 import TableRow from './TableRow.vue';
+import type { ColumnFunction, IDGetterFunction, RowClickFunction, SearchFunction, TableState, TransformRowDataFunction } from './TableTypes';
 
 
-export type TableState = {
-  page: TablePageQuery,
-  has_next: boolean,
-  select: Select
 
-}
-
-
-export type TablePageQuery = {
-  page_pos: number,
-  page_size: number,
-}
-
-type Select = {
-  selected: Array<any>,
-  inverted: Boolean,
-  selecting: Boolean
-}
 
 let WINDOW_RADIUS = 1;
 
 
-// Function Defs
-type SearchFunction = (
-  state: TableState
-) => Promise<Array<any>>
-
-export type TransformRowDataFunction = (row: any) => Array<any>
-
-type ColumnFunction = () => Promise<Array<Array<String>>>
-
-export type IDGetterFunction = (row: any) => any    
-
-type RowClickFunction = (row: any) => void
 
 
 
@@ -128,7 +104,7 @@ const defaultState: TableState = {
 
 const state: Ref<TableState> = ref(defaultState)
 const column_groups: any = ref([])
-const rows: any = ref([])
+const rows: any = ref()
 
 
 
@@ -138,7 +114,8 @@ const props = defineProps<{
   get_column_groups: ColumnFunction,
   get_id: IDGetterFunction,
   row_click: RowClickFunction,
-  limited_pages?: Boolean
+  limited_pages?: boolean,
+  slots: string[]
 }>()
 
 

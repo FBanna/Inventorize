@@ -9,6 +9,8 @@ pub enum FileErrors {
 
     Upload(String),
     WriteUpload,
+    MimeUpload,
+    ManipulateImageUpload
 
 }
 
@@ -18,8 +20,9 @@ impl Display for FileErrors{
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             FileErrors::Upload(template) => write!(f, "[ERROR] FileError - Upload - Failed to upload file: {}", template),
-            FileErrors::WriteUpload => write!(f, "[ERROR] FileError - WriteUpload - Failed to write uploaded file")
-
+            FileErrors::WriteUpload => write!(f, "[ERROR] FileError - WriteUpload - Failed to write uploaded file"),
+            FileErrors::MimeUpload => write!(f, "[ERROR] FileError - MimeUpload - Failed to infer mime type from file"),
+            FileErrors::ManipulateImageUpload => write!(f, "[ERROR] FileError - ManipulateImageUpload - Failed to resize or compress image")
         }
     }
 }
