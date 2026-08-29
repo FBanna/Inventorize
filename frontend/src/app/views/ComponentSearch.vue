@@ -74,7 +74,7 @@
 
         <template #image="slotted_props">
           
-          <img @load="get_image"  alt="" loading="lazy">
+          <img v-if="slotted_props.row.image" class="thumb-img" :src="api_url + 'api/get_image_thumb/' + slotted_props.row.component_id" loading="lazy">
 
         </template>
     
@@ -140,26 +140,24 @@ import { get_fields_from_class_instance } from '@/api/class_instance';
 import { post_search_get_component_with_attributes, post_search_get_component_with_attributes_paged, post_search_get_facets } from '@/api/search';
 import { pushAppError } from '@/error/error_state';
 import { onBeforeMount, ref, useTemplateRef, watch, type Ref } from 'vue';
-import { onBeforeRouteUpdate, useRoute } from 'vue-router';
-import router from '../router/index.ts';
 import { Popups, setActivePopup } from '../popup/popup_state.ts';
 import { post_component_id_get_image_thumb } from '@/api/image.ts';
 import { CellTypes, type CellData, type TableState } from '../components/table/TableTypes.ts';
 import Table from '../components/table/Table.vue';
 
 
-  const route = useRoute();
+  const props = defineProps(["uuid"])
 
-    const props = defineProps(["uuid"])
-
-    //const results = ref()         // components found
-    const prompts: Ref<Array<any>> = ref<any>([])  // prompts found that populate facets
-    const search = ref<any>({})   // the users searched request
+  //const results = ref()         // components found
+  const prompts: Ref<Array<any>> = ref<any>([])  // prompts found that populate facets
+  const search = ref<any>({})   // the users searched request
 
 
-    const table = useTemplateRef("table");
+  const table = useTemplateRef("table");
 
-    const slots: string[] = ["image"]
+  const slots: string[] = ["image"]
+
+  const api_url = import.meta.env.VITE_API_URL
 
 
     
@@ -222,9 +220,11 @@ import Table from '../components/table/Table.vue';
     async function get_image(event: Event): Promise<void> {
 
       try {
-        let response: any = await post_component_id_get_image_thumb(
-          event.row.component_id
-        )
+
+        console.log(event)
+        // let response: any = await post_component_id_get_image_thumb(
+        //   event.row.component_id
+        // )
 
         //return URL.createObjectURL(response)
       } catch (e: any) {
@@ -280,7 +280,7 @@ import Table from '../components/table/Table.vue';
 
     let raw_fields: any;
 
-    async function search_function(state: TableState): Promise<Array<any>> {
+    async function search_function(state: TableState): Promise<any[]> {
 
         let res: any = await post_search_get_component_with_attributes_paged(
             props.uuid,
@@ -508,6 +508,10 @@ import Table from '../components/table/Table.vue';
       overflow-x: hidden;
       flex: 1;
 
+    }
+
+    .thumb-img {
+      width: 100px;
     }
 
     

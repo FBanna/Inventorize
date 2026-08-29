@@ -48,7 +48,7 @@
 
       <div class="page-info">
         Page size of 
-        <select class="page-size-dropdown" v-model.number="state.page.page_size" @change="search" >
+        <select class="page-size-dropdown" v-model.number="state.page.page_size" @change="page_start" >
           <option value=25>25</option>
           <option value=50>50</option>
           <option value=100>100</option>
@@ -103,8 +103,8 @@ const defaultState: TableState = {
   }
 
 const state: Ref<TableState> = ref(defaultState)
-const column_groups: any = ref([])
-const rows: any = ref()
+const column_groups: Ref<any[]> = ref([])
+const rows: Ref<any[]> = ref([])
 
 
 
@@ -217,7 +217,7 @@ function row_click(row: any) {
 
 async function search() {
 
-  console.log(state.value)
+  
     
     try {
         let res = await props.get_search(state.value)

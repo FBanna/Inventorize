@@ -3,16 +3,6 @@ use uuid::Uuid;
 
 use crate::{db::{component::properties::image::image::ComponentImage, db::DB}, error::error::AppError};
 
-#[derive(FromRow)]
-struct FullBytes {
-    full_img: Vec<u8>
-}
-
-
-#[derive(FromRow)]
-struct ThumbBytes {
-    thumb_img: Vec<u8>
-}
 
 pub trait ComponentImageService {
 
@@ -20,8 +10,8 @@ pub trait ComponentImageService {
     async fn add_img(&self, img: ComponentImage) -> Result<(), AppError>;
     async fn del_img(&self, c_id: Uuid) -> Result<(), AppError>;
     async fn get_img(&self, c_id: Uuid) -> Result<ComponentImage, AppError>;
-    async fn get_full(&self, c_id: Uuid) -> Result<Vec<u8>, AppError>;
-    async fn get_thumb(&self, c_id: Uuid) -> Result<Vec<u8>, AppError>;
+    async fn get_full(&self, c_id: Uuid) -> Result<Option<Vec<u8>>, AppError>;
+    async fn get_thumb(&self, c_id: Uuid) -> Result<Option<Vec<u8>>, AppError>;
 
 }
 
@@ -64,25 +54,25 @@ impl ComponentImageService for DB {
 
     }
 
-    async fn get_full(&self, c_id: Uuid) -> Result<Vec<u8>, AppError> {
+    async fn get_full(&self, c_id: Uuid) -> Result<Option<Vec<u8>>, AppError> {
         
-        let output: FullBytes  = sqlx::query_as("SELECT (full_img) FROM component_image WHERE component_id = ($1)")
+        let output: Option<Vec<u8>>  = sqlx::query_scalar("SELECT (full_img) FROM component_image WHERE component_id = ($1)")
             .bind(c_id)
-            .fetch_one(&*self.pool)
+            .fetch_optional(&*self.pool)
             .await?;
 
-        Ok(output.full_img)
+        Ok(output)
 
     }
 
-    async fn get_thumb(&self, c_id: Uuid) -> Result<Vec<u8>, AppError> {
+    async fn get_thumb(&self, c_id: Uuid) -> Result<Option<Vec<u8>>, AppError> {
         
-        let output: ThumbBytes  = sqlx::query_as("SELECT (thumb_img) FROM component_image WHERE component_id = ($1)")
+        let output: Option<Vec<u8>> = sqlx::query_scalar("SELECT (thumb_img) FROM component_image WHERE component_id = ($1)")
             .bind(c_id)
-            .fetch_one(&*self.pool)
+            .fetch_optional(&*self.pool)
             .await?;
 
-        Ok(output.thumb_img)
+        Ok(output)
 
 
     }

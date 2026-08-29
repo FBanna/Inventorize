@@ -31,7 +31,8 @@ pub struct ComponentWithAttributes{
     pub manufacturer: Option<String>,
     pub label: Option<String>,
 
-    pub attributes: Json
+    pub attributes: Json,
+    pub image: bool
 }
 
 

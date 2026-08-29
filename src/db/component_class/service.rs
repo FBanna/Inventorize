@@ -165,7 +165,12 @@ impl ComponentClassServices for DB {
     c.stock,
     m.name manufacturer,
     l.name label,    
-    component_classes.attributes
+    component_classes.attributes,
+    EXISTS (
+        SELECT 1
+        FROM component_image cimg
+        WHERE cimg.component_id = c.component_id
+    ) AS image
 FROM component c
 
 CROSS JOIN LATERAL (

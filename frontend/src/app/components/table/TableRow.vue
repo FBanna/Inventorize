@@ -3,8 +3,9 @@
     <tr :class="{selected: props.state.select.selected.find((a: any) => a === props.get_id(props.row_data))}">
 
       <td v-for="col in props.transform_row_data(props.row_data)" v-show="col.type == CellTypes.Slot">
-        <slot :name="col.value" :row="props.row_data">hello</slot>
+        <slot :name="col.value" :row="props.row_data">IMAGE</slot>
       </td>
+      
       <td v-for="col in props.transform_row_data(props.row_data)" v-show="col.type == CellTypes.String">{{ col.value }}</td>
 
 <!-- 
@@ -39,7 +40,7 @@ import { CellTypes, type CellData, type IDGetterFunction, type TableState, type 
 
 
 const props = defineProps<{
-  row_data: CellData[],
+  row_data: any,
   state: TableState,
   get_id: IDGetterFunction,
   transform_row_data: TransformRowDataFunction,
