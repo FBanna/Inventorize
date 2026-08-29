@@ -74,7 +74,7 @@
 
         <template #image="slotted_props">
           
-          <img :src="get_img" loading="lazy">
+          <img @load="get_image"  alt="" loading="lazy">
 
         </template>
     
@@ -219,7 +219,19 @@ import Table from '../components/table/Table.vue';
     }
 
 
-    async function get_img() {
+    async function get_image(event: Event): Promise<void> {
+
+      try {
+        let response: any = await post_component_id_get_image_thumb(
+          event.row.component_id
+        )
+
+        //return URL.createObjectURL(response)
+      } catch (e: any) {
+        pushAppError(e)
+      }
+
+      //return ""
       
     }
 
