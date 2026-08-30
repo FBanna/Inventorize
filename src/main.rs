@@ -1,24 +1,18 @@
 
 use std::{collections::HashMap, io::Error, println, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, transport_component::{EmbeddedComponentClassAttributes, TransportComponent}}, component_class::{component_class::{FacetSearch, PagedComponentSearch, TablePageQuery, UnitComponentClassSearch}, service::ComponentClassServices}, label::{service::LabelServices, transport_label::TransportLabel}, manufacturer::{self, service::ManufacturerServices, transport::TransportManufacturer}}};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, properties::origin::component_origin::ComponentOrigin, transport_component::{EmbeddedComponentClassAttributes, EmbeddedComponentOrigin, TransportComponent}}, component_class::{component_class::{FacetSearch, PagedComponentSearch, TablePageQuery, UnitComponentClassSearch}, service::ComponentClassServices}, label::{service::LabelServices, transport_label::TransportLabel}, manufacturer::{self, service::ManufacturerServices, transport::TransportManufacturer}, origin::{service::OriginServices, transport_origin::TransportOrigin}}};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
 use serde_json::Value as Json;
 
-// use tokio::signal;
-
-
-
-// use signal_hook::consts::signal::*;
 
 mod server;
 mod config;
 mod db;
 mod label;
 mod error;
-mod cli;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -100,6 +94,17 @@ async fn main() -> Result<(), Error> {
 
     let man_id = component_db.add_transport_manufacturer(manufacturer).await.unwrap();
 
+    // Origin
+
+    let origin_t = TransportOrigin {
+        name: "LCSC".to_owned(),
+        url: Some("lcsc.com".to_owned()),
+        hurl_get: None,
+        hurl_price: None
+    };
+
+    let origin_id = component_db.add_transport_origin(origin_t).await.unwrap();
+
 
     // components
     let component1 = TransportComponent {
@@ -111,7 +116,13 @@ async fn main() -> Result<(), Error> {
         attributes: HashMap::from([
             (passive_class_instance_id, json!({}))
         ]),
-        //origins: Vec::new()
+        origins: Vec::from(
+            [EmbeddedComponentOrigin {
+                origin_id,
+                part_number: Some("xc3tr".to_owned()),
+                price: Some(0.344 as i32)
+            }]
+        )
     };
 
     let component2 = TransportComponent {
@@ -133,7 +144,7 @@ async fn main() -> Result<(), Error> {
                 json!({})
             )
         ]),
-        //origins: Vec::new()
+        origins: Vec::new()
     };
 
 

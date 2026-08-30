@@ -7,5 +7,7 @@ use uuid::Uuid;
 pub struct Origin {
     pub origin_id: Uuid,
     pub name: String,
-    pub url: String
+    pub url: Option<String>,
+    pub hurl_get: Option<String>,
+    pub hurl_price: Option<String>
 }

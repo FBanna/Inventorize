@@ -4,7 +4,7 @@ use std::{format, path::Ancestors, println};
 use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, postgres::{PgQueryResult, PgRow, PgValueRef}, types::{Json, JsonRawValue}};
 use uuid::Uuid;
 
-use crate::{config::config::Config, db::{class::{class::Class, service::ClassServices}, class_instance::service::ClassInstanceServices, component::{component::Component, transport_component::TransportComponent}, component_class::{component_class::ComponentClass, service::ComponentClassServices}, db::DB}, error::{self, error::AppError, json::JsonErrors}};
+use crate::{config::config::Config, db::{class::{class::Class, service::ClassServices}, class_instance::service::ClassInstanceServices, component::{component::Component, properties::origin::{component_origin::ComponentOrigin, service::ComponentOriginServices}, transport_component::TransportComponent}, component_class::{component_class::ComponentClass, service::ComponentClassServices}, db::DB}, error::{self, error::AppError, json::JsonErrors}};
 
 
 pub trait ComponentServices {
@@ -150,6 +150,20 @@ impl ComponentServices for DB{
                 &mut *tx
             ).await?;
         }
+
+        for origin in &c.origins {
+
+            self.add_component_origin_with_executer(
+                ComponentOrigin{
+                    component_id: id,
+                    origin_id: origin.origin_id,
+                    part_number: origin.part_number.clone(),
+                    price: origin.price
+                }, &mut *tx).await?;
+
+        }
+
+
 
         // commit transaction
         tx.commit().await?;

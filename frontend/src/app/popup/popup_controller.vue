@@ -9,6 +9,7 @@
             <Add_component v-if="active == Popups.AddComponent" />
             <Add_label v-if="active == Popups.AddLabel" />
             <Add_manufacturer v-if="active == Popups.AddManufacturer" />
+            <Add_origin v-if="active == Popups.AddOrigin" />
 
         </div>
 
@@ -28,6 +29,7 @@
     import Add_component from './add_component.vue';
     import Add_label from './add_label.vue';
 import Add_manufacturer from './add_manufacturer.vue';
+import Add_origin from './add_origin.vue';
 
     function clear() {
         clearActivePopup()

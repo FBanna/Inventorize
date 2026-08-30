@@ -1,2 +1,2 @@
-pub mod get_all_manufacturers;
+pub mod get_all_labels;
 pub mod post_label;

@@ -19,6 +19,7 @@ import Error_controller from '@/error/error_controller.vue';
         <RouterLink class="nav_buttons" to="/classes">Classes</RouterLink>
         <RouterLink class="nav_buttons" to="/labels">Labels</RouterLink>
         <RouterLink class="nav_buttons" to="/manufacturers">Manufacturers</RouterLink>
+        <RouterLink class="nav_buttons" to="/origins">Origins</RouterLink>
         <!-- <RouterLink class="nav_buttons" to="/component/1">build</RouterLink> -->
 
 

@@ -1,5 +1,7 @@
 -- Classes
 
+
+-- holiday, uni, snapchat, being bored, seeing people on results day, what u got!, today has gone well!, enjoyed school (meh sciences, bio good, meh chem, good phys, robbed in music, stinky maths, nice history, french is a 7, english 66) 
 CREATE TABLE IF NOT EXISTS class
 (
     class_id     uuid DEFAULT uuidv7()   PRIMARY KEY,
@@ -27,7 +29,11 @@ CREATE TABLE IF NOT EXISTS origin
     origin_id       uuid DEFAULT uuidv7()   PRIMARY KEY,
 
     name            TEXT            NOT NULL,
-    url             TEXT            NOT NULL
+    url             TEXT,
+    hurl_get        TEXT,
+    hurl_price      TEXT
+
+
 );
 
 -- Label

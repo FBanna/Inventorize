@@ -8,7 +8,6 @@
 #place(center + horizon)[
 
 
-
 #diagram(
   debug: 0,
   spacing: 40pt,
@@ -69,12 +68,17 @@
       ),
       rows: (
         ("name", "text"),
-        ("url", "text"),
-        ("hurl", "path")
+        ("url*", "text"),
+        ("hurl_price*", "path"),
+        ("hurl_get*", "path")
       )
     )
   
   ),
+
+  /// what does hurl actually need.
+  /// I need to populate rows eg. get ALL available data, name, price, manufacturer, maybe even compnent_class data, images and files
+  /// I also need a function that grabs only the price, so that I can do autoupdating prices which will be an absolute pain
 
 
 

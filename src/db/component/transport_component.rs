@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use serde_json::Value as Json;
 
-use crate::db::component::properties::origin::origin::ComponentOrigin;
+use crate::db::component::properties::origin::component_origin::ComponentOrigin;
 
 
 
@@ -27,7 +27,7 @@ pub struct TransportComponent {
     // class_id, Json
     pub attributes: HashMap<Uuid, Json>, // looks like "attributes: {"(uuid)": "...", "(uuid)": "..."}"
 
-    //pub origins: Vec<EmbeddedComponentOrigin>
+    pub origins: Vec<EmbeddedComponentOrigin>
 
 }
 // add image, files, origins

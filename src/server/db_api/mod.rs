@@ -19,3 +19,4 @@ pub mod class;
 pub mod class_instance;
 pub mod manufacturer;
 pub mod label;
+pub mod origin;
