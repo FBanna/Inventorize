@@ -1,4 +1,4 @@
 cd frontend
-yarn build
+npm run build
 cd ..
 cargo build --release
