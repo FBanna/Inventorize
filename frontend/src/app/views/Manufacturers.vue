@@ -34,7 +34,7 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
 import { useTemplateRef } from 'vue';
 import { get_all_labels } from '@/api/label.ts';
 import { get_all_manufacturers } from '@/api/manufacturer.ts';
-import type { TableState } from '../components/table/TableTypes.ts';
+import { CellTypes, type CellData, type TableState } from '../components/table/TableTypes.ts';
 import Table from '../components/table/Table.vue';
 
 const table = useTemplateRef("table")
@@ -58,9 +58,15 @@ async function search_function(state: TableState): Promise<Array<any>> {
 
 }
 
-function transform_function(row: any): Array<any> {
+function transform_function(row: any): CellData[] {
 
-    return [row.name, row.url]
+    return [{
+        type: CellTypes.String,
+        value: row.name
+    }, {
+        type: CellTypes.String,
+        value: row.url
+    }]
 }
 
 async function column_function(): Promise<Array<any>> {

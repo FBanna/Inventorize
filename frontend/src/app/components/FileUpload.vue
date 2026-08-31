@@ -1,6 +1,6 @@
 <template>
 
-  <div class="file-upload-container">
+  <div>
     <label :for="label" class="button">{{ props.text }}</label>
 
     <input
@@ -81,11 +81,5 @@ function getPreviewUrl(file: File): string {
 <style lang="scss" scoped>
 
     @use "@/style/import";
-
-
-    .file-upload-container {
-        background-color: red;
-        margin: 10px;
-    }
 
 </style>

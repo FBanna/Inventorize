@@ -34,6 +34,7 @@ export async function post_component_with_files(
     manufacturer: string,
     label_id: any,
     attributes: any,
+    origins: any[],
     files: File[],
     image: File | null
 ) {
@@ -46,7 +47,8 @@ export async function post_component_with_files(
         stock: stock,
         manufacturer_id: manufacturer,
         label_id: label_id,
-        attributes: attributes
+        attributes: attributes,
+        origins: origins
     }))
 
     for (let file of files) {

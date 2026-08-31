@@ -1,7 +1,11 @@
 <template>
     <div class="popup_template menu">
 
-        Add component to {{ class_.name }}
+        <div class="row">
+            Add component to {{ class_.name }}
+        </div>
+
+        
 
 
         
@@ -16,53 +20,78 @@
         </select> -->
 
         <!-- <input class="name-input" type="text" v-model="name"> -->
-        <br>
+        
+        <div class="row">
 
-        Core
-        <span>
-            <input type="text" placeholder="name" v-model="name"/>
-            <input type="number" placeholder="stock" v-model="stock"/>
+            Core
+            <span>
+                <input type="text" placeholder="name" v-model="name"/>
+                <input type="number" placeholder="stock" v-model="stock"/>
 
-            <select v-model="manufacturer" multiple=false>
+                <select v-model="manufacturer" multiple=false>
 
-                <option v-for="man in manufacturer_options" :value="man.manufacturer_id">
+                    <option v-for="man in manufacturer_options" :value="man.manufacturer_id">
 
-                    {{man.name}}
-                    
-                </option>
+                        {{man.name}}
+                        
+                    </option>
 
-            </select>
+                </select>
 
-            <select v-model="label" multiple=false>
+                <select v-model="label" multiple=false>
 
-                <option v-for="label in label_options" :value="label.label_id">
+                    <option v-for="label in label_options" :value="label.label_id">
 
-                    {{label.name}}
-                    
-                </option>
+                        {{label.name}}
+                        
+                    </option>
 
-            </select>
+                </select>
 
-            
-        </span>
+                <select v-model="origins" multiple=true>
 
+                    <option v-for="origin in origin_options" :value="origin.origin_id">
 
-        Attributes
-        <span class="attribute-span">
-            <div class="class-fields" v-for="class_fields in fields.attributes">
-                {{ class_fields.name }}
+                        {{origin.name}}
+                        
+                    </option>
+
+                </select>
+
                 
-                <input v-model="attributes[class_fields.class_instance_id][field.name]" v-for="field in class_fields.fields" :type="field.object_type" :placeholder="field.name">
-            </div>
-        </span>
+            </span>
 
-        Files
-        <FileUpload ref="img_uploader" text="Upload Image" accept="image/*" />
-        <FileUpload ref="file_uploader" text="Upload Files" multiple accept="*" />
+        </div>
+        
+
+        <div class="row">
+
+            Attributes
+            <span class="attribute-span">
+                <div class="class-fields" v-for="class_fields in fields.attributes">
+                    {{ class_fields.name }}
+                    
+                    <input v-model="attributes[class_fields.class_instance_id][field.name]" v-for="field in class_fields.fields" :type="field.object_type" :placeholder="field.name">
+                </div>
+            </span>
+            
+        </div>
+        
+        <div class="row">
+            Files
+
+            <span>
+                <FileUpload class="file" ref="img_uploader" text="Upload Image" accept="image/*" />
+                <FileUpload class="file" ref="file_uploader" text="Upload Files" multiple accept="*" />
+            </span>
+        </div>
+
+        
+        
 
 
 
-        <button class="button confirm_button" @click="confirm">Confirm</button>
+        <button class="button" @click="confirm">Confirm</button>
 
 
 
@@ -83,6 +112,7 @@ import { post_component, post_component_with_files } from '@/api/component';
 import { get_all_manufacturers } from '@/api/manufacturer';
 import { get_all_labels } from '@/api/label';
 import FileUpload from '../components/FileUpload.vue';
+import { get_all_origins } from '@/api/origin.ts';
 
 
     const class_: any = ref({})
@@ -90,11 +120,13 @@ import FileUpload from '../components/FileUpload.vue';
     
     const manufacturer_options: Ref<Array<any>> = ref([])
     const label_options: Ref<Array<any>> = ref([])
+    const origin_options: Ref<Array<any>> = ref([])
 
     const name = ref()
     const stock = ref()
     const manufacturer: Ref<Array<any>> = ref([])
     const label: Ref<Array<any>> = ref([])
+    const origins: Ref<Array<any>> = ref([])
     
     const attributes: Ref<any> = ref({})
 
@@ -151,6 +183,7 @@ import FileUpload from '../components/FileUpload.vue';
                 manufacturer_out,
                 label_out,
                 attributes.value,
+                origins.value,
                 file_uploader.value.files,
                 img_out
             )
@@ -195,6 +228,7 @@ import FileUpload from '../components/FileUpload.vue';
             })
             manufacturer_options.value = await get_all_manufacturers()
             label_options.value = await get_all_labels()
+            origin_options.value = await get_all_origins()
 
         } catch (e: any) {
             pushAppError(e)
@@ -217,10 +251,16 @@ import FileUpload from '../components/FileUpload.vue';
 
     .menu{
         width: 600px;
-        height: 700px;
+        height: 400px;
 
         display: grid;
-        overflow: hidden;
+
+        grid-template-rows: 15px 80px 100px 80px 50px;
+        row-gap: 20px;
+
+        overflow-x: hidden;
+        overflow-y: scroll;
+        scrollbar-width: none;
     }
 
 
@@ -235,6 +275,8 @@ import FileUpload from '../components/FileUpload.vue';
     span {
         display: flex;
         flex-direction: row;
+        height: 100%;
+        box-sizing: border-box;
         
     }
 
@@ -242,6 +284,7 @@ import FileUpload from '../components/FileUpload.vue';
         width: 100%;
         margin-right: 5px;
         box-sizing: border-box;
+        height: 100%;
     }
 
     .attribute-span {
@@ -254,7 +297,22 @@ import FileUpload from '../components/FileUpload.vue';
         padding: 5px;
         border-radius: 5px;
         margin-right: 5px;
+        height: 100%;
+        box-sizing: border-box;
 
+    }
+
+    .file {
+        margin-right: 5px;
+        border-radius: 5px;
+        background-color: import.$secondary;
+        width: 100%;
+        padding: 5px;
+        
+    }   
+
+    .row {
+        box-sizing: border-box;
     }
 
 
