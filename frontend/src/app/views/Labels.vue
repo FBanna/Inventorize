@@ -64,7 +64,7 @@ function transform_function(row: any): CellData[] {
         value: row.name
     }, {
         type: CellTypes.String,
-        value: row.Path
+        value: row.path
     }]
 }
 

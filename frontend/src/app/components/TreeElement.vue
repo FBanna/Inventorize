@@ -2,7 +2,7 @@
 <template>
 
     <li class="node" :style="{'paddingLeft': get_depth()}">
-        <img v-if="props.node.children.length != 0" class="drop_down" :isdropped="dropped" @click="drop()" src="/images/drop_down.svg">
+        <img :style="{ 'visibility': props.node.children.length != 0 ? 'visible' : 'hidden'}" class="drop_down" :isdropped="dropped" @click="drop()" src="/images/drop_down.svg">
         <div class="text" @click="follow_uuid()">
             {{props.node.name}}
         </div>
@@ -25,7 +25,7 @@ import { useRouter } from 'vue-router';
     const children = ref();
 
     function get_depth() {
-        return ((props.depth * 20).toString() + "px") 
+        return ((props.depth * 10).toString() + "px") 
     }
 
     function drop() {

@@ -12,15 +12,14 @@
       hidden
     />
 
-    <ul v-if="files.length" class="file-list">
-      <li v-for="(file, index) in files" :key="`${file.name}-${index}`">
+      <div v-for="(file, index) in files" :key="`${file.name}-${index}`">
 
-        <img v-if="file.type.startsWith('image/')" :src="getPreviewUrl(file)" class="file-preview" />
+        <!-- <img v-if="file.type.startsWith('image/')" :src="getPreviewUrl(file)" class="file-preview" /> -->
 
-        <span>{{ file.name }} ({{ (file.size / 1024).toFixed(1) }} KB)</span>
-        <button @click="removeFile(index)">Remove</button>
-      </li>
-    </ul>
+        {{ file.name }} ({{ (file.size / 1024).toFixed(1) }} KB) <button @click="removeFile(index)">Remove</button> 
+        
+      </div>
+
 
     
 
@@ -50,18 +49,15 @@ defineExpose({files})
 
 function handleFileSelect(e: Event) {
 
+  if (!props.multiple) { // multiple check
+    if (files.value.length != 0) {
+      return
+    }
+  }
+
     console.log(props.text)
   const input = e.target as HTMLInputElement
   const selectedFiles = Array.from(input?.files || [])
-
-//   const validFiles = selectedFiles.filter(file => {
-//     const sizeMB = file.size / (1024 * 1024)
-//     if (sizeMB > props.maxSizeMB) {
-//       errorMessage.value = `File "${file.name}" exceeds the ${props.maxSizeMB}MB size limit.`
-//       return false
-//     }
-//     return true
-//   })
 
   files.value = files.value.concat(selectedFiles)
 }

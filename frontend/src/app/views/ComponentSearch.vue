@@ -69,7 +69,7 @@
       :row_click="row_click_function"
       :get_id="id_function"
       :limited_pages="true"
-      :slots="slots"
+      :slots="['image', 'origin']"
       ref="table">
 
         <template #image="slotted_props">
@@ -77,53 +77,18 @@
           <img v-if="slotted_props.row.image" class="thumb-img" :src="api_url + 'api/get_image_thumb/' + slotted_props.row.component_id" loading="lazy">
 
         </template>
+
+        <template #origin="slotted_props">
+
+          <div v-for="origin in slotted_props.row.origins">
+            {{ origin.name }} - {{ origin.price }}
+          </div>
+
+        </template>
     
       </Table>
 
     </div>
-
-
-
-
-    <!-- <div class="search-results-container">
-
-      <table>
-
-
-        <thead>
-          <tr>
-
-            <th table-heading>image</th>
-
-            
-            <th v-for="name in search_names" table-heading>
-              {{ name }}
-            </th>
-          </tr>
-        </thead>
-
-        <tbody v-for="c in components">
-          
-          <tr @click="row_click(c)" @mouseenter="row_enter(c)" v-bind:style="[selected.includes(c.id) ? {'background-color': 'rgba(0, 110, 255, 0.445)'} : {}]">
-
-
-
-              <td><img v-if="c.image" class="thumbnail" :src=get_image_src(c)></td>
-            
-              <td style="width: 80px;">{{ c.name }}</td>
-              <td style="width: 50px;">{{ c.size }}</td>
-              <td style="width: 80px;">{{ c.value }}</td>
-              <td style="width: 80px;">{{ c.info }}</td>
-              <td style="width: 50px;">{{ c.stock }}</td>
-              <td style="width: 80px;">{{ c.manufacturer }}</td>
-              <td style="width: 50px;">{{ c.label }}</td>
-          </tr>
-          
-          
-        </tbody>
-      </table>
-
-    </div> -->
 
 
 
@@ -155,12 +120,8 @@ import Table from '../components/table/Table.vue';
 
   const table = useTemplateRef("table");
 
-  const slots: string[] = ["image"]
-
   const api_url = import.meta.env.VITE_API_URL
 
-
-    
     
 
     async function get_facets() {
@@ -216,24 +177,6 @@ import Table from '../components/table/Table.vue';
 
     }
 
-
-    async function get_image(event: Event): Promise<void> {
-
-      try {
-
-        console.log(event)
-        // let response: any = await post_component_id_get_image_thumb(
-        //   event.row.component_id
-        // )
-
-        //return URL.createObjectURL(response)
-      } catch (e: any) {
-        pushAppError(e)
-      }
-
-      //return ""
-      
-    }
 
 
     
@@ -303,6 +246,11 @@ import Table from '../components/table/Table.vue';
         out.push({type: CellTypes.String, value: row[field]})
       }
 
+      out.push({
+        type: CellTypes.Slot,
+        value: "origin"
+      })
+
       for (let class_ of raw_fields.attributes) {
         for (let field of class_.fields) {
           out.push(
@@ -334,6 +282,8 @@ import Table from '../components/table/Table.vue';
         core.push(field)
       }
 
+      core.push("Origins")
+
       processed.push(core)
 
       for (let class_ of res.attributes) {
@@ -362,9 +312,6 @@ import Table from '../components/table/Table.vue';
 
     async function row_click_function(row: any) {
 
-      await post_component_id_get_image_thumb(
-        row.component_id
-      )
       console.log("click")
     }
 
@@ -504,8 +451,8 @@ import Table from '../components/table/Table.vue';
     }
 
     .results-container {
-      overflow-y: scroll;
-      overflow-x: hidden;
+      overflow: auto;
+
       flex: 1;
 
     }

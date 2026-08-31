@@ -25,10 +25,10 @@
 
             Core
             <span>
-                <input type="text" placeholder="name" v-model="name"/>
-                <input type="number" placeholder="stock" v-model="stock"/>
+                <input class="core-input" type="text" placeholder="name" v-model="name"/>
+                <input class="core-input" type="number" placeholder="stock" v-model="stock"/>
 
-                <select v-model="manufacturer" multiple=false>
+                <select v-model="manufacturer">
 
                     <option v-for="man in manufacturer_options" :value="man.manufacturer_id">
 
@@ -36,9 +36,11 @@
                         
                     </option>
 
+                    <option :value="null">None</option>
+
                 </select>
 
-                <select v-model="label" multiple=false>
+                <select v-model="label">
 
                     <option v-for="label in label_options" :value="label.label_id">
 
@@ -46,17 +48,11 @@
                         
                     </option>
 
-                </select>
-
-                <select v-model="origins" multiple=true>
-
-                    <option v-for="origin in origin_options" :value="origin.origin_id">
-
-                        {{origin.name}}
-                        
-                    </option>
+                    <option :value="null">None</option>
 
                 </select>
+
+
 
                 
             </span>
@@ -75,6 +71,55 @@
                 </div>
             </span>
             
+        </div>
+
+        <div class="table">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Origin</th>
+                        <th>Part Number</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+
+
+                <tbody>
+                    <template v-for="(origin, index) in origins">
+
+                        
+
+                            <tr>
+
+                                <td>
+                                    <select v-model="origins[index]['origin_id']">
+
+                                        <option v-for="option in origin_options" :value="option.origin_id">
+
+                                            {{option.name}}
+                                            
+                                        </option>
+
+                                    </select>
+                                </td>
+                                <td><input type="text" v-model="origins[index]['part_number']"></td>
+                                <td><input type="text" v-model.number="origins[index]['price']"></td>
+                                
+                                <td><img class="remove" @click="remove_origin_row(index)" src="/images/remove.svg"></td>
+                            </tr>
+
+
+                    
+                        
+                    </template>
+                </tbody>
+
+                <tr class="add">
+                    <img @click="add_origin_row" src="/images/add.svg">
+                </tr>
+            </table>    
         </div>
         
         <div class="row">
@@ -124,14 +169,21 @@ import { get_all_origins } from '@/api/origin.ts';
 
     const name = ref()
     const stock = ref()
-    const manufacturer: Ref<Array<any>> = ref([])
-    const label: Ref<Array<any>> = ref([])
+    const manufacturer: Ref<any> = ref()
+    const label: Ref<any> = ref()
     const origins: Ref<Array<any>> = ref([])
     
     const attributes: Ref<any> = ref({})
 
     const file_uploader: Ref<any> = useTemplateRef("file_uploader") 
     const img_uploader = useTemplateRef("img_uploader") 
+
+
+    const emptyOrigin: Object = {
+        origin_id: "",
+        part_number: "",
+        price: 0
+    }
 
     async function confirm() {
 
@@ -148,23 +200,23 @@ import { get_all_origins } from '@/api/origin.ts';
             //     fields.value
             // )
 
-            let manufacturer_out;
-            let label_out;
+            // let manufacturer_out;
+            // let label_out;
 
             let img_out: File | null = null;
 
 
-            if (manufacturer.value.length == 0) {
-                manufacturer_out = null
-            } else {
-                manufacturer_out = manufacturer.value.at(0)
-            }
+            // if (manufacturer.value.length == 0) {
+            //     manufacturer_out = null
+            // } else {
+            //     manufacturer_out = manufacturer.value.at(0)
+            // }
 
-            if (label.value.length == 0) {
-                label_out = null
-            } else {
-                label_out = label.value.at(0)
-            }
+            // if (label.value.length == 0) {
+            //     label_out = null
+            // } else {
+            //     label_out = label.value.at(0)
+            // }
 
 
             const temp = img_uploader.value?.files.at(0)
@@ -180,8 +232,8 @@ import { get_all_origins } from '@/api/origin.ts';
                 opts.value.class_instance_id,
                 name.value,
                 stock.value,
-                manufacturer_out,
-                label_out,
+                manufacturer.value,
+                label.value,
                 attributes.value,
                 origins.value,
                 file_uploader.value.files,
@@ -201,6 +253,18 @@ import { get_all_origins } from '@/api/origin.ts';
     }
 
 
+    function add_origin_row() {
+        
+        origins.value.push(structuredClone(emptyOrigin))
+    }
+
+    function remove_origin_row(index: number) {
+
+        origins.value.splice(index, 1)
+
+    }
+
+
     async function setup() {
 
 
@@ -210,7 +274,6 @@ import { get_all_origins } from '@/api/origin.ts';
                 
 
                 for (let attr of res.attributes) {
-                    console.log(attr)
 
                     attributes.value[attr.class_instance_id] = {}
 
@@ -219,7 +282,6 @@ import { get_all_origins } from '@/api/origin.ts';
                     }
                 }
 
-                console.log(attributes.value)
 
 
                 return res
@@ -255,7 +317,7 @@ import { get_all_origins } from '@/api/origin.ts';
 
         display: grid;
 
-        grid-template-rows: 15px 80px 100px 80px 50px;
+        grid-template-rows: 10px 30px 130px auto 100px 50px;
         row-gap: 20px;
 
         overflow-x: hidden;
@@ -269,7 +331,12 @@ import { get_all_origins } from '@/api/origin.ts';
         height: 20px;
         margin-right: 5px;
         box-sizing: border-box;
+        margin-bottom: 2px;
         
+    }
+
+    .core-input {
+        height: 100%;
     }
 
     span {
@@ -284,7 +351,7 @@ import { get_all_origins } from '@/api/origin.ts';
         width: 100%;
         margin-right: 5px;
         box-sizing: border-box;
-        height: 100%;
+        //height: 100%;
     }
 
     .attribute-span {
@@ -312,6 +379,10 @@ import { get_all_origins } from '@/api/origin.ts';
     }   
 
     .row {
+        box-sizing: border-box;
+    }
+
+    .table {
         box-sizing: border-box;
     }
 

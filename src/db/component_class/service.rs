@@ -452,7 +452,7 @@ LEFT JOIN label l
         //     FROM class_facets;");
 
 
-        println!("{}", query.sql().as_str());
+        // println!("{}", query.sql().as_str());
         let result: SearchFacets = query.build_query_as().bind(search.root).fetch_one(&*self.pool).await?;
 
         Ok(result)

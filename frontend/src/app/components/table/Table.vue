@@ -36,9 +36,11 @@
 
 
     <TableRow @click="row_click(entry)" :transform_row_data="props.transform_row_data" :row_data="entry" :get_id="props.get_id" :state="state" :slots="props.slots" v-for="entry in rows" >
+      
       <template #[slot]="slotted_props" v-for="slot in props.slots">
         <slot :name="slot" :row="slotted_props.row"></slot>
       </template>
+      
     </TableRow>
 
     
@@ -265,7 +267,7 @@ setup()
 
 .table{
   border-collapse: collapse;
-  margin: 5px;
+
   width: 100%;
 }
 
