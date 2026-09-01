@@ -96,9 +96,14 @@
     display: flex;
     flex-shrink: 0;
 
-    flex: 0 0 150px;
-    width: 150px;
+    max-width: 500px;
+    resize: horizontal;
+    overflow-x: hidden;
     height: 100%;
+
+    border-right: 2px import.$accent solid;
+
+    box-sizing: border-box;
 
     flex-direction: column;
 }
@@ -112,7 +117,8 @@ ol {
     padding-left: 0px;
     width: 100%;
     //height: 100%;
-    overflow-y: auto;    
+    overflow-y: auto;
+    overflow-x: hidden;
     min-height: 0;
 
 }

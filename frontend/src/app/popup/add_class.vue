@@ -1,20 +1,13 @@
 <template>
     <div class="popup_template menu">
 
-        Add class
-
+        <div>
+            Add class
+        </div>
         
-        <!-- <select v-model="result" multiple=false class="results">
 
-            <option class="result" v-for="class_select in classes" :value="class_select">
 
-                {{class_select.name}}
-                
-            </option>
-
-        </select> -->
-
-        <input class="name-input" type="text" v-model="name">
+        <input class="name-input" type="text" placeholder="name" v-model="name">
 
         <div class="table">
 
@@ -164,10 +157,12 @@ import type { StatusError } from '@/api/util';
 
     .menu{
         width: 500px;
-        height: 400px;
+        height: 250px;
 
         display: grid;
-        overflow: hidden;
+        grid-template-rows: 15px 20px auto 50px;
+        row-gap: 10px;
+        
     }
 
     .table {

@@ -22,7 +22,7 @@ pub struct Component{
 
 /// Search Result Object
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
-pub struct ComponentWithAttributes{
+pub struct  ComponentWithAttributes{
     pub component_id: Uuid,
     pub class_instance_id: Uuid,
 
@@ -32,6 +32,9 @@ pub struct ComponentWithAttributes{
     pub label: Option<String>,
 
     pub attributes: Json,
+
+    pub origins: Json,
+
     pub image: bool
 }
 

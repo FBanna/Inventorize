@@ -3,8 +3,8 @@
 
         Add manufacturer
 
-        <input type="text" v-model="name">
-        <input type="text" v-model="url">
+        <input type="text" v-model="name" placeholder="name">
+        <input type="text" v-model="url" placeholder="url">
 
 
 
@@ -66,10 +66,11 @@ import { post_manufacturer } from '@/api/manufacturer';
 
     .menu{
         width: 500px;
-        height: 400px;
+        height: 150px;
 
         display: grid;
-        overflow: hidden;
+        grid-template-rows: 15px 20px 20px 50px;
+        row-gap: 10px;
     }
 
     input {

@@ -3,10 +3,10 @@
 
         Add origin
 
-        <input type="text" v-model="name">
-        <input type="text" v-model="url">
-        <input type="text" v-model="hurl_get">
-        <input type="text" v-model="hurl_price">
+        <input type="text" v-model="name" placeholder="name">
+        <input type="text" v-model="url" placeholder="url">
+        <input type="text" v-model="hurl_get" placeholder="hurl_get path">
+        <input type="text" v-model="hurl_price" placeholder="hurl_price path">
 
 
 
@@ -73,10 +73,11 @@ import { post_origin } from '@/api/origin';
 
     .menu{
         width: 500px;
-        height: 400px;
+        height: 200px;
 
         display: grid;
-        overflow: hidden;
+        grid-template-rows: 15px 20px 20px 20px 20px 50px;
+        row-gap: 10px;
     }
 
     input {

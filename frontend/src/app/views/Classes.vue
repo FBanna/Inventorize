@@ -20,8 +20,17 @@
             :get_id="get_id"
             :get_column_groups="column_function"
             :get_search="search_function"
-            :slots="[]"
-            ref="table"/>
+            :slots="['fields']"
+            ref="table">
+
+                <template #fields="slotted_props">
+          
+                    <div v-for="field in slotted_props.row.fields">
+                        {{ field.name }} - {{ field.unit }}
+                    </div>
+                </template>
+        
+            </Table>
 
         </div>
 
@@ -49,7 +58,6 @@ function add_class() {
 
 // Table Functionality
 
-let raw_field_data = null
 
 async function search_function(state: TableState): Promise<Array<any>> {
 
@@ -61,21 +69,21 @@ async function search_function(state: TableState): Promise<Array<any>> {
 
 function transform_function(row: any): CellData[] {
 
-    let attributes = ""
+    // let attributes = ""
 
-    let fields: Array<any> = row['fields']
+    // let fields: Array<any> = row['fields']
     
 
-    for( var field of fields) {
-        attributes = attributes + field.name + " "
-    }
+    // for( var field of fields) {
+    //     attributes = attributes + field.name + " "
+    // }
 
     return [{
         type: CellTypes.String,
         value: row.name
     }, {
-        type: CellTypes.String,
-        value: attributes
+        type: CellTypes.Slot,
+        value: "fields"
     }]
 }
 

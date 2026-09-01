@@ -91,7 +91,10 @@ import { clearActivePopup, opts, onSuccess } from './popup_state';
         width: 300px;
         height: 200px;
 
+
         display: grid;
+        grid-template-rows: 15px auto 50px;
+        row-gap: 10px;
     }
 
 

@@ -3,8 +3,8 @@
 
         Add Label
 
-        <input type="text" v-model="name">
-        <input type="text" v-model="path">
+        <input type="text" v-model="name" placeholder="name">
+        <input type="text" v-model="path" placeholder="path">
 
 
 
@@ -64,11 +64,13 @@ import { post_label } from '@/api/label';
     @use "@/style/import";
 
     .menu{
+
         width: 500px;
-        height: 400px;
+        height: 150px;
 
         display: grid;
-        overflow: hidden;
+        grid-template-rows: 15px 20px 20px 50px;
+        row-gap: 10px;
     }
 
     input {

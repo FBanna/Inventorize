@@ -46,4 +46,8 @@ $light_grey: rgb(235, 235, 235);
     border-radius: 10px;
     padding: 7px;
     background-color: $white;
+
+    overflow-x: hidden;
+    overflow-y: scroll;
+    scrollbar-width: none;
 }

@@ -268,6 +268,7 @@ import Table from '../components/table/Table.vue';
     }
 
     async function column_function(): Promise<Array<any>> {
+      
       let res: any = await get_fields_from_class_instance(
         props.uuid
       )

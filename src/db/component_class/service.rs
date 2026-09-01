@@ -166,6 +166,7 @@ impl ComponentClassServices for DB {
     m.name manufacturer,
     l.name label,    
     component_classes.attributes,
+    component_origins.origins,
     EXISTS (
         SELECT 1
         FROM component_image cimg
@@ -183,6 +184,28 @@ CROSS JOIN LATERAL (
     FROM component_class cc
     WHERE cc.component_id = c.component_id
 ) component_classes
+
+CROSS JOIN LATERAL (
+	SELECT COALESCE(
+        jsonb_agg(
+            jsonb_build_object(
+                'name', o.name,
+                'url', o.url,
+                'part_number', co.part_number,
+                'price', co.price
+            )
+        ),
+        '[]'::jsonb
+    ) AS origins
+    FROM component_origin co
+
+    JOIN origin o
+        ON o.origin_id = co.origin_id
+
+    WHERE co.component_id = c.component_id
+
+    
+) component_origins
 
 LEFT JOIN manufacturer m
     ON m.manufacturer_id = c.manufacturer_id

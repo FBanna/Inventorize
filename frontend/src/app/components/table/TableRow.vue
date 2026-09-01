@@ -5,7 +5,7 @@
       <td v-for="col in props.transform_row_data(props.row_data)">
 
         <template v-if="col.type == CellTypes.Slot">
-          <slot :name="col.value" :row="props.row_data">EMPTY</slot>
+          <slot :name="col.value" :row="props.row_data"></slot>
         </template>
 
         <template class="normal-cell" v-if="col.type == CellTypes.String">

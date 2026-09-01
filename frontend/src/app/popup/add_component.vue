@@ -24,11 +24,11 @@
         <div class="row">
 
             Core
-            <span>
+            <span class="core-span">
                 <input class="core-input" type="text" placeholder="name" v-model="name"/>
                 <input class="core-input" type="number" placeholder="stock" v-model="stock"/>
 
-                <select v-model="manufacturer">
+                <select class="core-input" v-model="manufacturer">
 
                     <option v-for="man in manufacturer_options" :value="man.manufacturer_id">
 
@@ -40,7 +40,7 @@
 
                 </select>
 
-                <select v-model="label">
+                <select class="core-input" v-model="label">
 
                     <option v-for="label in label_options" :value="label.label_id">
 
@@ -125,7 +125,7 @@
         <div class="row">
             Files
 
-            <span>
+            <span class="file-span">
                 <FileUpload class="file" ref="img_uploader" text="Upload Image" accept="image/*" />
                 <FileUpload class="file" ref="file_uploader" text="Upload Files" multiple accept="*" />
             </span>
@@ -317,55 +317,85 @@ import { get_all_origins } from '@/api/origin.ts';
 
         display: grid;
 
-        grid-template-rows: 10px 30px 130px auto 100px 50px;
-        row-gap: 20px;
+        grid-template-rows: 15px 40px 130px auto 100px 50px;
+        row-gap: 10px;
 
-        overflow-x: hidden;
-        overflow-y: scroll;
-        scrollbar-width: none;
+        
     }
 
 
-    input {
+    // input {
+    //     width: 100%;
+    //     height: 20px;
+    //     margin-right: 5px;
+    //     box-sizing: border-box;
+    //     margin-bottom: 2px;
+        
+    // }
+
+    .core-input {
         width: 100%;
         height: 20px;
         margin-right: 5px;
         box-sizing: border-box;
         margin-bottom: 2px;
-        
+
     }
 
-    .core-input {
-        height: 100%;
-    }
 
-    span {
+    .core-span {
         display: flex;
         flex-direction: row;
-        height: 100%;
         box-sizing: border-box;
-        
-    }
-
-    select {
-        width: 100%;
-        margin-right: 5px;
-        box-sizing: border-box;
-        //height: 100%;
     }
 
     .attribute-span {
         overflow-x: scroll;
+        overflow-y: hidden;
+
+        display: flex;
+        flex-direction: row;
+
+        box-sizing: border-box;
+        min-height: 0;
+        height: 100%;
+
+        
+
     }
 
     .class-fields {
+
         background-color: import.$secondary;
-        width: 150px;
+
+        box-sizing: border-box;
+
+        flex: 0 0 200px;
+
         padding: 5px;
         border-radius: 5px;
         margin-right: 5px;
+
+
+        overflow-y: scroll;
+        overflow-x: hidden;
+        scrollbar-width: none;
+
+        display: flex;
+        flex-direction: column;
+
+        
+        
+
+    }
+
+    .file-span {
+
+
+        display: flex;
+        flex-direction: row;
         height: 100%;
-        box-sizing: border-box;
+
 
     }
 
@@ -380,6 +410,11 @@ import { get_all_origins } from '@/api/origin.ts';
 
     .row {
         box-sizing: border-box;
+        width: inherit;
+        //min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
     }
 
     .table {
