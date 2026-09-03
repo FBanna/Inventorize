@@ -10,6 +10,7 @@
             <Add_label v-if="active == Popups.AddLabel" />
             <Add_manufacturer v-if="active == Popups.AddManufacturer" />
             <Add_origin v-if="active == Popups.AddOrigin" />
+            <Scan_qr v-if="active == Popups.ScanQR" />
 
         </div>
 
@@ -30,6 +31,7 @@
     import Add_label from './add_label.vue';
 import Add_manufacturer from './add_manufacturer.vue';
 import Add_origin from './add_origin.vue';
+import Scan_qr from './scan_qr.vue';
 
     function clear() {
         clearActivePopup()

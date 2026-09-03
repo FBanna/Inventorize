@@ -6,7 +6,8 @@ export enum Popups {
   AddComponent,
   AddLabel,
   AddManufacturer,
-  AddOrigin
+  AddOrigin,
+  ScanQR
 }
 
 

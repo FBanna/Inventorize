@@ -171,6 +171,7 @@ import Table from '../components/table/Table.vue';
             Popups.AddComponent,
             opts,
             async () => {
+              console.log("reloading")
               await setup()
             }
         )

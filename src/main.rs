@@ -1,7 +1,7 @@
 
-use std::{collections::HashMap, io::Error, println, sync::{Arc, atomic::AtomicBool}};
+use std::{collections::HashMap, io::Error, path::Path, println, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, properties::origin::component_origin::ComponentOrigin, transport_component::{EmbeddedComponentClassAttributes, EmbeddedComponentOrigin, TransportComponent}}, component_class::{component_class::{FacetSearch, PagedComponentSearch, TablePageQuery, UnitComponentClassSearch}, service::ComponentClassServices}, label::{service::LabelServices, transport_label::TransportLabel}, manufacturer::{self, service::ManufacturerServices, transport::TransportManufacturer}, origin::{service::OriginServices, transport_origin::TransportOrigin}}};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, properties::origin::component_origin::ComponentOrigin, transport_component::{EmbeddedComponentClassAttributes, EmbeddedComponentOrigin, TransportComponent}}, component_class::{component_class::{FacetSearch, PagedComponentSearch, TablePageQuery, UnitComponentClassSearch}, service::ComponentClassServices}, label::{service::LabelServices, transport_label::TransportLabel}, manufacturer::{self, service::ManufacturerServices, transport::TransportManufacturer}, origin::{service::OriginServices, transport_origin::TransportOrigin}}, hurl::hurl_wrapper::run_hurl};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use tokio::{signal, sync::broadcast};
@@ -12,6 +12,7 @@ mod server;
 mod config;
 mod db;
 mod label;
+mod hurl;
 mod error;
 
 #[tokio::main]
@@ -184,7 +185,7 @@ async fn main() -> Result<(), Error> {
         // ])
     };
 
-    let pageState = TablePageQuery {
+    let page_state = TablePageQuery {
         page_pos: 0,
         page_size: 50
     };
@@ -192,7 +193,7 @@ async fn main() -> Result<(), Error> {
     let search = PagedComponentSearch {
             root: Some(resistor_class_instance_id),
             units: Vec::from([search_unit]),
-            state: pageState
+            state: page_state
         };
 
 
@@ -217,6 +218,10 @@ async fn main() -> Result<(), Error> {
         }
 
     ).await;
+
+
+
+    let result = run_hurl(Path::new("test.hurl"), &config).unwrap();
 
     // if let Err(e) = facets {
     //     println!("BIG ERROR {:#}", e);

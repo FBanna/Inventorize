@@ -131,6 +131,8 @@
             </span>
         </div>
 
+        <button class="button" @click="on_scan_button">scan</button>
+
         
         
 
@@ -152,12 +154,13 @@ import { get_all_classes, post_class, post_class_instance_id_get_class } from '@
 import { get_fields_from_class_instance, get_fields_from_class_instance_for_html, post_class_instance } from '@/api/class_instance';
 import { pushAppError } from '@/error/error_state';
 import { onBeforeMount, ref, useTemplateRef, type Ref } from 'vue';
-import { clearActivePopup, opts, onSuccess } from './popup_state';
+import { clearActivePopup, opts, onSuccess, setActivePopup, Popups, active } from './popup_state';
 import { post_component, post_component_with_files } from '@/api/component';
 import { get_all_manufacturers } from '@/api/manufacturer';
 import { get_all_labels } from '@/api/label';
 import FileUpload from '../components/FileUpload.vue';
 import { get_all_origins } from '@/api/origin.ts';
+import { QrcodeStream } from 'vue-qrcode-reader';
 
 
     const class_: any = ref({})
@@ -262,6 +265,38 @@ import { get_all_origins } from '@/api/origin.ts';
 
         origins.value.splice(index, 1)
 
+    }
+
+    function on_scan_button() {
+
+        console.log("scanning!")
+
+        active.value = Popups.ScanQR
+
+        const oldSuccess = onSuccess.value
+
+        onSuccess.value = () => {
+            console.log("populating fields with " + opts.value.url)
+
+            onSuccess.value = oldSuccess
+        }
+
+        // setActivePopup(
+        //     Popups.ScanQR,
+        //     opts,
+        //     () => {
+
+        //         active.value = Popups.AddComponent
+        //         // onSuccess.value = 
+
+        //         // onSuccess.value?.()
+        //         // console.log("found it!")
+
+
+        //     }
+        // )
+
+        
     }
 
 
