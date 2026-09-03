@@ -61,3 +61,4 @@ hurl_core = { git = "https://github.com/FBanna/hurl-ico-fix.git", tag = "ico-fix
 
 [profile.release]
 opt-level = 3
+lto = true
