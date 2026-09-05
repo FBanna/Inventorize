@@ -30,10 +30,9 @@ CREATE TABLE IF NOT EXISTS origin
 
     name            TEXT            NOT NULL,
     url             TEXT,
-    hurl_get        TEXT,
-    hurl_price      TEXT
-
-
+    price_hurl      TEXT,
+    hurl_pn         TEXT,
+    hurl_qr         TEXT
 );
 
 -- Label

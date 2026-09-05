@@ -60,7 +60,7 @@
     )
   ),
 
-  node((1,0.099999), name: <origin>,
+  node((1,0.2), name: <origin>,
     erd_table(
       name: "Origin",
       key: (
@@ -69,8 +69,9 @@
       rows: (
         ("name", "text"),
         ("url*", "text"),
-        ("hurl_price*", "path"),
-        ("hurl_get*", "path")
+        ("price_hurl*", "path"),
+        ("hurl_pn*", "path"),
+        ("hurl_qr*", "path")
       )
     )
   

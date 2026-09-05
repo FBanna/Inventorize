@@ -1,4 +1,4 @@
-use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::{get_all_classes::get_all_classes, post_class::post_class, post_class_instance_id_get_class::post_class_instance_id_get_class}, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance, post_class_instance_id_get_fields::post_class_instance_id_get_fields, post_class_instance_id_get_fields_for_html::post_class_instance_id_get_fields_for_html}, component::{post_component::{self, post_component}, post_component_with_files::post_component_with_files, post_search_get_component_with_attributes::post_search_get_component_with_attributes, post_search_get_facets::post_search_get_facets}, files::get_image_thumb::get_image_thumb, label::{get_all_labels::get_all_labels, post_label::post_label}, manufacturer::{get_all_manufacturers::get_all_manufacturers, post_manufacturer::post_manufacturer}, origin::{get_all_origins::get_all_origins, post_origin::post_origin}}, embedded_dir::{self}, label_api::post_build_label}};
+use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::{get_all_classes::get_all_classes, post_class::post_class, post_class_instance_id_get_class::post_class_instance_id_get_class}, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance, post_class_instance_id_get_fields::post_class_instance_id_get_fields, post_class_instance_id_get_fields_for_html::post_class_instance_id_get_fields_for_html}, component::{post_component::{self, post_component}, post_component_with_files::post_component_with_files, post_search_get_component_with_attributes::post_search_get_component_with_attributes, post_search_get_facets::post_search_get_facets}, files::get_image_thumb::get_image_thumb, label::{get_all_labels::get_all_labels, post_label::post_label}, manufacturer::{get_all_manufacturers::get_all_manufacturers, post_manufacturer::post_manufacturer}, origin::{get_all_origins::get_all_origins, post_origin::post_origin}}, embedded_dir::{self}, hurl_api::post_qr_hurl_to_origin::post_qr_hurl_to_origin, label_api::post_build_label}};
 
 use axum::{
     Form, Json, Router, extract::{DefaultBodyLimit, Query}, http::{HeaderValue, Method, StatusCode, Uri, header::CONTENT_TYPE}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}
@@ -37,7 +37,7 @@ pub async fn start_server(config: Config, db: DB) -> tokio::task::JoinHandle<()>
     let auth_layer: AuthManagerLayer<Backend, MemoryStore> = AuthManagerLayerBuilder::new(backend, session_layer).build();
 
     
-    let addr = SocketAddr::from(([127, 0, 0, 1], config.port)); // could add custom port
+    let addr = SocketAddr::from(([0,0,0,0], config.port)); // could add custom port
 
 
     let shared_state = Arc::new(
@@ -181,7 +181,10 @@ fn api() -> Router<Arc<ServerState>>{
         
         // ORIGIN
         .route("/get_all_origins", get(get_all_origins))
-        .route("/post_origin", post(post_origin));
+        .route("/post_origin", post(post_origin))
+        
+        // HURL
+        .route("/post_qr_hurl_to_origin", post(post_qr_hurl_to_origin));
 
         // .route("/post_update_component", post(post_update_component::post_update_component))
         // .route("/post_build_label", post(post_build_label::post_build_label))

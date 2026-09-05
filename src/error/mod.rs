@@ -3,5 +3,6 @@ pub mod json;
 pub mod class;
 pub mod file;
 pub mod config;
+pub mod hurl;
 
 pub mod error;

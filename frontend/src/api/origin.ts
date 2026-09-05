@@ -39,3 +39,19 @@ export async function post_origin(
     })
     
 }
+
+export async function post_qr_hurl_to_origin(
+    qr: any,
+    origin_id: any
+) {
+
+    let res: any = await fetchJSON("api/post_qr_hurl_to_origin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            qr: qr,
+            origin_id: origin_id
+        })
+    })
+
+}

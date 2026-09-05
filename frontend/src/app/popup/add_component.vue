@@ -107,7 +107,9 @@
                                 <td><input type="text" v-model="origins[index]['part_number']"></td>
                                 <td><input type="text" v-model.number="origins[index]['price']"></td>
                                 
-                                <td><img class="remove" @click="remove_origin_row(index)" src="/images/remove.svg"></td>
+                                <td><img class="row-img" @click="remove_origin_row(index)" src="/images/remove.svg"></td>
+
+                                <td><img class="row-img" @click="scan(origins[index]['origin_id'])" src="/images/qr.svg"></td>
                             </tr>
 
 
@@ -131,9 +133,6 @@
             </span>
         </div>
 
-        <button class="button" @click="on_scan_button">scan</button>
-
-        
         
 
 
@@ -267,16 +266,21 @@ import { QrcodeStream } from 'vue-qrcode-reader';
 
     }
 
-    function on_scan_button() {
+    function scan(origin_id: any) {
+
+        if (origin_id == null || origin_id == "") {
+            return
+        }
 
         console.log("scanning!")
 
         active.value = Popups.ScanQR
 
         const oldSuccess = onSuccess.value
+        opts.value.origin_id = origin_id
 
         onSuccess.value = () => {
-            console.log("populating fields with " + opts.value.url)
+            console.log("populating fields with " + opts.value.url + " @ " + opts.value.origin_id)
 
             onSuccess.value = oldSuccess
         }

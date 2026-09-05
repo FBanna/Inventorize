@@ -1,14 +1,14 @@
 use std::{fs, path::{Path, PathBuf}};
 
-use hurl::{runner::{RunnerOptionsBuilder, VariableSet}, util::logger::{ErrorFormat, LoggerOptionsBuilder, Verbosity}};
+use hurl::{runner::{HurlResult, RunnerOptionsBuilder, VariableSet}, util::logger::{ErrorFormat, LoggerOptionsBuilder, Verbosity}};
 use hurl_core::input::Input;
 
-use crate::{config::config::Config, error::error::AppError};
+use crate::{config::config::Config, error::{error::AppError, hurl::HurlErrors}};
 
 
 
 
-pub fn run_hurl(path: &Path, config: &Config) -> Result<(), AppError> {
+pub fn run_hurl(path: &Path, config: &Config, variables: VariableSet) -> Result<HurlResult, AppError> {
 
     let path = PathBuf::from(config.hurl_location.clone()).join(path);
 
@@ -31,7 +31,8 @@ pub fn run_hurl(path: &Path, config: &Config) -> Result<(), AppError> {
         &runner_options, 
         &variables, 
         &logger_options
-    );
+    ).map_err(|e| HurlErrors::Run(e))?;
 
-    Ok(())
+    
+    Ok(result)
 }

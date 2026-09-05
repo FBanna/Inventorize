@@ -6,7 +6,7 @@ use jsonschema::ValidationError;
 use serde::de::value;
 use tempfile::PersistError;
 
-use crate::error::{class::ClassErrors, config::ConfigErrors, file::FileErrors, json::JsonErrors, label::LabelErrors};
+use crate::error::{class::ClassErrors, config::ConfigErrors, file::FileErrors, hurl::HurlErrors, json::JsonErrors, label::LabelErrors};
 
 // helped greatly by - https://github.com/tokio-rs/axum/blob/main/examples/error-handling/src/main.rs
 
@@ -24,6 +24,8 @@ pub enum AppError{
     FileError(FileErrors),
     
     ConfigError(ConfigErrors),
+
+    HurlError(HurlErrors)
 
 
 }
@@ -50,6 +52,7 @@ impl Display for AppError{
             AppError::TypeError(err) => err.fmt(f),
             AppError::FileError(err) => err.fmt(f),
             AppError::ConfigError(err) => err.fmt(f),
+            AppError::HurlError(err) => err.fmt(f),
             _ => write!(f, "[ERROR] Unknown Error")
         }
     }
@@ -74,6 +77,9 @@ impl IntoResponse for AppError {
 
             },
             AppError::TypeError(err) => {
+                (err.clone().into_response(), Some(self))
+            },
+            AppError::HurlError(err) => {
                 (err.clone().into_response(), Some(self))
             },
             _ => ((StatusCode::INTERNAL_SERVER_ERROR, "Unknown Inventorize error!").into_response(), None)
@@ -120,6 +126,12 @@ impl From<ClassErrors> for AppError {
 impl From<FileErrors> for AppError {
     fn from(value: FileErrors) -> Self {
         Self::FileError(value)
+    }
+}
+
+impl From<HurlErrors> for AppError {
+    fn from(value: HurlErrors) -> Self {
+        Self::HurlError(value)
     }
 }
 
