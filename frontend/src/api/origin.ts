@@ -14,16 +14,21 @@ export async function get_all_origins() {
 export async function post_origin(
     name: String,
     url: String,
-    hurl_get: any,
-    hurl_price: any
+    price_hurl: any,
+    hurl_pn: any,
+    hurl_qr: any
 ) {
     
-    if (hurl_get == null) {
-        hurl_get = null
+    if (price_hurl == null) {
+        price_hurl = null
     }
 
-    if (hurl_price == null) {
-        hurl_price = null
+    if (hurl_pn == null) {
+        hurl_pn = null
+    }
+
+    if (hurl_qr == null) {
+        hurl_qr = null
     }
 
     let res: any = await fetchURL("api/post_origin", {
@@ -33,8 +38,9 @@ export async function post_origin(
         body: JSON.stringify({
             name: name,
             url: url,
-            hurl_get: hurl_get,
-            hurl_price: hurl_price
+            price_hurl: price_hurl,
+            hurl_pn: hurl_pn,
+            hurl_qr: hurl_qr
         })
     })
     

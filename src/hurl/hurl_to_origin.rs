@@ -1,4 +1,4 @@
-use std::{collections::HashMap, iter::Map, path::Path, result};
+use std::{any::Any, collections::HashMap, iter::Map, path::Path, result};
 
 use axum_login::tracing::field;
 use hurl::runner::{CaptureResult, Value, VariableSet};
@@ -24,15 +24,54 @@ pub fn qr_hurl(qr: String, origin: Origin, config: &Config) -> Result<ComponentF
     let mut variables: VariableSet = VariableSet::new();
 
     // match on json
+    //serde_json::from_str(s)
 
-    if let Ok(json) = serde_json::to_value(&qr) {
+    println!("json: {}", qr);
+    //let test: Json = serde_json::from_str::<Json>(&qr).unwrap();
+
+
+    if let Ok(json) = serde_json::from_str::<Json>(&qr) {
         println!("its json all right!");
 
 
-        let hurl_json = Value::from_json(&json);
+        println!("extracted {:#?}", json);
 
-        variables.insert("json".to_owned(), hurl_json);
+        if json.is_object() {
+            
+            let json_object = json.as_object().unwrap();
 
+            for (key, value) in json_object {
+                variables.insert(key.to_owned(), Value::from_json(value));
+            }
+        } else {
+            let hurl_json = Value::from_json(&json);
+
+            variables.insert("json".to_owned(), hurl_json);
+        }
+
+
+
+
+
+    } else if let Ok(corrected_json) = serde_json::from_str::<Json>(&correct_json(&qr)) {
+
+        println!("its json all right!");
+
+
+        println!("extracted {:#?}", corrected_json);
+
+        if corrected_json.is_object() {
+            
+            let json_object = corrected_json.as_object().unwrap();
+
+            for (key, value) in json_object {
+                variables.insert(key.to_owned(), Value::from_json(value));
+            }
+        } else {
+            let hurl_json = Value::from_json(&corrected_json);
+
+            variables.insert("json".to_owned(), hurl_json);
+        }
 
     } else {
 
@@ -92,6 +131,20 @@ fn run_hurl_get_component(option_path: Option<String>, origin_id: Uuid, config: 
 }
 
 
+
+
+
+fn correct_json(input: &String) -> String {
+
+    let mut out = input.replace("{", "{\"");
+    out = out.replace(":", "\":\"");
+    out = out.replace(",", "\",\"");
+    out = out.replace("}", "\"}");
+
+    return out;
+
+
+}
 
 fn get_option_field_from_map<T: FromValue>(map: &HashMap<String, Value>, field: String) -> Result<Option<T>, AppError>
 {

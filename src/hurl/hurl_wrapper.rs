@@ -19,7 +19,6 @@ pub fn run_hurl(path: &Path, config: &Config, variables: VariableSet) -> Result<
     let runner_options = RunnerOptionsBuilder::new()
         .build();
 
-    let variables = VariableSet::new();
     
     let logger_options = LoggerOptionsBuilder::new()
         .verbosity(Some(Verbosity::Verbose))
@@ -32,6 +31,14 @@ pub fn run_hurl(path: &Path, config: &Config, variables: VariableSet) -> Result<
         &variables, 
         &logger_options
     ).map_err(|e| HurlErrors::Run(e))?;
+
+    if !result.success {
+
+        
+
+        return Err(HurlErrors::Run("ERR runnig".to_owned()).into());
+
+    }
 
     
     Ok(result)

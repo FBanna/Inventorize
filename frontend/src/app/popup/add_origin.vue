@@ -5,8 +5,9 @@
 
         <input type="text" v-model="name" placeholder="name">
         <input type="text" v-model="url" placeholder="url">
-        <input type="text" v-model="hurl_get" placeholder="hurl_get path">
-        <input type="text" v-model="hurl_price" placeholder="hurl_price path">
+        <input type="text" v-model="price_hurl" placeholder="price_hurl path">
+        <input type="text" v-model="hurl_pn" placeholder="hurl_pn path">
+        <input type="text" v-model="hurl_qr" placeholder="hurl_qr path">
 
 
 
@@ -34,8 +35,9 @@ import { post_origin } from '@/api/origin';
 
     const name = ref()
     const url = ref()
-    const hurl_get = ref()
-    const hurl_price = ref()
+    const price_hurl = ref()
+    const hurl_pn = ref()
+    const hurl_qr = ref()
         
 
 
@@ -47,8 +49,9 @@ import { post_origin } from '@/api/origin';
             await post_origin(
                 name.value,
                 url.value,
-                hurl_get.value,
-                hurl_price.value
+                price_hurl.value,
+                hurl_pn.value,
+                hurl_qr.value
             )
 
             if (onSuccess != null) {
@@ -76,8 +79,8 @@ import { post_origin } from '@/api/origin';
         height: 200px;
 
         display: grid;
-        grid-template-rows: 15px 20px 20px 20px 20px 50px;
-        row-gap: 10px;
+        grid-template-rows: 15px 20px 20px 20px 20px 20px 50px;
+        row-gap: 5px;
     }
 
     input {

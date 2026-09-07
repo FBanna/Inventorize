@@ -3,6 +3,8 @@
 
         <QrcodeStream @detect="confirm"></QrcodeStream>
 
+        <QrcodeDropZone @detect="confirm">drop here</QrcodeDropZone>
+
 
         <button class="button confirm_button" @click="confirm([])">Confirm</button>
 
@@ -21,7 +23,8 @@ import { pushAppError } from '@/error/error_state';
 import { ref, type Ref } from 'vue';
 import { clearActivePopup, opts, onSuccess, active, Popups } from './popup_state';
 import { post_label } from '@/api/label';
-import { QrcodeStream, type DetectedBarcode } from 'vue-qrcode-reader';
+import { QrcodeDropZone, QrcodeStream, type DetectedBarcode } from 'vue-qrcode-reader';
+import { post_qr_hurl_to_origin } from '@/api/origin';
 
 
     async function confirm(detectedCodes: DetectedBarcode[]) {
@@ -30,6 +33,10 @@ import { QrcodeStream, type DetectedBarcode } from 'vue-qrcode-reader';
         opts.value.url = detectedCodes[0]?.rawValue
 
         onSuccess.value?.()
+
+        let result = await post_qr_hurl_to_origin(detectedCodes[0]?.rawValue, opts.value.origin_id)
+
+        console.log(result)
 
         
         
