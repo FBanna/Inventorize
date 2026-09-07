@@ -20,12 +20,12 @@ impl OriginServices for DB {
 
     async fn add_transport_origin(&self, to: TransportOrigin) -> Result<Uuid, AppError> {
         
-        let id: Uuid = sqlx::query_scalar("INSERT INTO origin(name, url, price_hurl, hurl_pn, hurl_qr) VALUES ($1,$2, $3, $4, $5) RETURNING origin_id")
+        let id: Uuid = sqlx::query_scalar("INSERT INTO origin(name, url, price_py, py_pn, py_qr) VALUES ($1,$2, $3, $4, $5) RETURNING origin_id")
             .bind(&to.name)
             .bind(&to.url)
-            .bind(&to.price_hurl)
-            .bind(&to.hurl_pn)
-            .bind(&to.hurl_qr)
+            .bind(&to.price_py)
+            .bind(&to.py_pn)
+            .bind(&to.py_qr)
             .fetch_one(&*self.pool)
             .await?;
 

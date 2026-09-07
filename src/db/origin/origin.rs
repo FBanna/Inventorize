@@ -8,7 +8,7 @@ pub struct Origin {
     pub origin_id: Uuid,
     pub name: String,
     pub url: Option<String>,
-    pub price_hurl: Option<String>,
-    pub hurl_pn: Option<String>,
-    pub hurl_qr: Option<String>
+    pub price_py: Option<String>,
+    pub py_pn: Option<String>,
+    pub py_qr: Option<String>
 }

@@ -69,9 +69,9 @@
       rows: (
         ("name", "text"),
         ("url*", "text"),
-        ("price_hurl*", "path"),
-        ("hurl_pn*", "path"),
-        ("hurl_qr*", "path")
+        ("price_py*", "path"),
+        ("py_pn*", "path"),
+        ("py_qr*", "path")
       )
     )
   

@@ -4,7 +4,7 @@ use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{db::origin::{service::OriginServices, transport_origin::TransportOrigin}, error::error::AppError, hurl::hurl_to_origin::{ComponentFromHurl, qr_hurl}, server::server_state::ServerState};
+use crate::{db::origin::{service::OriginServices, transport_origin::TransportOrigin}, error::error::AppError, python::hurl_to_origin::{ComponentFromHurl, qr_hurl}, server::server_state::ServerState};
 
 #[derive(Deserialize)]
 pub struct QRHurlToOrigin {
