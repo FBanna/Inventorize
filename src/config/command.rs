@@ -46,7 +46,7 @@ pub async fn get_config() -> Config{
         )
         .arg(
             arg!(
-                --hurl <HURL> "sets hurl location"
+                --python <PYTHON> "sets python location"
             ).required(false).value_parser(value_parser!(String))
         )
         .subcommand(
@@ -141,8 +141,8 @@ pub async fn get_config() -> Config{
         config.asset_location = asset_location.clone();
     }
 
-    if let Some(hurl_location) = matches.get_one::<String>("hurl") {
-        config.hurl_location = hurl_location.clone();
+    if let Some(python_location) = matches.get_one::<String>("python") {
+        config.python_location = python_location.clone();
     }
 
     return config;

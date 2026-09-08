@@ -4,7 +4,8 @@ use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{db::origin::{service::OriginServices, transport_origin::TransportOrigin}, error::error::AppError, python::hurl_to_origin::{ComponentFromHurl, qr_hurl}, server::server_state::ServerState};
+use crate::{db::origin::service::OriginServices, error::error::AppError, python::python_to_origin::{ComponentFromPython, qr_python}, server::server_state::ServerState};
+
 
 #[derive(Deserialize)]
 pub struct QRHurlToOrigin {
@@ -13,17 +14,15 @@ pub struct QRHurlToOrigin {
 }
 
 
-pub async fn post_qr_hurl_to_origin(
+pub async fn post_qr_python_to_origin(
     State(shared_state): State<Arc<ServerState>>,
     Json(qr): Json<QRHurlToOrigin>
-) -> Result<Json<ComponentFromHurl>, AppError> {
+) -> Result<Json<ComponentFromPython>, AppError> {
 
 
     let origin = shared_state.db.get_origin(qr.origin_id).await?;
 
-    let result = qr_hurl(qr.qr, origin, &shared_state.config)?;
-
-    
+    let result = qr_python(qr.qr, origin, &shared_state.config)?;
 
 
     Ok(Json(result))

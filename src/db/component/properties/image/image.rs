@@ -32,7 +32,7 @@ impl ComponentImage {
 
         println!("1");
 
-        let temp_file = File::open(file.file_field.contents.path())?;
+        let temp_file = File::open(file.file_field.contents.path()).map_err(|_| FileErrors::WriteUpload)?;
 
         println!("2");
 
@@ -40,7 +40,11 @@ impl ComponentImage {
 
         println!("3");
 
-        let img = ImageReader::new(reader).with_guessed_format()?.decode().map_err(|_| FileErrors::ManipulateImageUpload)?;
+        let img = ImageReader::new(reader)
+            .with_guessed_format()
+            .map_err(|_| FileErrors::MimeUpload)?
+            .decode()
+            .map_err(|_| FileErrors::ManipulateImageUpload)?;
 
 
         println!("4");

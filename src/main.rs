@@ -1,7 +1,7 @@
 
 use std::{collections::HashMap, io::Error, path::Path, println, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, properties::origin::component_origin::ComponentOrigin, transport_component::{EmbeddedComponentClassAttributes, EmbeddedComponentOrigin, TransportComponent}}, component_class::{component_class::{FacetSearch, PagedComponentSearch, TablePageQuery, UnitComponentClassSearch}, service::ComponentClassServices}, label::{service::LabelServices, transport_label::TransportLabel}, manufacturer::{self, service::ManufacturerServices, transport::TransportManufacturer}, origin::{service::OriginServices, transport_origin::TransportOrigin}}, python::hurl_wrapper::run_hurl};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, properties::origin::component_origin::ComponentOrigin, transport_component::{EmbeddedComponentClassAttributes, EmbeddedComponentOrigin, TransportComponent}}, component_class::{component_class::{FacetSearch, PagedComponentSearch, TablePageQuery, UnitComponentClassSearch}, service::ComponentClassServices}, label::{service::LabelServices, transport_label::TransportLabel}, manufacturer::{self, service::ManufacturerServices, transport::TransportManufacturer}, origin::{service::OriginServices, transport_origin::TransportOrigin}}, python::python_wrapper::run_python};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use sqlx::encode::IsNull::No;
@@ -101,9 +101,9 @@ async fn main() -> Result<(), Error> {
     let origin_t = TransportOrigin {
         name: "LCSC".to_owned(),
         url: Some("lcsc.com".to_owned()),
-        price_hurl: None,
-        hurl_pn: None,
-        hurl_qr: None
+        price_py: None,
+        py_pn: None,
+        py_qr: None
     };
 
     let origin_id = component_db.add_transport_origin(origin_t).await.unwrap();

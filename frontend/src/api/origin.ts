@@ -14,21 +14,21 @@ export async function get_all_origins() {
 export async function post_origin(
     name: String,
     url: String,
-    price_hurl: any,
-    hurl_pn: any,
-    hurl_qr: any
+    price_py: any,
+    py_pn: any,
+    py_qr: any
 ) {
     
-    if (price_hurl == null) {
-        price_hurl = null
+    if (price_py == null) {
+        price_py = null
     }
 
-    if (hurl_pn == null) {
-        hurl_pn = null
+    if (py_pn == null) {
+        py_pn = null
     }
 
-    if (hurl_qr == null) {
-        hurl_qr = null
+    if (py_qr == null) {
+        py_qr = null
     }
 
     let res: any = await fetchURL("api/post_origin", {
@@ -38,20 +38,20 @@ export async function post_origin(
         body: JSON.stringify({
             name: name,
             url: url,
-            price_hurl: price_hurl,
-            hurl_pn: hurl_pn,
-            hurl_qr: hurl_qr
+            price_py: price_py,
+            py_pn: py_pn,
+            py_qr: py_qr
         })
     })
     
 }
 
-export async function post_qr_hurl_to_origin(
+export async function post_qr_python_to_origin(
     qr: any,
     origin_id: any
 ) {
 
-    let res: any = await fetchJSON("api/post_qr_hurl_to_origin", {
+    let res: any = await fetchJSON("api/post_qr_python_to_origin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

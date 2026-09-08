@@ -1,2 +1,2 @@
-pub mod hurl_to_origin;
-pub mod hurl_wrapper;
+pub mod python_to_origin;
+pub mod python_wrapper;

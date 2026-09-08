@@ -1,4 +1,4 @@
-use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::{get_all_classes::get_all_classes, post_class::post_class, post_class_instance_id_get_class::post_class_instance_id_get_class}, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance, post_class_instance_id_get_fields::post_class_instance_id_get_fields, post_class_instance_id_get_fields_for_html::post_class_instance_id_get_fields_for_html}, component::{post_component::{self, post_component}, post_component_with_files::post_component_with_files, post_search_get_component_with_attributes::post_search_get_component_with_attributes, post_search_get_facets::post_search_get_facets}, files::get_image_thumb::get_image_thumb, label::{get_all_labels::get_all_labels, post_label::post_label}, manufacturer::{get_all_manufacturers::get_all_manufacturers, post_manufacturer::post_manufacturer}, origin::{get_all_origins::get_all_origins, post_origin::post_origin}}, embedded_dir::{self}, hurl_api::post_qr_hurl_to_origin::post_qr_hurl_to_origin, label_api::post_build_label}};
+use crate::{Config, db::{component::component::Component, db::DB}, server::{db_api::{class::{get_all_classes::get_all_classes, post_class::post_class, post_class_instance_id_get_class::post_class_instance_id_get_class}, class_instance::{get_class_instance_descendants::post_id_get_class_instance_descendants, post_class_instance::post_class_instance, post_class_instance_id_get_fields::post_class_instance_id_get_fields, post_class_instance_id_get_fields_for_html::post_class_instance_id_get_fields_for_html}, component::{post_component::{self, post_component}, post_component_with_files::post_component_with_files, post_search_get_component_with_attributes::post_search_get_component_with_attributes, post_search_get_facets::post_search_get_facets}, files::get_image_thumb::get_image_thumb, label::{get_all_labels::get_all_labels, post_label::post_label}, manufacturer::{get_all_manufacturers::get_all_manufacturers, post_manufacturer::post_manufacturer}, origin::{get_all_origins::get_all_origins, post_origin::post_origin}}, embedded_dir::{self}, python_api::post_qr_python_to_origin::post_qr_python_to_origin, label_api::post_build_label}};
 
 use axum::{
     Form, Json, Router, extract::{DefaultBodyLimit, Query}, http::{HeaderValue, Method, StatusCode, Uri, header::CONTENT_TYPE}, response::{Html, IntoResponse, Redirect}, routing::{any_service, get, get_service, post}
@@ -13,14 +13,20 @@ use typst::foundations::ops::pos;
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::{cors::{Any, CorsLayer}, services::{ServeDir, ServeFile}};
 
-
+#[cfg(not(debug_assertions))] 
 static LOGIN: &str = include_str!("../../target/dist/login.html");
+
+#[cfg(not(debug_assertions))] 
 static MAIN: &str = include_str!("../../target/dist/index.html");
 
+
+#[cfg(not(debug_assertions))] 
 #[derive(Embed)]
 #[folder = "target/dist/assets"]
 struct Assets;
 
+
+#[cfg(not(debug_assertions))] 
 #[derive(Embed)]
 #[folder = "target/dist/images"]
 struct Images;
@@ -184,7 +190,7 @@ fn api() -> Router<Arc<ServerState>>{
         .route("/post_origin", post(post_origin))
         
         // HURL
-        .route("/post_qr_hurl_to_origin", post(post_qr_hurl_to_origin));
+        .route("/post_qr_python_to_origin", post(post_qr_python_to_origin));
 
         // .route("/post_update_component", post(post_update_component::post_update_component))
         // .route("/post_build_label", post(post_build_label::post_build_label))

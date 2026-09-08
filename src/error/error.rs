@@ -6,7 +6,7 @@ use jsonschema::ValidationError;
 use serde::de::value;
 use tempfile::PersistError;
 
-use crate::error::{class::ClassErrors, config::ConfigErrors, file::FileErrors, hurl::HurlErrors, json::JsonErrors, label::LabelErrors};
+use crate::error::{class::ClassErrors, config::ConfigErrors, file::FileErrors, python::PythonErrors, json::JsonErrors, label::LabelErrors};
 
 // helped greatly by - https://github.com/tokio-rs/axum/blob/main/examples/error-handling/src/main.rs
 
@@ -25,7 +25,7 @@ pub enum AppError{
     
     ConfigError(ConfigErrors),
 
-    HurlError(HurlErrors)
+    PythonError(PythonErrors)
 
 
 }
@@ -52,7 +52,7 @@ impl Display for AppError{
             AppError::TypeError(err) => err.fmt(f),
             AppError::FileError(err) => err.fmt(f),
             AppError::ConfigError(err) => err.fmt(f),
-            AppError::HurlError(err) => err.fmt(f),
+            AppError::PythonError(err) => err.fmt(f),
             _ => write!(f, "[ERROR] Unknown Error")
         }
     }
@@ -79,7 +79,7 @@ impl IntoResponse for AppError {
             AppError::TypeError(err) => {
                 (err.clone().into_response(), Some(self))
             },
-            AppError::HurlError(err) => {
+            AppError::PythonError(err) => {
                 (err.clone().into_response(), Some(self))
             },
             _ => ((StatusCode::INTERNAL_SERVER_ERROR, "Unknown Inventorize error!").into_response(), None)
@@ -129,9 +129,9 @@ impl From<FileErrors> for AppError {
     }
 }
 
-impl From<HurlErrors> for AppError {
-    fn from(value: HurlErrors) -> Self {
-        Self::HurlError(value)
+impl From<PythonErrors> for AppError {
+    fn from(value: PythonErrors) -> Self {
+        Self::PythonError(value)
     }
 }
 
@@ -157,11 +157,11 @@ impl From<MultipartError> for AppError {
 }
 
 
-impl From<io::Error> for AppError {
-    fn from(value: io::Error) -> Self {
-        Self::FileError(FileErrors::WriteUpload)
-    }
-}
+// impl From<io::Error> for AppError {
+//     fn from(value: io::Error) -> Self {
+//         Self::FileError(FileErrors::WriteUpload)
+//     }
+// }
 
 impl<'a> From<ValidationError<'a>> for AppError {
     fn from(value: ValidationError) -> Self {

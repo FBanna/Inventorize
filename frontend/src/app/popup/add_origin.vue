@@ -5,9 +5,9 @@
 
         <input type="text" v-model="name" placeholder="name">
         <input type="text" v-model="url" placeholder="url">
-        <input type="text" v-model="price_hurl" placeholder="price_hurl path">
-        <input type="text" v-model="hurl_pn" placeholder="hurl_pn path">
-        <input type="text" v-model="hurl_qr" placeholder="hurl_qr path">
+        <input type="text" v-model="price_py" placeholder="price_py path">
+        <input type="text" v-model="py_pn" placeholder="py_pn path">
+        <input type="text" v-model="py_qr" placeholder="py_qr path">
 
 
 
@@ -35,9 +35,9 @@ import { post_origin } from '@/api/origin';
 
     const name = ref()
     const url = ref()
-    const price_hurl = ref()
-    const hurl_pn = ref()
-    const hurl_qr = ref()
+    const price_py = ref()
+    const py_pn = ref()
+    const py_qr = ref()
         
 
 
@@ -49,9 +49,9 @@ import { post_origin } from '@/api/origin';
             await post_origin(
                 name.value,
                 url.value,
-                price_hurl.value,
-                hurl_pn.value,
-                hurl_qr.value
+                price_py.value,
+                py_pn.value,
+                py_qr.value
             )
 
             if (onSuccess != null) {

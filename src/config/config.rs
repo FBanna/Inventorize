@@ -31,7 +31,7 @@ pub struct Config{
     pub label_location: String,
     pub font_location: String,
 
-    pub hurl_location: String,
+    pub python_location: String,
 
     pub asset_location: String,
     //pub temp_location: String,
@@ -47,7 +47,7 @@ impl Default for Config{
             db_location: "postgres://postgres:password@localhost/database".to_owned(),
             label_location: "labels".to_owned(),
             font_location: "fonts".to_owned(),
-            hurl_location: "hurl".to_owned(),
+            python_location: "python".to_owned(),
             asset_location: "data".to_owned(),
             //temp_location: "temp".to_owned()
         }

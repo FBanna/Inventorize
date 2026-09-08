@@ -24,7 +24,7 @@ import { ref, type Ref } from 'vue';
 import { clearActivePopup, opts, onSuccess, active, Popups } from './popup_state';
 import { post_label } from '@/api/label';
 import { QrcodeDropZone, QrcodeStream, type DetectedBarcode } from 'vue-qrcode-reader';
-import { post_qr_hurl_to_origin } from '@/api/origin';
+import { post_qr_python_to_origin } from '@/api/origin';
 
 
     async function confirm(detectedCodes: DetectedBarcode[]) {
@@ -32,15 +32,21 @@ import { post_qr_hurl_to_origin } from '@/api/origin';
 
         opts.value.url = detectedCodes[0]?.rawValue
 
-        onSuccess.value?.()
+        
 
-        let result = await post_qr_hurl_to_origin(detectedCodes[0]?.rawValue, opts.value.origin_id)
+        try {
+            let result = await post_qr_python_to_origin(detectedCodes[0]?.rawValue, opts.value.origin_id)
+            onSuccess.value?.()
+            active.value = Popups.AddComponent
+        } catch (e: any) {
+            pushAppError(e)
+        }
 
-        console.log(result)
+    
 
         
         
-        active.value = Popups.AddComponent
+        
         
 
 

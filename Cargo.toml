@@ -54,13 +54,8 @@ mime_guess = "2.0.5"
 rust-embed = "8.12.0"
 axum_typed_multipart = "0.16.7"
 tempfile = "3.27.0"
+pyo3 = "0.29.2"
 
-
-hurl = { git = "https://github.com/FBanna/hurl-ico-fix.git", tag = "ico-fix-8.0.1" }
-hurl_core = { git = "https://github.com/FBanna/hurl-ico-fix.git", tag = "ico-fix-8.0.1" }
-
-[build-dependencies]
-vcpkg = "0.2.15"
 
 [profile.release]
 opt-level = 3
