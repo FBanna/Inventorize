@@ -1,15 +1,30 @@
 use std::{ffi::CString, fs, path::{Path, PathBuf}};
 
-use pyo3::{Py, PyAny, PyResult, Python, types::{PyAnyMethods, PyList, PyListMethods, PyModule}};
+use pyo3::{Py, PyAny, PyErr, PyResult, Python, exceptions::PyModuleNotFoundError, types::{PyAnyMethods, PyList, PyListMethods, PyModule}};
 
 use crate::{config::config::Config, error::{error::AppError, python::PythonErrors}};
 
 
-pub fn run_python(path: &Path, config: &Config, data: String) -> PyResult<()> {
+pub fn run_python(path: &Path, config: &Config, data: String) -> Result<(), AppError> {
 
     let path = PathBuf::from(config.python_location.clone()).join(path);
 
-    let py_app = CString::new(fs::read_to_string(&path)?)?;
+
+    let file_name = path.file_name()
+        .ok_or(PythonErrors::PathError)?
+        .to_owned()
+        .into_string()
+        .map_err(|_| PythonErrors::PathError)?;
+
+    let file_name_c_string = CString::new(file_name.clone()).map_err(|_| PythonErrors::PathError)?;
+
+
+    let py_app = CString::new(
+        fs::read_to_string(&path).map_err(|_| PythonErrors::MissingFile(file_name.clone()))?
+    ).map_err(|_| PythonErrors::PathError)?;
+
+    println!("{:#?}", py_app);
+
 
     Python::initialize();
 
@@ -23,15 +38,28 @@ pub fn run_python(path: &Path, config: &Config, data: String) -> PyResult<()> {
 
         // syspath.insert(0, path)?;
         
-        let app: Py<PyAny> = PyModule::from_code(py, py_app.as_c_str(), c"", c"")?
-            .getattr("main")?
-            .into();
-
-        app.call0(py)
-    });
+        let app = PyModule::from_code(py, py_app.as_c_str(), file_name_c_string.as_c_str(), c"main")?.getattr("main")?;
 
 
-    println!("py: {}", from_python?);
+        
+
+
+        if app.is_callable() {
+
+            let runner: Py<PyAny> = app.into();
+
+            return runner.call0(py)
+        } else {
+            
+            return Err(PyModuleNotFoundError::new_err("could not find function"))
+
+        }
+
+        
+    })?;
+
+
+    println!("py: {}", from_python);
 
     Ok(())
 

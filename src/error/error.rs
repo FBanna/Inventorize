@@ -3,6 +3,7 @@ use std::{fmt::Display, io, sync::Arc};
 use axum::{extract::multipart::MultipartError, http::{StatusCode, response}, response::{IntoResponse, Response}};
 use image::ImageError;
 use jsonschema::ValidationError;
+use pyo3::PyErr;
 use serde::de::value;
 use tempfile::PersistError;
 
@@ -166,6 +167,12 @@ impl From<MultipartError> for AppError {
 impl<'a> From<ValidationError<'a>> for AppError {
     fn from(value: ValidationError) -> Self {
         Self::JsonError(JsonErrors::GenValidator)
+    }
+}
+
+impl From<PyErr> for AppError {
+    fn from(value: PyErr) -> Self {
+        Self::PythonError(PythonErrors::Run(value.to_string()))
     }
 }
 
