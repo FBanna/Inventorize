@@ -30,14 +30,15 @@ import { post_qr_python_to_origin } from '@/api/origin';
     async function confirm(detectedCodes: DetectedBarcode[]) {
 
 
-        opts.value.url = detectedCodes[0]?.rawValue
-
-        
-
         try {
             let result = await post_qr_python_to_origin(detectedCodes[0]?.rawValue, opts.value.origin_id)
-            onSuccess.value?.()
+
+            opts.value.component_from_origin = result
+
             active.value = Popups.AddComponent
+
+            onSuccess.value?.()
+            
         } catch (e: any) {
             pushAppError(e)
         }

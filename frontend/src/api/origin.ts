@@ -60,4 +60,6 @@ export async function post_qr_python_to_origin(
         })
     })
 
+    return res
+
 }

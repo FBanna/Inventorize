@@ -276,14 +276,14 @@ import { QrcodeStream } from 'vue-qrcode-reader';
 
         active.value = Popups.ScanQR
 
-        const oldSuccess = onSuccess.value
+        // const oldSuccess = onSuccess.value
         opts.value.origin_id = origin_id
 
-        onSuccess.value = () => {
-            console.log("populating fields with " + opts.value.url + " @ " + opts.value.origin_id)
+        //onSuccess.value = () => {
+            
 
-            onSuccess.value = oldSuccess
-        }
+            // onSuccess.value = oldSuccess
+        //}
 
         // setActivePopup(
         //     Popups.ScanQR,
@@ -305,6 +305,9 @@ import { QrcodeStream } from 'vue-qrcode-reader';
 
 
     async function setup() {
+
+
+        
 
 
         try {
@@ -333,6 +336,23 @@ import { QrcodeStream } from 'vue-qrcode-reader';
 
         } catch (e: any) {
             pushAppError(e)
+        }
+
+
+
+        // Check for scanned component
+
+        let c = opts.value.component_from_origin
+
+        if (c != undefined && c != null) {
+
+            name.value = c.name
+            origins.value = [{
+                origin_id: opts.value.origin_id,
+                part_number: c.origin.part_number,
+                price: c.origin.price
+            }]
+
         }
 
         
