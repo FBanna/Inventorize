@@ -1,10 +1,10 @@
 
-use std::{format, path::Ancestors, println};
+use std::{format, path::Ancestors, println, result};
 
 use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, postgres::{PgQueryResult, PgRow, PgValueRef}, types::{Json, JsonRawValue}};
 use uuid::Uuid;
 
-use crate::{config::config::Config, db::{class::{class::Class, service::ClassServices}, class_instance::service::ClassInstanceServices, component::{component::Component, properties::origin::{component_origin::ComponentOrigin, service::ComponentOriginServices}, transport_component::TransportComponent}, component_class::{component_class::ComponentClass, service::ComponentClassServices}, db::DB}, error::{self, error::AppError, json::JsonErrors}};
+use crate::{config::config::Config, db::{class::{class::Class, service::ClassServices}, class_instance::service::ClassInstanceServices, component::{component::{Component, ComponentWithAttributes}, properties::origin::{component_origin::ComponentOrigin, service::ComponentOriginServices}, transport_component::TransportComponent}, component_class::{component_class::ComponentClass, service::ComponentClassServices}, db::DB}, error::{self, error::AppError, json::JsonErrors}};
 
 
 pub trait ComponentServices {
@@ -18,6 +18,7 @@ pub trait ComponentServices {
     async fn update_component(&self, component_id: Uuid, c: &Component) -> Result<PgQueryResult, AppError>;
 
     async fn get_component(&self, component_id: Uuid) -> Result<Component, AppError>;
+    async fn get_component_with_attributes(&self, component_id: Uuid) -> Result<ComponentWithAttributes, AppError>;
     async fn get_component_list(&self, list: Vec<Uuid>) -> Result<Vec<Component>, AppError>;
 
     //async fn search_component(&self, c: Vec<Vec<String>>) -> Result<Vec<Component>, AppError>;
@@ -189,6 +190,7 @@ impl ComponentServices for DB{
 
         Ok(result)
     }
+
     
     async fn get_component_list(&self, list: Vec<Uuid>) -> Result<Vec<Component>, AppError> {
         
@@ -199,8 +201,75 @@ impl ComponentServices for DB{
 
         Ok(result)
     }
-
     
+    async fn get_component_with_attributes(&self, component_id: Uuid) -> Result<ComponentWithAttributes, AppError> {
+        
+        let result: ComponentWithAttributes = sqlx::query_as("
+        
+        SELECT 
+            c.component_id,
+            c.class_instance_id,
+            c.name,
+            c.stock,
+            m.name manufacturer,
+            l.name label,    
+            component_classes.attributes,
+            component_origins.origins,
+            EXISTS (
+                SELECT 1
+                FROM component_image cimg
+                WHERE cimg.component_id = c.component_id
+            ) AS image
+        FROM component c
+
+        CROSS JOIN LATERAL (
+            SELECT jsonb_agg(
+                jsonb_build_object(
+                    'class_instance_id', cc.class_instance_id,
+                    'attributes', cc.attributes
+                )
+            ) AS attributes
+            FROM component_class cc
+            WHERE cc.component_id = c.component_id
+        ) component_classes
+
+        CROSS JOIN LATERAL (
+            SELECT COALESCE(
+                jsonb_agg(
+                    jsonb_build_object(
+                        'name', o.name,
+                        'url', o.url,
+                        'part_number', co.part_number,
+                        'price', co.price
+                    )
+                ),
+                '[]'::jsonb
+            ) AS origins
+            FROM component_origin co
+
+            JOIN origin o
+                ON o.origin_id = co.origin_id
+
+            WHERE co.component_id = c.component_id
+
+            
+        ) component_origins
+
+        LEFT JOIN manufacturer m
+            ON m.manufacturer_id = c.manufacturer_id
+
+        LEFT JOIN label l
+            ON l.label_id = c.label_id
+
+        WHERE c.component_id = ($1)
+        
+        ")
+        .bind(component_id)
+        .fetch_one(&*self.pool)
+        .await?;
+
+        Ok(result)
+    }
 
 
 

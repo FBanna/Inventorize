@@ -11,6 +11,7 @@
             <Add_manufacturer v-if="active == Popups.AddManufacturer" />
             <Add_origin v-if="active == Popups.AddOrigin" />
             <Scan_qr v-if="active == Popups.ScanQR" />
+            <Component v-if="active == Popups.Component" />
 
         </div>
 
@@ -32,6 +33,7 @@
 import Add_manufacturer from './add_manufacturer.vue';
 import Add_origin from './add_origin.vue';
 import Scan_qr from './scan_qr.vue';
+import Component from './component.vue';
 
     function clear() {
         clearActivePopup()

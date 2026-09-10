@@ -109,6 +109,7 @@ import { Popups, setActivePopup } from '../popup/popup_state.ts';
 import { post_component_id_get_image_thumb } from '@/api/image.ts';
 import { CellTypes, type CellData, type TableState } from '../components/table/TableTypes.ts';
 import Table from '../components/table/Table.vue';
+import router from '../router/index.ts';
 
 
   const props = defineProps(["uuid"])
@@ -314,7 +315,10 @@ import Table from '../components/table/Table.vue';
 
     async function row_click_function(row: any) {
 
-      console.log("click")
+      console.log("click: " + "component/" + row.component_id)
+
+      router.push("/component/" + row.component_id)
+
     }
 
 

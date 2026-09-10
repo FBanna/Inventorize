@@ -5,6 +5,7 @@ import Labels from '@/app/views/Labels.vue'
 import Manufacturers from '@/app/views/Manufacturers.vue'
 import Classes from '@/app/views/Classes.vue'
 import Origins from '../views/Origins.vue'
+import Component from '../views/Component.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,7 +15,8 @@ const router = createRouter({
     {path: "/classes", component: Classes},
     {path: "/labels", component: Labels},
     {path: "/manufacturers", component: Manufacturers},
-    {path: "/origins", component: Origins}
+    {path: "/origins", component: Origins},
+    {path: "/component/:uuid", component: Component, props: true}
   ],
 })
 

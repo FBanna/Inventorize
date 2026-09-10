@@ -38,7 +38,7 @@ import { useRouter } from 'vue-router';
 
     function follow_uuid() {
     
-        router.push(props.node.class_instance_id)
+        router.push("/" + props.node.class_instance_id)
         
     }
 

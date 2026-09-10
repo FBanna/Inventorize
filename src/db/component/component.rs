@@ -20,7 +20,7 @@ pub struct Component{
 }
 
 
-/// Search Result Object
+/// Search Result Object -- should be as close to a finished object as possible ( - image)
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
 pub struct  ComponentWithAttributes{
     pub component_id: Uuid,
@@ -28,7 +28,8 @@ pub struct  ComponentWithAttributes{
 
     pub name: String,
     pub stock: i32, // should this be i32?
-    pub manufacturer: Option<String>,
+
+    pub manufacturer: Option<String>, // string to display
     pub label: Option<String>,
 
     pub attributes: Json,

@@ -1,5 +1,22 @@
-import { fetchURL } from "./util";
+import { fetchJSON, fetchURL } from "./util";
 
+
+export async function get_component(
+    uuid: any
+) {
+
+    let result = await fetchJSON("api/post_id_get_component_with_attributes", {
+        method: "POST",
+
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            component_id: uuid
+        })
+    })
+
+    return result
+
+}
 
 export async function post_component(
     class_instance_id: any,
