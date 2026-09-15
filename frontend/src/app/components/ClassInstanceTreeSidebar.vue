@@ -27,14 +27,14 @@
     import { get_class_instance_descendants } from '@/api/class_instance';
     import TreeElement from './TreeElement.vue';
 
-    import { ref } from 'vue';
+    import { ref, useTemplateRef } from 'vue';
     import { pushAppError } from '@/error/error_state.ts';
     import { Popups, setActivePopup } from '@/app/popup/popup_state.ts';
 
     const tree = ref();
-    const collapsed = ref(true);
+    const collapsed = ref(false);
 
-    const children = ref();
+    const children = useTemplateRef("children");
 
     function end_add() {
         let opts = {
@@ -60,7 +60,7 @@
 
 
         for (var branch of children.value) {
-            branch.collapse(collapsed.value)
+            branch?.collapse(collapsed.value)
         }
     }
 

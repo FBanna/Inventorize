@@ -9,23 +9,34 @@
         <img class="add add_hide" @click="add" src="/images/add.svg">
     </li>
 
-    <tree-element ref="children" v-if="dropped" v-for="child_node in props.node.children" :node="child_node" :depth="props.depth+1" :onSuccess="props.onSuccess" />
+    <div v-show="dropped">
+
+        <tree-element 
+            ref="children" 
+            v-for="child_node in props.node.children" 
+            :node="child_node" 
+            :depth="props.depth+1" 
+            :onSuccess="props.onSuccess" 
+        />
+
+    </div>
+    
 
 </template>
 
 <script setup lang="ts">
 import Add_class_instance from '@/app/popup/add_class_instance.vue';
 import { Popups, setActivePopup } from '@/app/popup/popup_state';
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import router from '../router';
 import { useRouter } from 'vue-router';
 
     const props = defineProps(["node", "depth", "onSuccess"])
-    const dropped = ref<boolean>(true)
-    const children = ref();
+    const dropped = ref<boolean>(false)
+    const children = useTemplateRef("children");
 
     function get_depth() {
-        return ((props.depth * 10).toString() + "px") 
+        return ((props.depth * 7).toString() + "px") 
     }
 
     function drop() {
@@ -68,7 +79,7 @@ import { useRouter } from 'vue-router';
         }
 
         for (var child of children.value) {
-            child.collapse(value)
+            child?.collapse(value)
         }
     }
 

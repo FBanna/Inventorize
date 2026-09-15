@@ -353,6 +353,8 @@ import { QrcodeStream } from 'vue-qrcode-reader';
                 price: c.origin.price
             }]
 
+            opts.value.component_from_origin = null
+
         }
 
         
