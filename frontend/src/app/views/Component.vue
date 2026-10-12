@@ -10,21 +10,25 @@ import { get_component } from '@/api/component';
 import { pushAppError } from '@/error/error_state';
 import ComponentSearch from './ComponentSearch.vue';
 import { ref, type Ref } from 'vue';
-import { Popups, setActivePopup } from '../popup/popup_state.ts';
+import { opts, Popups, setActivePopup } from '../popup/popup_state.ts';
 import router from '../router/index.ts';
 import { post_class_instance_id_get_class } from '@/api/class.ts';
 
 
 
 const props = defineProps(["uuid"])
-let component: Ref<any> = ref({})
+let component: Ref<any> = ref()
 
 
 async function setup() {
 
+    component.value = await get_component(props.uuid)
+
     setActivePopup(
         Popups.Component,
-        props,
+        {
+            component: component.value
+        },
         null,
     )
 

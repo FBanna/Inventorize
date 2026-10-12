@@ -45,10 +45,20 @@
 
             Attributes
             <span class="attribute-span">
-                <div class="class-fields" v-for="class_fields in component.attributes">
-                    {{ class_fields.name }}
+                <div class="class-fields" v-for="class_fields in fields.attributes">
+
+                    <div class="title">
+                        {{ class_fields.name }}
+                    </div>
                     
-                    <input v-model="component.attributes[class_fields.class_instance_id][field.name]" v-for="field in class_fields.fields" :type="field.object_type" :placeholder="field.name">
+
+                    <!-- v-model="component.attributes[class_fields.class_instance_id][field.name]" -->
+                    
+                    <div v-for="field in class_fields.fields">
+                        {{ field.name }} - {{ component.attributes.find(
+                            (a: any) => a.class_instance_id === class_fields.class_instance_id
+                        ).attributes[field.name]}}{{ field.unit }}
+                    </div>
                 </div>
             </span>
             
@@ -63,7 +73,7 @@
 <script setup lang="ts">
 
 import { get_all_classes, post_class, post_class_instance_id_get_class } from '@/api/class';
-import { post_class_instance } from '@/api/class_instance';
+import { get_fields_from_class_instance, post_class_instance } from '@/api/class_instance';
 import { pushAppError } from '@/error/error_state';
 import { onBeforeMount, onMounted, ref, type Ref } from 'vue';
 import { clearActivePopup, opts, onSuccess, onClear } from './popup_state';
@@ -76,15 +86,18 @@ const api_url = import.meta.env.VITE_API_URL
 
 let class_: Ref<any> = ref({})
 let component: Ref<any> = ref({})
-let 
+let fields: Ref<any> = ref({})
 
 
 
 async function setup() {
 
     try {
-        component.value = await get_component(opts.value.uuid)
+        component.value = opts.value.component
         class_.value = await post_class_instance_id_get_class(component.value.class_instance_id)
+
+        fields.value = await get_fields_from_class_instance(component.value.class_instance_id)
+
 
 
         onClear.value = () => {
@@ -147,6 +160,48 @@ setup()
     }
 
 
+
+
+    // attributes
+    .attribute-span {
+        overflow-x: scroll;
+        overflow-y: hidden;
+
+        display: flex;
+        flex-direction: row;
+
+        box-sizing: border-box;
+        min-height: 0;
+        height: 100%;
+
+        
+
+    }
+
+    .class-fields {
+
+        background-color: import.$secondary;
+
+        box-sizing: border-box;
+
+        flex: 0 0 200px;
+
+        padding: 5px;
+        border-radius: 5px;
+        margin-right: 5px;
+
+        overflow-y: scroll;
+        overflow-x: hidden;
+        scrollbar-width: none;
+
+        display: flex;
+        flex-direction: column;
+
+    }
+
+    .attributes {
+        grid-column: 1 / span 2;
+    }
 
 
 </style>
