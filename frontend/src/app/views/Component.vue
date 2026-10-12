@@ -17,32 +17,17 @@ import { post_class_instance_id_get_class } from '@/api/class.ts';
 
 
 const props = defineProps(["uuid"])
-let component: Ref<any> = ref(null)
+let component: Ref<any> = ref({})
 
 
 async function setup() {
 
-    try {
-        component.value = await get_component(props.uuid)
-        let class_ = await post_class_instance_id_get_class(component.value.class_instance_id)
+    setActivePopup(
+        Popups.Component,
+        props,
+        null,
+    )
 
-        let opts = {
-            component: component.value,
-            class_: class_
-        }
-
-        setActivePopup(
-            Popups.Component,
-            opts,
-            null,
-            () => {
-                router.push("/" + component.value.class_instance_id)
-            }
-        )
-    } catch (e: any) {
-        pushAppError(e)
-    }
-    
 }
 
 setup()
