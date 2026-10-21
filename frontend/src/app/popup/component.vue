@@ -41,7 +41,7 @@
             
         </div>
 
-        <div class="attributes">
+        <div class="double-span">
 
             Attributes
             <span class="attribute-span">
@@ -63,6 +63,16 @@
             </span>
             
         </div>
+
+        <div class="double-span files">
+
+            Files
+            <ol class="file-list">
+                <li v-for="file in files">
+                    <a :href="api_url + 'api/get_file/' + file.file_id">{{ file.name }}</a>
+                </li>
+            </ol>
+        </div>
         
 
         
@@ -80,13 +90,16 @@ import { clearActivePopup, opts, onSuccess, onClear } from './popup_state';
 import { post_label } from '@/api/label';
 import router from '../router';
 import { get_component } from '@/api/component';
+import { post_id_get_file_list } from '@/api/file';
 
 const api_url = import.meta.env.VITE_API_URL
+
 
 
 let class_: Ref<any> = ref({})
 let component: Ref<any> = ref({})
 let fields: Ref<any> = ref({})
+let files: Ref<any> = ref({})
 
 
 
@@ -97,6 +110,10 @@ async function setup() {
         class_.value = await post_class_instance_id_get_class(component.value.class_instance_id)
 
         fields.value = await get_fields_from_class_instance(component.value.class_instance_id)
+
+        files.value = await post_id_get_file_list(component.value.component_id)
+
+
 
 
 
@@ -135,7 +152,7 @@ setup()
 
         display: grid;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
+        grid-template-rows: 1fr 1fr 1fr;
         column-gap: 10px;
         //grid-template-rows: 15px 20px 20px 50px;
         //row-gap: 10px;
@@ -173,9 +190,6 @@ setup()
         box-sizing: border-box;
         min-height: 0;
         height: 100%;
-
-        
-
     }
 
     .class-fields {
@@ -199,8 +213,17 @@ setup()
 
     }
 
-    .attributes {
+    .double-span {
         grid-column: 1 / span 2;
+    }
+
+    .files {
+        margin-top: 30px;
+    }
+
+    .file-list{
+        list-style-type: disc;
+        padding-left: 20px;
     }
 
 

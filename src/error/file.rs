@@ -10,7 +10,8 @@ pub enum FileErrors {
     Upload(String),
     WriteUpload,
     MimeUpload,
-    ManipulateImageUpload
+    ManipulateImageUpload,
+    UnableToOpen
 
 }
 
@@ -22,7 +23,8 @@ impl Display for FileErrors{
             FileErrors::Upload(template) => write!(f, "[ERROR] FileError - Upload - Failed to upload file: {}", template),
             FileErrors::WriteUpload => write!(f, "[ERROR] FileError - WriteUpload - Failed to write uploaded file"),
             FileErrors::MimeUpload => write!(f, "[ERROR] FileError - MimeUpload - Failed to infer mime type from file"),
-            FileErrors::ManipulateImageUpload => write!(f, "[ERROR] FileError - ManipulateImageUpload - Failed to resize or compress image")
+            FileErrors::ManipulateImageUpload => write!(f, "[ERROR] FileError - ManipulateImageUpload - Failed to resize or compress image"),
+            FileErrors::UnableToOpen => write!(f, "[ERROR] FileError - UnableToOpen - Failed to open file from disk")
         }
     }
 }

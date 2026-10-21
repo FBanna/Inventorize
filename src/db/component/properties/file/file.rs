@@ -1,6 +1,8 @@
-use std::{fs, path::{Path, PathBuf}};
+use std::{fs::self, path::{Path, PathBuf}};
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
+use tokio::fs::File;
+use tokio_util::io::ReaderStream;
 use uuid::Uuid;
 
 use crate::{config::config::Config, db::component::properties::files::DownloadedFile, error::{error::AppError, file::FileErrors}};
@@ -41,6 +43,18 @@ impl ComponentFile {
             name: file.file_field.metadata.file_name.unwrap_or("document".to_string()),
             mime: mime.mime_type().to_owned()
         })
+    }
+
+    pub async fn fetch_file_stream(&self, config: &Config) -> Result<ReaderStream<File>, AppError> {
+        
+        let path = PathBuf::from(config.asset_location.clone()).join(self.file_id.as_hyphenated().to_string());
+
+        let file = File::open(path).await.map_err(|_| AppError::FileError(FileErrors::UnableToOpen))?;
+
+        let stream: ReaderStream<File> = ReaderStream::new(file);
+        
+
+        Ok(stream)
     }
 
 }

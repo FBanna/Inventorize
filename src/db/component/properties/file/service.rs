@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::{db::{component::properties::file::file::ComponentFile, db::DB}, error::error::AppError};
+use crate::{config::config::Config, db::{component::properties::file::file::ComponentFile, db::DB}, error::error::AppError, server::db_api::files::get_file::get_file};
 
 
 
@@ -19,9 +19,6 @@ pub trait ComponentFileService {
 
 impl ComponentFileService for DB {
 
-
-
-    // FILES
 
     async fn add_file(&self, file: ComponentFile) -> Result<(), AppError> {
         
@@ -80,6 +77,8 @@ impl ComponentFileService for DB {
 
         Ok(output)
     }
+    
+    
     
     
 
