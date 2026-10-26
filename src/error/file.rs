@@ -11,7 +11,8 @@ pub enum FileErrors {
     WriteUpload,
     MimeUpload,
     ManipulateImageUpload,
-    UnableToOpen
+    UnableToOpen,
+    UnableToDelete
 
 }
 
@@ -24,7 +25,8 @@ impl Display for FileErrors{
             FileErrors::WriteUpload => write!(f, "[ERROR] FileError - WriteUpload - Failed to write uploaded file"),
             FileErrors::MimeUpload => write!(f, "[ERROR] FileError - MimeUpload - Failed to infer mime type from file"),
             FileErrors::ManipulateImageUpload => write!(f, "[ERROR] FileError - ManipulateImageUpload - Failed to resize or compress image"),
-            FileErrors::UnableToOpen => write!(f, "[ERROR] FileError - UnableToOpen - Failed to open file from disk")
+            FileErrors::UnableToOpen => write!(f, "[ERROR] FileError - UnableToOpen - Failed to open file from disk"),
+            FileErrors::UnableToDelete => write!(f, "[ERROR] FileError - UnableToDelete - Failed to delete file from disk")
         }
     }
 }

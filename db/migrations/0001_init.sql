@@ -125,3 +125,26 @@ CREATE TABLE IF NOT EXISTS component_class
 -- Indexes
 
 CREATE INDEX attribute_index ON component_class USING GIN (attributes);
+
+-- Triggers
+
+CREATE TABLE file_cleanup_queue (
+    file_id             uuid    PRIMARY KEY
+);
+
+CREATE OR REPLACE FUNCTION queue_deleted_file()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO file_cleanup_queue (file_id)
+    VALUES (OLD.file_id);
+
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER attachments_after_delete
+AFTER DELETE ON component_file
+FOR EACH ROW
+EXECUTE FUNCTION queue_deleted_file();
+
