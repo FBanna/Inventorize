@@ -4,7 +4,7 @@ use std::{format, path::Ancestors, println, result};
 use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, postgres::{PgQueryResult, PgRow, PgValueRef}, types::{Json, JsonRawValue}};
 use uuid::Uuid;
 
-use crate::{config::config::Config, db::{class::{class::Class, service::ClassServices}, class_instance::service::ClassInstanceServices, component::{component::{Component, ComponentWithAttributes}, properties::origin::{component_origin::ComponentOrigin, service::ComponentOriginServices}, transport_component::TransportComponent}, component_class::{component_class::ComponentClass, service::ComponentClassServices}, db::DB}, error::{self, error::AppError, json::JsonErrors}};
+use crate::{config::config::Config, db::{class::{class::Class, service::ClassServices}, class_instance::service::ClassInstanceServices, component::{component::{Component, ComponentWithAttributes}, properties::{file::service::ComponentFileService, origin::{component_origin::ComponentOrigin, service::ComponentOriginServices}}, transport_component::TransportComponent}, component_class::{component_class::ComponentClass, service::ComponentClassServices}, db::DB}, error::{self, error::AppError, json::JsonErrors}};
 
 
 pub trait ComponentServices {
@@ -46,6 +46,13 @@ impl ComponentServices for DB{
     async fn remove_component(&self, component_id: Uuid, config: &Config) -> Result<PgQueryResult, AppError>{
 
 
+        let files = self.get_component_files(component_id).await?;
+
+        for file in files {
+            file.
+        }
+
+
         let result = sqlx::query("
             DELETE FROM component
             WHERE component_id = ($1)
@@ -58,6 +65,9 @@ impl ComponentServices for DB{
     }
 
     async fn remove_component_list(&self, list: Vec<Uuid>, config: &Config) -> Result<(), AppError> {
+
+
+        // CONFIGURE PG POOL
 
         for i in list{
             self.remove_component(i, config).await?;

@@ -12,7 +12,7 @@ pub trait ComponentFileService {
     async fn add_file_get_id(&self, name: String, mime: String, c_id: Uuid) -> Result<Uuid, AppError>;
     async fn del_file(&self, uuid: Uuid) -> Result<(), AppError>;
     async fn get_file(&self, uuid: Uuid) -> Result<ComponentFile, AppError>;
-    async fn get_all_files(&self, c_id: Uuid) -> Result<Vec<ComponentFile>, AppError>;
+    async fn get_component_files(&self, c_id: Uuid) -> Result<Vec<ComponentFile>, AppError>;
 
 }
 
@@ -68,7 +68,7 @@ impl ComponentFileService for DB {
         Ok(output)
     }
 
-    async fn get_all_files(&self, c_id: Uuid) -> Result<Vec<ComponentFile>, AppError> {
+    async fn get_component_files(&self, c_id: Uuid) -> Result<Vec<ComponentFile>, AppError> {
         
         let output: Vec<ComponentFile> = sqlx::query_as("SELECT * FROM component_file WHERE component_id = ($1)")
             .bind(c_id)

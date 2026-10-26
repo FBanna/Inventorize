@@ -57,6 +57,12 @@ impl ComponentFile {
         Ok(stream)
     }
 
+    pub async fn remove(&self, config: &Config) -> Result<(), AppError> {
+        let path = PathBuf::from(config.asset_location.clone()).join(self.file_id.as_hyphenated().to_string());
+
+        File::
+    }
+
 }
 
 

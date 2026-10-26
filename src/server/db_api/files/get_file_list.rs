@@ -20,7 +20,7 @@ pub async fn get_file_list(
 ) -> Result<Json<Vec<ComponentFile>>, AppError> {
 
 
-    let files = shared_state.db.get_all_files(c.component_id).await?;
+    let files = shared_state.db.get_component_files(c.component_id).await?;
 
 
     
