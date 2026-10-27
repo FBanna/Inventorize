@@ -46,11 +46,11 @@ impl ComponentServices for DB{
     async fn remove_component(&self, component_id: Uuid, config: &Config) -> Result<PgQueryResult, AppError>{
 
 
-        let files = self.get_component_files(component_id).await?;
+        // let files = self.get_component_files(component_id).await?;
 
-        for file in files {
-            file.
-        }
+        // for file in files {
+        //     file.
+        // }
 
 
         let result = sqlx::query("

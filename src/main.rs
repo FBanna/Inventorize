@@ -238,7 +238,7 @@ async fn main() -> Result<(), Error> {
 
 
 
-    let join_handle = server::entry::start_server(config, component_db).await; 
+    let join_handle = server::entry::start_server(config, component_db).await;
 
 
     signal::ctrl_c().await?;
