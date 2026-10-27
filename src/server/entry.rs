@@ -149,9 +149,6 @@ pub async fn start_server(config: Config, db: DB) -> tokio::task::JoinHandle<()>
 
 fn api() -> Router<Arc<ServerState>>{
     let api: Router<Arc<ServerState>> = Router::new()
-        //.route("/", get(handler))
-        //.route("/post_build_zip", post(post_build_label::post_build_label))
-
 
         // COMPONENT
 
@@ -217,15 +214,9 @@ fn protected() -> Router<Arc<ServerState>>{
 
     let mut protected = Router::new().nest("/api", api());
 
-    // #[cfg(not(debug_assertions))]
-    // let service = ServeFile::new("./dist/index.html");
-    // #[cfg(debug_assertions)]
-    // let service = ServeFile::new("../dist/index.html");
-
     #[cfg(not(debug_assertions))]
     {
         protected = protected
-            //.fallback(get( || async { Html(MAIN).into_response() }))
             .route("/", get(|| async {
                 Html(MAIN).into_response()
             }))
@@ -238,16 +229,6 @@ fn protected() -> Router<Arc<ServerState>>{
     {
         protected = protected.fallback_service(ServeFile::new("../dist/index.html"));
     }
-
-
-    // let protected = Router::new()
-    //     .route_service("/", service.clone())
-    //     .route_service("/addcomponent", service.clone())
-    //     .route_service("/component/{id}", service.clone())
-    //     .route_service("/component/{id}/update", service)
-    //     .nest("/api", api());
-
-
 
     return protected;
 }

@@ -21,19 +21,25 @@ pub const DEFAULT_CONFIG_FILE: &str = "./config.yaml";
 pub struct Config{
     pub port: u16,
 
+    // USER
     pub user: String,
     pub password: String,
 
+    // SERVER
     pub host_address: String,
-
     pub db_location: String,
     
+    // DIRS
     pub label_location: String,
     pub font_location: String,
-
     pub python_location: String,
-
     pub asset_location: String,
+
+    // FILE CLEAN UP
+    pub clean_up_interval: u16, // mins
+
+
+
     //pub temp_location: String,
 }
 
@@ -49,6 +55,7 @@ impl Default for Config{
             font_location: "fonts".to_owned(),
             python_location: "python".to_owned(),
             asset_location: "data".to_owned(),
+            clean_up_interval: 1
             //temp_location: "temp".to_owned()
         }
     }

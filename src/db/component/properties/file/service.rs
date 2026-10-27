@@ -1,3 +1,4 @@
+use sqlx::prelude::FromRow;
 use uuid::Uuid;
 
 use crate::{config::config::Config, db::{component::properties::file::file::ComponentFile, db::DB}, error::error::AppError, server::db_api::files::get_file::get_file};
@@ -14,6 +15,14 @@ pub trait ComponentFileService {
     async fn get_file(&self, uuid: Uuid) -> Result<ComponentFile, AppError>;
     async fn get_component_files(&self, c_id: Uuid) -> Result<Vec<ComponentFile>, AppError>;
 
+    async fn get_all_file_clean_up_queue_id(&self) -> Result<Vec<FileCleanUp>, AppError>;
+    async fn remove_id_from_file_clean_up_queue(&self, file_id: Uuid) -> Result<(), AppError>;
+
+}
+
+#[derive(FromRow)]
+pub struct FileCleanUp {
+    pub file_id: Uuid
 }
 
 
@@ -76,6 +85,28 @@ impl ComponentFileService for DB {
             .await?;
 
         Ok(output)
+    }
+
+
+    
+    async fn get_all_file_clean_up_queue_id(&self) -> Result<Vec<FileCleanUp>, AppError> {
+        
+        let ids: Vec<FileCleanUp> = sqlx::query_as("SELECT * FROM file_cleanup_queue")
+            .fetch_all(&*self.pool)
+            .await?;
+
+        Ok(ids)
+
+    }
+
+    async fn remove_id_from_file_clean_up_queue(&self, file_id: Uuid) -> Result<(), AppError> {
+
+        let result = sqlx::query("DELETE FROM file_cleanup_queue WHERE file_id = ($1)")
+            .bind(file_id)
+            .execute(&*self.pool)
+            .await?;
+
+        Ok(())
     }
     
     

@@ -1,7 +1,7 @@
 
 use std::{format, path::Ancestors, println, result};
 
-use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migrate::{MigrateDatabase, Migrator}, prelude::FromRow, postgres::{PgQueryResult, PgRow, PgValueRef}, types::{Json, JsonRawValue}};
+use sqlx::{ColumnIndex, Execute, PgExecutor, PgPool, Pool, Postgres, QueryBuilder, Row, migrate::{MigrateDatabase, Migrator}, postgres::{PgQueryResult, PgRow, PgValueRef}, prelude::FromRow, types::{Json, JsonRawValue}};
 use uuid::Uuid;
 
 use crate::{config::config::Config, db::{class::{class::Class, service::ClassServices}, class_instance::service::ClassInstanceServices, component::{component::{Component, ComponentWithAttributes}, properties::{file::service::ComponentFileService, origin::{component_origin::ComponentOrigin, service::ComponentOriginServices}}, transport_component::TransportComponent}, component_class::{component_class::ComponentClass, service::ComponentClassServices}, db::DB}, error::{self, error::AppError, json::JsonErrors}};
@@ -23,17 +23,11 @@ pub trait ComponentServices {
 
     //async fn search_component(&self, c: Vec<Vec<String>>) -> Result<Vec<Component>, AppError>;
 
-    async fn remove_component(&self, component_id: Uuid, config: &Config) -> Result<PgQueryResult, AppError>;   
+    async fn remove_component(&self, component_id: Uuid) -> Result<(), AppError>;   
 
-    async fn remove_component_list(&self, list: Vec<Uuid>, config: &Config) -> Result<(), AppError>;
+    async fn remove_component_use_tx(&self, component_id: Uuid, tx: impl PgExecutor<'_>) -> Result<(), AppError>;
 
-
-    // async fn add_component_type_value(&self, tc: ComponentTypeValue) -> Result<PgQueryResult, AppError>;
-    // async fn add_component_type_values(&self, tcs: Vec<ComponentTypeValue>) -> Result<(), AppError>;
-
-    // async fn get_component_type_value(&self, c_id: i64, t_id: i64) -> Result<ComponentTypeValue, AppError>;
-    // async fn get_component_type_values_t_id(&self, t_id: i64) -> Result<Vec<ComponentTypeValue>, AppError>;
-    // async fn get_component_type_values_c_id(&self, c_id: i64) -> Result<Vec<ComponentTypeValue>, AppError>;
+    async fn remove_component_list(&self, list: Vec<Uuid>) -> Result<(), AppError>;
 
 
 }
@@ -42,36 +36,38 @@ pub trait ComponentServices {
 impl ComponentServices for DB{
 
 
-    /// Delete a component + remove files
-    async fn remove_component(&self, component_id: Uuid, config: &Config) -> Result<PgQueryResult, AppError>{
+    /// Delete a component
+    async fn remove_component(&self, component_id: Uuid) -> Result<(), AppError>{
+
+        let mut tx = self.pool.begin().await?;
+
+        self.remove_component_use_tx(component_id, &mut *tx).await?;
 
 
-        // let files = self.get_component_files(component_id).await?;
+        Ok(())
+    }
 
-        // for file in files {
-        //     file.
-        // }
+    /// Delete a component using a transaction
+    async fn remove_component_use_tx(&self, component_id: Uuid, tx: impl PgExecutor<'_>) -> Result<(), AppError> {
 
-
-        let result = sqlx::query("
+        let _result = sqlx::query("
             DELETE FROM component
             WHERE component_id = ($1)
         ").bind(component_id)
-        .execute(&*self.pool).await?;
+        .execute(tx).await?;
 
-        //remove_component_files(component_id, &config.asset_location); RE ADD THIS
-
-        Ok(result)
+        Ok(())
     }
 
-    async fn remove_component_list(&self, list: Vec<Uuid>, config: &Config) -> Result<(), AppError> {
+    async fn remove_component_list(&self, list: Vec<Uuid>) -> Result<(), AppError> {
 
+        let mut tx: sqlx::Transaction<'_, Postgres> = self.pool.begin().await?;
 
-        // CONFIGURE PG POOL
-
-        for i in list{
-            self.remove_component(i, config).await?;
+        for id in list{
+            self.remove_component_use_tx(id, &mut *tx).await?;
         }
+
+        tx.commit().await?;
 
         Ok(())
     }
@@ -179,9 +175,6 @@ impl ComponentServices for DB{
         // commit transaction
         tx.commit().await?;
 
-
-        // handle other elements!!!
-
         Ok(id)
     }
 
@@ -284,59 +277,3 @@ impl ComponentServices for DB{
 
 
 }
-
-
-// // why are you here?
-
-// pub fn get_component_files(id: i32, name: &str, config: &str) -> Option<Vec<u8>> {
-    
-//     //let binding = config.to_owned() + "/" + &id.to_string() + "/" + name;
-
-
-//     let asset_location = Path::new(config).join(id.to_string()).join(name);
-
-//     println!("finding file {} at {}", name, asset_location.display());
-
-//     if asset_location.exists() {
-
-//         let result = fs::read(asset_location);
-
-//         return result.ok()
-
-//     }
-//     None
-// }
-
-
-
-// pub fn write_component_files(id: i64, name: &str, config: &str, option: &Option<Vec<u8>>, is_present: bool) {
-
-//     if is_present {
-//         if let Some(data) = option {
-//             //let binding = config.to_owned() + "\\" + &id.to_string();
-
-            
-//             let path: PathBuf = Path::new(config).join(id.to_string());
-
-//             //println!("trying to access path at {}", path.as_os_str().to_str().get_or_insert_default());
-
-//             if !path.exists() {
-//                 fs::create_dir_all(&path).expect("could not create asset dir for component!");
-//             }
-
-//             fs::write(path.join(name.to_owned()), data).expect("Could not write asset file");
-
-//         }
-
-//     } else {
-
-//         // THIS RUNS EVERY TIME YOU UPDATE A COMPONENT, LOTS OF SYS CALLS. COULD ADD
-//         // ANOTHER PARAMETER TO REMOVE CERTAIN DATA FILES
-//         let path: PathBuf = Path::new(config).join(id.to_string()).join(name.to_owned());
-
-//         if path.exists(){
-//             fs::remove_file(path).expect("could not remove file");
-//         }
-//     }
-
-// }

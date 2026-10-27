@@ -58,13 +58,18 @@ impl ComponentFile {
     }
 
 
-    #[deprecated]
-    pub async fn remove(&self, config: &Config) -> Result<(), AppError> {
-        let path = PathBuf::from(config.asset_location.clone()).join(self.file_id.as_hyphenated().to_string());
+    // #[deprecated]
+    // pub async fn remove(&self, config: &Config) -> Result<(), AppError> {
+    //     let path = PathBuf::from(config.asset_location.clone()).join(self.file_id.as_hyphenated().to_string());
 
-        fs::remove_file(path).map_err(|_| FileErrors::UnableToDelete.into())
-    }
+    //     fs::remove_file(path).map_err(|_| FileErrors::UnableToDelete.into())
+    // }
 
 }
 
 
+pub async fn clean_up_file(file_id: Uuid, config: &Config) -> Result<(), AppError> {
+    let path = PathBuf::from(config.asset_location.clone()).join(file_id.as_hyphenated().to_string());
+
+    fs::remove_file(path).map_err(|_| FileErrors::UnableToDelete.into())
+}

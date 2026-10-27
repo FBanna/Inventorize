@@ -17,7 +17,7 @@ pub async fn post_id_remove_component(
     Json(component): Json<ComponentID>
 ) -> Result<impl IntoResponse, AppError> {
 
-    shared_state.db.remove_component(component.component_id, &shared_state.config).await?;
+    shared_state.db.remove_component(component.component_id).await?;
 
     Ok(StatusCode::OK.into_response())
 

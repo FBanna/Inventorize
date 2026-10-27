@@ -3,6 +3,7 @@ use std::sync::Arc;
 use sqlx::{ConnectOptions, PgPool, Pool, Postgres, migrate::{MigrateDatabase, Migrator}};
 
 
+#[derive(Clone)]
 pub struct DB {
     pub pool: Arc<Pool<Postgres>>,
     // could have a cached prompts stay open here

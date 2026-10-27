@@ -1,7 +1,7 @@
 
 use std::{collections::HashMap, io::Error, path::Path, println, sync::{Arc, atomic::AtomicBool}};
 
-use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, properties::origin::component_origin::ComponentOrigin, transport_component::{EmbeddedComponentClassAttributes, EmbeddedComponentOrigin, TransportComponent}}, component_class::{component_class::{FacetSearch, PagedComponentSearch, TablePageQuery, UnitComponentClassSearch}, service::ComponentClassServices}, label::{service::LabelServices, transport_label::TransportLabel}, manufacturer::{self, service::ManufacturerServices, transport::TransportManufacturer}, origin::{service::OriginServices, transport_origin::TransportOrigin}}, python::python_wrapper::run_python};
+use crate::{config::config::Config, db::{class::{service::ClassServices, transport_class::TransportClass}, class_instance::{service::ClassInstanceServices, transport_class_instance::TransportClassInstance}, component::{component::Component, properties::origin::component_origin::ComponentOrigin, transport_component::{EmbeddedComponentClassAttributes, EmbeddedComponentOrigin, TransportComponent}}, component_class::{component_class::{FacetSearch, PagedComponentSearch, TablePageQuery, UnitComponentClassSearch}, service::ComponentClassServices}, file_clean_up::start_file_clean_up, label::{service::LabelServices, transport_label::TransportLabel}, manufacturer::{self, service::ManufacturerServices, transport::TransportManufacturer}, origin::{service::OriginServices, transport_origin::TransportOrigin}}, python::python_wrapper::run_python};
 use db::{component::service::ComponentServices, db::DB};
 use serde_json::json;
 use sqlx::encode::IsNull::No;
@@ -22,9 +22,6 @@ async fn main() -> Result<(), Error> {
     let config: Config = config::command::get_config().await;
 
     let component_db = DB::init(&config.db_location).await;
-
-    let pool_clone = Arc::clone(&component_db.pool);
-
 
 
 
@@ -238,14 +235,17 @@ async fn main() -> Result<(), Error> {
 
 
 
-    let join_handle = server::entry::start_server(config, component_db).await;
+    let join_handle: tokio::task::JoinHandle<()> = server::entry::start_server(config.clone(), component_db.clone()).await;
+
+    let clean_join_handle = start_file_clean_up(config, component_db.clone()).await;
 
 
     signal::ctrl_c().await?;
 
     println!("Ctrl-C - EXITING");
 
-    pool_clone.close().await;
+    component_db.pool.close().await;
+
 
 
     Ok(())
