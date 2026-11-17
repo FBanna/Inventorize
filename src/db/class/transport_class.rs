@@ -17,6 +17,7 @@ pub enum AttributeType {
     Float,
     Boolean,
     Date,
+    Prefix
 }
 
 impl AttributeType {
@@ -27,7 +28,8 @@ impl AttributeType {
             AttributeType::Integer => "integer",
             AttributeType::Float => "number",
             AttributeType::Boolean => "boolean",
-            AttributeType::Date => "date"
+            AttributeType::Date => "date",
+            AttributeType::Prefix => "number"
         }
     }
 
@@ -38,6 +40,7 @@ impl AttributeType {
             "float" => Ok(AttributeType::Float),
             "boolean" => Ok(AttributeType::Boolean),
             "date" => Ok(AttributeType::Date),
+            "prefix" => Ok(AttributeType::Prefix),
             _ => Err(JsonError(JsonErrors::IncorrectFieldsFound))
         }
     } 
@@ -48,7 +51,8 @@ impl AttributeType {
             AttributeType::Integer => "number",
             AttributeType::Float => "number",
             AttributeType::Boolean => "checkbox",
-            AttributeType::Date => "date"
+            AttributeType::Date => "date",
+            AttributeType::Prefix => "number"
         }
     } 
 }
@@ -84,6 +88,7 @@ impl TransportClass {
         Ok(())       
 
     }
+
 
     /// Generates schema from verified attributes
     /// as a JsonValue eg.:

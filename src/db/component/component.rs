@@ -6,6 +6,8 @@ use sqlx::{ColumnIndex, Execute, Pool, QueryBuilder, Row, Postgres, PgPool, migr
 use uuid::Uuid;
 use serde_json::Value as Json;
 
+use crate::{db::{class::{service::ClassServices, transport_class::AttributeType}, class_instance::{class_instance::ClassClassInstance, service::ClassInstanceServices}, db::DB}, error::{error::AppError::{self, JsonError}, json::JsonErrors}};
+
 pub static CORE_ATTRIBUTES: [&str; 4] = ["name", "stock", "manufacturer", "label"];
 
 #[derive(Serialize, Deserialize, Clone, Debug, FromRow)]
@@ -74,5 +76,41 @@ impl ComponentWithAttributes{
             self.attributes
         );
     }
+
+
+    // pub async fn convert_number_to_prefix(&self, db: &DB) -> Result<Self, AppError> {
+
+    //     let ancestors: Vec<ClassClassInstance> = db.get_class_ancestors_from_instance(Some(self.class_instance_id)).await?;
+
+
+    //     for class_class in ancestors{
+    //         for field in class_class.fields.as_array().ok_or(JsonError(JsonErrors::IncorrectFieldsFound))? {
+
+    //             let object_type = field.get("object_type")
+    //                 .ok_or(JsonErrors::GenSchema)?
+    //                 .as_str()
+    //                 .ok_or(JsonErrors::GenSchema)?;
+
+    //             let attribute_type: AttributeType = AttributeType::from(object_type)?;
+
+    //             match attribute_type {
+    //                 AttributeType::Prefix => {
+                        
+    //                     // actually change value here
+                        
+    //                     self.attributes.get_mut(index)
+
+    //                 },
+    //                 _ 
+    //             }
+
+    //         }
+    //     }
+        
+
+    //     todo!()
+
+
+    // }
 
 }
