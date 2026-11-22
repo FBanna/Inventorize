@@ -57,14 +57,6 @@ impl ComponentFile {
         Ok(stream)
     }
 
-
-    // #[deprecated]
-    // pub async fn remove(&self, config: &Config) -> Result<(), AppError> {
-    //     let path = PathBuf::from(config.asset_location.clone()).join(self.file_id.as_hyphenated().to_string());
-
-    //     fs::remove_file(path).map_err(|_| FileErrors::UnableToDelete.into())
-    // }
-
 }
 
 

@@ -1,4 +1,5 @@
 <template>
+
     <div class="popup_template menu">
 
         <div class="row">
@@ -384,6 +385,17 @@ import { QrcodeStream } from 'vue-qrcode-reader';
         
     }
 
+    @media screen and (max-width: 600px) {
+
+        .popup_template {
+            border: 0px;
+            width: 100vw;
+            height: auto;
+            max-height: 100%;
+        }
+
+    }
+
 
     // input {
     //     width: 100%;
@@ -473,6 +485,7 @@ import { QrcodeStream } from 'vue-qrcode-reader';
         box-sizing: border-box;
         width: inherit;
         //min-width: 0;
+        width: 100%;
         min-height: 0;
         display: flex;
         flex-direction: column;

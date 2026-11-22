@@ -73,6 +73,10 @@
                 </li>
             </ol>
         </div>
+
+        <div class="double-span">
+            <button></button>
+        </div>
         
 
         
@@ -152,7 +156,7 @@ setup()
 
         display: grid;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr 1fr;
+        grid-template-rows: auto auto auto auto;
         column-gap: 10px;
         //grid-template-rows: 15px 20px 20px 50px;
         //row-gap: 10px;

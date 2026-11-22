@@ -1,4 +1,5 @@
 <template>
+
     <div class="popup_template menu">
 
         Add manufacturer
@@ -71,6 +72,18 @@ import { post_manufacturer } from '@/api/manufacturer';
         display: grid;
         grid-template-rows: 15px 20px 20px 50px;
         row-gap: 10px;
+    }
+
+
+    @media screen and (max-width: 500px) {
+
+        .popup_template {
+            border: 0px;
+            width: 100vw;
+            height: auto;
+            max-height: 100%;
+        }
+
     }
 
     input {
