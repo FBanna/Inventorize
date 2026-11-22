@@ -1,4 +1,5 @@
 <template>
+
     <div class="popup_template menu">
 
         Add origin
@@ -76,11 +77,22 @@ import { post_origin } from '@/api/origin';
 
     .menu{
         width: 500px;
-        height: 200px;
+        height: 215px;
 
         display: grid;
         grid-template-rows: 15px 20px 20px 20px 20px 20px 50px;
         row-gap: 5px;
+    }
+
+    @media screen and (max-width: 500px) {
+
+        .popup_template {
+            border: 0px;
+            width: 100vw;
+            height: auto;
+            max-height: 100%;
+        }
+
     }
 
     input {

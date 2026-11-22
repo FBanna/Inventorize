@@ -44,10 +44,14 @@ $light_grey: rgb(235, 235, 235);
 .popup_template {
     border: 2px solid $accent;
     border-radius: 10px;
-    padding: 7px;
+    padding: 7px 7px 7px 7px;
+    //margin: 7px;
+    box-sizing: border-box;
     background-color: $white;
 
     overflow-x: hidden;
     overflow-y: scroll;
     scrollbar-width: none;
 }
+
+

@@ -1,3 +1,4 @@
+
 <template>
     <div class="popup_template menu">
 
@@ -9,50 +10,46 @@
 
         <input class="name-input" type="text" placeholder="name" v-model="name">
 
-        <div class="table">
+        <table>
 
-            <table>
-
-                <thead>
-                    <tr>
-                        <th>name</th>
-                        <th>unit</th>
-                        <th>object type</th>
-                    </tr>
-                </thead>
+            <thead>
+                <tr>
+                    <th>name</th>
+                    <th>unit</th>
+                    <th>object type</th>
+                </tr>
+            </thead>
 
 
-                <tbody>
-                    <template v-for="(field, index) in fields">
-
-                        
-
-                            <tr>
-                                <td><input type="text" v-model="fields[index]['name']"></td>
-                                <td><input type="text" v-model="fields[index]['unit']"></td>
-                                <td>
-                                    <select v-model="fields[index]['object_type']">
-
-                                        <option v-for="option in object_type_options" :value="option">{{ option }}</option>
-
-                                    </select>
-
-                                </td>
-                                <td><img class="remove" @click="remove_row(index)" src="/images/remove.svg"></td>
-                            </tr>
-
+            <tbody>
+                <template v-for="(field, index) in fields">
 
                     
-                        
-                    </template>
-                </tbody>
 
-                <tr class="add">
-                    <img @click="add_row" src="/images/add.svg">
-                </tr>
-            </table>    
-        </div>
+                        <tr>
+                            <td><input type="text" v-model="fields[index]['name']"></td>
+                            <td><input type="text" v-model="fields[index]['unit']"></td>
+                            <td>
+                                <select v-model="fields[index]['object_type']">
 
+                                    <option v-for="option in object_type_options" :value="option">{{ option }}</option>
+
+                                </select>
+
+                            </td>
+                            <td><img class="remove" @click="remove_row(index)" src="/images/remove.svg"></td>
+                        </tr>
+
+
+                
+                    
+                </template>
+            </tbody>
+
+            <tr class="add">
+                <img @click="add_row" src="/images/add.svg">
+            </tr>
+        </table>    
 
 
 
@@ -165,8 +162,16 @@ import type { StatusError } from '@/api/util';
         
     }
 
-    .table {
-        width: 500px;
+
+    @media screen and (max-width: 500px) {
+
+        .popup_template {
+            border: 0px;
+            width: 100vw;
+            height: auto;
+            max-height: 100%;
+        }
+
     }
 
 
@@ -181,7 +186,9 @@ import type { StatusError } from '@/api/util';
     td {
         //border: 1px black solid;
         //box-sizing: border-box;
+
         padding-right: 10px;
+        box-sizing: border-box;
         //width: 20px;
     }
 
@@ -194,5 +201,3 @@ import type { StatusError } from '@/api/util';
         align-content: center;
         width: 100%;
     }
-
-</style>
