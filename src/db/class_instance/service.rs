@@ -173,6 +173,7 @@ impl ClassInstanceServices for DB {
         Ok(result)
     }
 
+    /// None is root branch
     async fn get_class_ancestors_from_instance(&self, class_instance_id: Option<Uuid>) -> Result<Vec<ClassClassInstance>, AppError> {
         
         let result: Vec<ClassClassInstance> = sqlx::query_as("

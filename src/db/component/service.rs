@@ -142,10 +142,12 @@ impl ComponentServices for DB{
 
             let value = c.attributes
                     .get(&ancestor.class_instance_id)
-                    .ok_or(JsonErrors::ComponentClassAttributesMalformed(format!("Does not have attribute for {}", ancestor.name)))?;
+                    .ok_or(JsonErrors::ComponentClassAttributesMalformed(format!("Does not have attribute for {}", ancestor.name)))?;      
+
 
             // verify
             Into::<Class>::into(ancestor.clone()).verify_component_attributes(value)?;
+
 
             // insert
             self.add_component_class(

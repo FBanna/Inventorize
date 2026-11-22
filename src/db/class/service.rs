@@ -23,6 +23,7 @@ pub trait ClassServices {
 }
 
 
+
 impl ClassServices for DB {
 
     // Add class & verify attributes

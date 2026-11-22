@@ -123,6 +123,8 @@ import router from '../router/index.ts';
 
   const api_url = import.meta.env.VITE_API_URL
 
+  const suffixs = ["E", "P", "T", "B", "M", "k", "", "m", "u", "n", "p", "f"] // starting at 18
+
     
 
     async function get_facets() {
@@ -239,6 +241,20 @@ import router from '../router/index.ts';
 
     }
 
+    function formatPrefix(n: number) {
+
+      for (let i = 0; i < suffixs.length; i++) {
+        let divider = (10**((6 - i)*3))
+        if (n >= divider) {
+          return (n / divider).toString() + suffixs[i]
+        }
+      }
+
+      return n.toString()
+    }
+
+    //function format_suffix(num: )
+
     function transform_function(row: any): CellData[] {
 
       let out: CellData[] = [{type: CellTypes.Slot, value: "image"}]
@@ -255,14 +271,37 @@ import router from '../router/index.ts';
 
       for (let class_ of raw_fields.attributes) {
         for (let field of class_.fields) {
-          out.push(
-            {
-              type: CellTypes.String,
-              value: row.attributes.find(
-                      (a: any) => a.class_instance_id === class_.class_instance_id
-                    ).attributes[field.name]
-            }
-          )
+
+          if (field.object_type == "prefix") {
+
+            let value: number = row.attributes.find(
+              (a: any) => a.class_instance_id === class_.class_instance_id
+            ).attributes[field.name]
+
+
+            out.push(
+              {
+                type: CellTypes.String,
+                value: formatPrefix(value)
+              }
+            )
+
+
+          } else {
+
+            out.push(
+              {
+                type: CellTypes.String,
+                value: row.attributes.find(
+                  (a: any) => a.class_instance_id === class_.class_instance_id
+                ).attributes[field.name]
+              }
+            )
+
+          }
+
+
+          
         }
       }
 

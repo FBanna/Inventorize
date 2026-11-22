@@ -23,12 +23,20 @@ impl Class {
 
         let validator = jsonschema::validator_for(&self.schema)?;
 
+        for field in self.fields.as_array().ok_or(JsonError(JsonErrors::IncorrectFieldsFound)) {
+            
+            //let type_ = field.get("object_type");
+        }
+
         validator.validate(attributes).map_err(|err| -> AppError {
 
             return JsonError(JsonErrors::ComponentClassAttributesMalformed(err.to_string()));
 
         })?;
 
+
+
+        //todo!();
         Ok(())
 
     }

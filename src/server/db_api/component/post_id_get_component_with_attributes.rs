@@ -18,7 +18,7 @@ pub async fn post_id_get_component_with_attributes(
 ) -> Result<Json<ComponentWithAttributes>, AppError> {
 
 
-    let result: crate::db::component::component::ComponentWithAttributes = shared_state.db.get_component_with_attributes(component.component_id).await?;
+    let result: ComponentWithAttributes = shared_state.db.get_component_with_attributes(component.component_id).await?;
 
     Ok(Json(result))
 }
